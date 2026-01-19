@@ -14,6 +14,7 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      fail-fast: false   # 🔥 WICHTIG
       matrix:
         rid:
           - win-x64
@@ -37,6 +38,7 @@ jobs:
 
       # 4️⃣ Publish Service
       - name: Publish Service (${{ matrix.rid }})
+        continue-on-error: ${{ matrix.rid == 'win-x86' }}
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
@@ -48,6 +50,7 @@ jobs:
 
       # 5️⃣ Publish WPF UI
       - name: Publish WPF UI (${{ matrix.rid }})
+        continue-on-error: ${{ matrix.rid == 'win-x86' }}
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
           -c Release
@@ -60,6 +63,7 @@ jobs:
 
       # 6️⃣ Collect Output + ZIP
       - name: Collect Final Output (${{ matrix.rid }})
+        if: success() || matrix.rid != 'win-x86'
         shell: pwsh
         run: |
           $rid = "${{ matrix.rid }}"
@@ -75,7 +79,7 @@ jobs:
             -DestinationPath "AppWatchdog_${{ github.ref_name }}_$rid.zip" `
             -Force
 
-      # 7️⃣ GitHub Release (einmal, alle ZIPs anhängen)
+      # 7️⃣ GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -91,12 +95,12 @@ jobs:
             - AppWatchdog.UI.WPF.exe
 
             Unterstützte Plattformen:
-            - win-x64
-            - win-x86
-            - win-arm64
+            - win-x64 ✅
+            - win-arm64 ✅
+            - win-x86 ⚠️ (best effort)
 
             Keine zusätzliche .NET Runtime erforderlich.
           files: |
             AppWatchdog_${{ github.ref_name }}_win-x64.zip
-            AppWatchdog_${{ github.ref_name }}_win-x86.zip
             AppWatchdog_${{ github.ref_name }}_win-arm64.zip
+            AppWatchdog_${{ github.ref_name }}_win-x86.zip
