@@ -10,21 +10,21 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout
+      # 1️⃣ Repository auschecken
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ .NET SDK
+      # 2️⃣ .NET SDK installieren
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ Restore (einmal global)
+      # 3️⃣ Restore (einmal für die ganze Solution)
       - name: Restore
         run: dotnet restore AppWatchdog.sln
 
-      # 4️⃣ Publish Service (self-contained, single-file)
+      # 4️⃣ Publish Windows Service
       - name: Publish Service
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
@@ -38,7 +38,8 @@ jobs:
           /p:AssemblyVersion=2.0.0.0
           -o publish
 
-      # 5️⃣ Publish WPF UI (gleicher Ordner!)
+      # 5️⃣ Publish WPF UI
+      # WICHTIG: CopyServiceExe explizit deaktiviert
       - name: Publish WPF UI
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
@@ -50,16 +51,17 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:FileVersion=2.0.0.0
           /p:AssemblyVersion=2.0.0.0
+          /p:CopyServiceExe=false
           -o publish
 
-      # 6️⃣ Sanity Check (optional, aber hilfreich)
+      # 6️⃣ Ergebnis prüfen (Debug-Hilfe)
       - name: Verify Output
         shell: pwsh
         run: |
           Write-Host "Published files:"
           Get-ChildItem publish
 
-      # 7️⃣ Upload Artifact
+      # 7️⃣ Artefakt hochladen
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
