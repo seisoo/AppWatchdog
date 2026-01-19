@@ -10,21 +10,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Repository auschecken
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ .NET SDK installieren
+      # 2️⃣ .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ Restore (einmal für die ganze Solution)
+      # 3️⃣ Restore
       - name: Restore
         run: dotnet restore AppWatchdog.sln
 
-      # 4️⃣ Publish Windows Service
+      # 4️⃣ Publish Service
+      # WICHTIG: GENAU in den Pfad, den die UI erwartet
       - name: Publish Service
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
@@ -36,10 +37,9 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:FileVersion=2.0.0.0
           /p:AssemblyVersion=2.0.0.0
-          -o publish
 
       # 5️⃣ Publish WPF UI
-      # WICHTIG: CopyServiceExe explizit deaktiviert
+      # Jetzt findet CopyServiceExe die Service-EXE
       - name: Publish WPF UI
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
@@ -51,17 +51,20 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:FileVersion=2.0.0.0
           /p:AssemblyVersion=2.0.0.0
-          /p:CopyServiceExe=false
-          -o publish
 
-      # 6️⃣ Ergebnis prüfen (Debug-Hilfe)
-      - name: Verify Output
+      # 6️⃣ Gemeinsamen Ordner erzeugen
+      - name: Collect Final Output
         shell: pwsh
         run: |
-          Write-Host "Published files:"
+          New-Item -ItemType Directory -Force -Path publish | Out-Null
+
+          Copy-Item AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe publish -Force
+          Copy-Item AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe publish -Force
+
+          Write-Host "Final files:"
           Get-ChildItem publish
 
-      # 7️⃣ Artefakt hochladen
+      # 7️⃣ Upload
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
