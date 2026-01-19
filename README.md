@@ -1,7 +1,7 @@
 # 🛡️ AppWatchdog  
 **Windows Application & Service Watchdog**
 
-![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?token=GHSAT0AAAAAADTOT3SANO2HGCIRJBXPT3OK2LNUZNA)
+![overview](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)
 
 **AppWatchdog** ist ein **robuster Windows Watchdog**, bestehend aus einem **Windows Service** und einer **WPF-Benutzeroberfläche**, entwickelt für den produktiven Einsatz auf Windows-Systemen.
 
@@ -37,15 +37,15 @@ Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt 
 ---
 
 ## 🧩 Architektur
-
-┌──────────────────────┐
+      
+┌──────────────────────┐      
 │ AppWatchdog.UI.WPF │ ← Konfiguration & Monitoring (WPF)
-└──────────▲───────────┘
-│ Named Pipes (IPC)
-┌──────────┴───────────┐
+└──────────▲───────────┘  
+│ Named Pipes (IPC)        
+┌──────────┴───────────┐      
 │ AppWatchdog.Service │ ← Windows Service (Watchdog Engine)
-└──────────────────────┘
-
+└──────────────────────┘      
+      
 
 ### Komponenten
 
@@ -66,16 +66,16 @@ Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt 
 ## 🖥️ Screenshots
 
 ### Service Management
-![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?token=GHSAT0AAAAAADTOT3SANO2HGCIRJBXPT3OK2LNUZNA)
+![Service Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)
 
 ### Application Monitoring
-![Apps Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png?token=GHSAT0AAAAAADTOT3SAG7STDREAG6MRQ2EC2LNU2MQ)
+![Apps Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png?raw=true)
 
 ### Notifications
-![Notifications Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png?token=GHSAT0AAAAAADTOT3SBGUHVSHKZJR7LFMDY2LNUZXQ)
+![Notifications Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png?raw=true)
 
 ### Logs
-![Logs Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png?token=GHSAT0AAAAAADTOT3SALJHJ4WEAJJUOVXWO2LNU2VQ)
+![Logs Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png?raw=true)
 
 ---
 
