@@ -1,0 +1,92 @@
+﻿<ui:FluentWindow
+    x:Class="AppWatchdog.UI.WPF.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:AppWatchdog.UI.WPF"
+    xmlns:pages="clr-namespace:AppWatchdog.UI.WPF.Views.Pages"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="AppWatchdog – Control Center"
+    Width="1200"
+    Height="1070"
+    MinWidth="1024"
+    MinHeight="1070"
+    ui:Background="DarkSlateBlue"
+    ExtendsContentIntoTitleBar="True"
+    Icon="/Images/ico.png"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen">
+
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            Title="AppWatchdog – Control Center"
+            Grid.Row="0"
+            ShowClose="True"
+            ShowMaximize="True"
+            ShowMinimize="True">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon
+                    Width="20"
+                    Height="20"
+                    Source="/Images/ico.png" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
+
+        <ui:ContentDialogHost
+            x:Name="RootContentDialogHost"
+            Grid.RowSpan="2"
+            Panel.ZIndex="999" />
+
+        <ui:NavigationView
+            x:Name="RootNavigationView"
+            Grid.Row="1"
+            AlwaysShowHeader="false"
+            IsBackButtonVisible="Collapsed"
+            IsPaneOpen="false"
+            IsPaneToggleVisible="false"
+            OpenPaneLength="135"
+            PaneDisplayMode="LeftMinimal">
+
+
+            <ui:NavigationView.MenuItems>
+
+                <ui:NavigationViewItem
+                    Content="Service"
+                    Icon="{ui:SymbolIcon Shield24}"
+                    TargetPageType="{x:Type pages:ServicePage}" />
+
+                <ui:NavigationViewItem
+                    Content="Apps"
+                    Icon="{ui:SymbolIcon AppFolder24}"
+                    TargetPageType="{x:Type pages:AppsPage}" />
+
+                <ui:NavigationViewItem
+                    Content="Notifications"
+                    Icon="{ui:SymbolIcon Megaphone24}"
+                    TargetPageType="{x:Type pages:NotificationsPage}" />
+
+                <ui:NavigationViewItem
+                    Content="Logs"
+                    Icon="{ui:SymbolIcon DocumentText24}"
+                    TargetPageType="{x:Type pages:LogsPage}" />
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem
+                    Content="About"
+                    Icon="{ui:SymbolIcon Info24}"
+                    TargetPageType="{x:Type pages:AboutPage}" />
+            </ui:NavigationView.FooterMenuItems>
+
+        </ui:NavigationView>
+    </Grid>
+
+
+</ui:FluentWindow>

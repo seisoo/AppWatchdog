@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishTrimmed>false</PublishTrimmed>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<FileVersion>2.0.0.0</FileVersion>
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Images\banner.jpg" />
+	  <None Remove="Images\banner3.png" />
+	  <None Remove="Images\banner5.png" />
+	  <None Remove="Images\banner8.png" />
+	  <None Remove="Images\banner9.png" />
+	  <None Remove="Images\ico.png" />
+	  <None Remove="Images\uac.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="Images\banner.jpg" />
+	  <Resource Include="Images\banner3.png" />
+	  <Resource Include="Images\banner5.png" />
+	  <Resource Include="Images\banner8.png" />
+	  <Resource Include="Images\banner9.png" />
+	  <Resource Include="Images\ico.png" />
+	  <Resource Include="Images\uac.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="ViewModels\MainWindowViewModel.cs" />
+	  <None Include="ViewModels\NotificationsViewModel.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WPF-UI" Version="4.2.0" />
+		<PackageReference Include="WPF-UI.DependencyInjection" Version="4.1.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AppWatchdog.Shared\AppWatchdog.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\Pages\AboutPage.xaml.cs">
+	    <SubType>Code</SubType>
+	  </Compile>
+	</ItemGroup>
+
+	<Target Name="CopyServiceExe" AfterTargets="Build">
+		<ItemGroup>
+			<ServiceExe Include="..\AppWatchdog.Service\bin\Release\net8.0-windows\win-x64\publish\AppWatchdog.Service.exe" />
+		</ItemGroup>
+
+		<Copy SourceFiles="@(ServiceExe)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="false" />
+	</Target>
+
+</Project>

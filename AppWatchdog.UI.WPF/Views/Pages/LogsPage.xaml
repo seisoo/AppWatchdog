@@ -1,0 +1,109 @@
+﻿<Page
+    x:Class="AppWatchdog.UI.WPF.Views.Pages.LogsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Logs">
+
+
+    <Grid IsEnabled="{Binding IsContentEnabled}">
+        <StackPanel Margin="16" VerticalAlignment="Top">
+
+            <ui:Card
+                Height="154"
+                Margin="0,0,0,12"
+                Padding="0">
+                <Grid>
+
+                    <Image Source="pack://application:,,,/Images/banner5.png" Stretch="UniformToFill" />
+
+                    <Rectangle>
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Offset="0.0" Color="#AA000000" />
+                                <GradientStop Offset="1.0" Color="#AA000000" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <StackPanel Margin="24,36,24,36" VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="26"
+                            FontWeight="SemiBold"
+                            Foreground="White"
+                            Text="AppWatchdog" />
+
+                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                Foreground="#E5E7EB"
+                                Text="天網恢恢、疎にして漏らさず" />
+                        </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+            </ui:Card>
+
+
+            <ui:Card Margin="0,0,0,12" Padding="16">
+                <StackPanel>
+
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="Logs" />
+
+                    <TextBlock
+                        Margin="0,6,0,6"
+                        Opacity="0.7"
+                        Text="{Binding Header}" />
+
+                    <WrapPanel VerticalAlignment="Center">
+                        <ComboBox
+                            Width="200"
+                            Margin="0,0,8,0"
+                            ItemsSource="{Binding Days}"
+                            SelectedItem="{Binding SelectedDay}" />
+
+                        <ui:Button
+                            Margin="0,0,12,0"
+                            Command="{Binding LoadSelectedCommand}"
+                            Content="Laden"
+                            Icon="{ui:SymbolIcon Symbol=SparkleCircle24}" />
+
+
+                        <CheckBox
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            Content="Auto-Refresh"
+                            IsChecked="{Binding AutoRefreshEnabled}" />
+
+
+                    </WrapPanel>
+                    <TextBlock
+                        HorizontalAlignment="right"
+                        VerticalAlignment="Center"
+                        FontFamily="Consolas"
+                        Foreground="NavajoWhite"
+                        Text="{Binding AutoRefreshStatusText}" />
+                </StackPanel>
+            </ui:Card>
+
+
+            <ui:Card Padding="16">
+                <TextBox
+                    MinHeight="300"
+                    AcceptsReturn="True"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    HorizontalScrollBarVisibility="Auto"
+                    IsReadOnly="True"
+                    Text="{Binding LogText}"
+                    TextWrapping="NoWrap"
+                    VerticalScrollBarVisibility="Auto" />
+            </ui:Card>
+
+        </StackPanel>
+    </Grid>
+</Page>
