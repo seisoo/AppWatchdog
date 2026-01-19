@@ -1,7 +1,7 @@
 # 🛡️ AppWatchdog  
 **Windows Application & Service Watchdog**
 
-![overview](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)
+![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
 
 **AppWatchdog** is a Windows watchdog solution consisting of a **Windows Service** and a **WPF-based user interface**.
 
@@ -68,16 +68,16 @@ Additional features include notifications, logging, and basic self-healing capab
 ## 🖥️ Screenshots
 
 ### Service Management
-![Service Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)
+![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
 
 ### Application Monitoring
-![Apps Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png?raw=true)
+![Apps Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png)
 
 ### Notifications
-![Notifications Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png?raw=true)
+![Notifications Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png)
 
 ### Logs
-![Logs Page](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png?raw=true)
+![Logs Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png)
 
 ---
 
