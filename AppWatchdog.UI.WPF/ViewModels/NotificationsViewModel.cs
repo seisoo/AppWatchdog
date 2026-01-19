@@ -7,6 +7,7 @@ using System.ComponentModel;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using AppWatchdog.UI.WPF.Common;
+using System.Threading.Tasks;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 

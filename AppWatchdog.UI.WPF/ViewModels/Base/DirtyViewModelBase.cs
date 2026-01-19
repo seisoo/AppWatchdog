@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Diagnostics;
 
 namespace AppWatchdog.UI.WPF.ViewModels.Base;

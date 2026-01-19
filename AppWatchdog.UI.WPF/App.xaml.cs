@@ -4,6 +4,8 @@ using AppWatchdog.UI.WPF.ViewModels;
 using AppWatchdog.UI.WPF.Views.Pages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
