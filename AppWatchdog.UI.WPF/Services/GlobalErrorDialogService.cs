@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;

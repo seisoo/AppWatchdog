@@ -1,5 +1,6 @@
 ﻿using AppWatchdog.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 using System.Xml.Linq;
 
 public partial class WatchedAppItemViewModel : ObservableObject

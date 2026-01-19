@@ -1,6 +1,7 @@
 ﻿using AppWatchdog.UI.WPF.ViewModels;
 using AppWatchdog.UI.WPF.Views.Pages;
 using System.ComponentModel;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui;
