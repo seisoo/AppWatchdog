@@ -12,52 +12,47 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Repo auschecken
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ .NET SDK (für net8.0-windows Projekte)
+      # 2️⃣ .NET SDK (net8.0)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ MSBuild (für .NET Framework Projekte)
+      # 3️⃣ MSBuild (für .NET Framework + WPF)
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      # 4️⃣ NuGet Restore (klassisch + stabil)
+      # 4️⃣ Restore
       - name: Restore NuGet
         run: nuget restore AppWatchdog.sln
 
-      # 5️⃣ Build – Release | Any CPU
-      # KEIN publish, KEIN RuntimeIdentifier
+      # 5️⃣ BUILD (CopyServiceExe explizit AUS)
       - name: Build Solution
-        run: msbuild AppWatchdog.sln /m /p:Configuration=Release /p:Platform="Any CPU"
+        run: >
+          msbuild AppWatchdog.sln
+          /m
+          /p:Configuration=Release
+          /p:Platform="Any CPU"
+          /p:CopyServiceExe=false
 
-      # 6️⃣ Artefakte sammeln (nur relevante EXEs)
+      # 6️⃣ Artefakte sammeln
       - name: Collect Artifacts
         shell: pwsh
         run: |
           $out = "artifacts"
           New-Item -ItemType Directory -Force -Path $out | Out-Null
 
-          Write-Host "Collecting UI and Service executables..."
-
           Get-ChildItem -Recurse -Filter *.exe |
-            Where-Object {
-              $_.FullName -match "\\bin\\Release\\" -and
-              ($_.Name -match "AppWatchdog.*UI" -or $_.Name -match "AppWatchdog.*Service")
-            } |
+            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
             ForEach-Object {
-              Write-Host "  -> $($_.FullName)"
               Copy-Item $_.FullName $out -Force
             }
 
-          Write-Host "Artifacts collected:"
-          Get-ChildItem $out
-
-      # 7️⃣ Upload als GitHub Artifact
+      # 7️⃣ Upload
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
