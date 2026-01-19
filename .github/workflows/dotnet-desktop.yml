@@ -6,6 +6,10 @@ on:
     tags:
       - "v*"
 
+# 🔑 WICHTIG: Rechte für Releases
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: windows-latest
@@ -37,6 +41,7 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
 
       # 5️⃣ Publish WPF UI
+      # 🔴 CopyServiceExe MUSS deaktiviert sein
       - name: Publish WPF UI
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
@@ -46,8 +51,9 @@ jobs:
           /p:PublishSingleFile=true
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:CopyServiceExe=false
 
-      # 6️⃣ Gemeinsamen Ordner erzeugen
+      # 6️⃣ Gemeinsamen Ordner erzeugen + ZIP
       - name: Collect Final Output
         shell: pwsh
         run: |
@@ -76,5 +82,3 @@ jobs:
             Keine zusätzliche .NET Runtime erforderlich.
           files: |
             AppWatchdog_${{ github.ref_name }}_win-x64.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
