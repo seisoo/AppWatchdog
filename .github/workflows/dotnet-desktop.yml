@@ -1,4 +1,4 @@
-name: Build (Windows x86/x64)
+name: Build (Windows)
 
 on:
   push:
@@ -10,10 +10,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        platform: [ "x86", "x64" ]
-        config: [ "Release" ]
 
     steps:
       - name: Checkout
@@ -25,23 +21,23 @@ jobs:
       - name: Restore NuGet
         run: nuget restore
 
-      - name: Build Solution
-        run: msbuild /m /p:Configuration=${{ matrix.config }} /p:Platform=${{ matrix.platform }}
+      - name: Build Solution (Release | Any CPU)
+        run: msbuild AppWatchdog.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
       - name: Collect Artifacts
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path artifacts/${{ matrix.platform }}
+          New-Item -ItemType Directory -Force -Path artifacts
 
-          # TODO: Passe diese Pfade exakt an DEINE Output-Namen an:
-          # Suche in deinem Repo nach den EXE-Namen und Output-Pfaden.
-          # Typisch: src/YourProject/bin/Release/...
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.exe" "artifacts/${{ matrix.platform }}/"
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.dll" "artifacts/${{ matrix.platform }}/" -ErrorAction SilentlyContinue
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.config" "artifacts/${{ matrix.platform }}/" -ErrorAction SilentlyContinue
+          # ALLE Release-EXEs sammeln (UI + Service)
+          Get-ChildItem -Recurse -Filter *.exe |
+            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
+            ForEach-Object {
+              Copy-Item $_.FullName artifacts -Force
+            }
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AppWatchdog_${{ matrix.platform }}
-          path: artifacts/${{ matrix.platform }}
+          name: AppWatchdog_Release_AnyCPU
+          path: artifacts
