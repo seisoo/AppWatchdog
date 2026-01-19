@@ -1,60 +1,79 @@
-name: Build (Windows)
+name: Publish (UI + Service)
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build:
+  publish:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ .NET SDK (net8.0)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ MSBuild (für .NET Framework + WPF)
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+      - name: Restore
+        run: dotnet restore
 
-      # 4️⃣ Restore
-      - name: Restore NuGet
-        run: nuget restore AppWatchdog.sln
-
-      # 5️⃣ BUILD (CopyServiceExe explizit AUS)
-      - name: Build Solution
+      # ----------------------------
+      # Publish UI (WPF)
+      # ----------------------------
+      - name: Publish UI
         run: >
-          msbuild AppWatchdog.sln
-          /m
-          /p:Configuration=Release
-          /p:Platform="Any CPU"
-          /p:CopyServiceExe=false
+          dotnet publish
+          src/AppWatchdog.UI/AppWatchdog.UI.csproj
+          -c Release
 
-      # 6️⃣ Artefakte sammeln
-      - name: Collect Artifacts
+      # ----------------------------
+      # Publish Service
+      # ----------------------------
+      - name: Publish Service
+        run: >
+          dotnet publish
+          src/AppWatchdog.Service/AppWatchdog.Service.csproj
+          -c Release
+
+      # ----------------------------
+      # Merge Service.exe into UI folder
+      # ----------------------------
+      - name: Merge Service into UI output
         shell: pwsh
         run: |
-          $out = "artifacts"
-          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          $uiPublish = Get-ChildItem -Recurse -Directory -Filter publish |
+            Where-Object { $_.FullName -match "AppWatchdog.UI" } |
+            Select-Object -First 1
 
-          Get-ChildItem -Recurse -Filter *.exe |
-            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
-            ForEach-Object {
-              Copy-Item $_.FullName $out -Force
-            }
+          if (-not $uiPublish) {
+            Write-Error "UI publish folder not found"
+            exit 1
+          }
 
-      # 7️⃣ Upload
-      - name: Upload Artifacts
+          $serviceExe = Get-ChildItem -Recurse -Filter *.exe |
+            Where-Object { $_.FullName -match "AppWatchdog.Service" } |
+            Select-Object -First 1
+
+          if (-not $serviceExe) {
+            Write-Error "Service exe not found"
+            exit 1
+          }
+
+          Copy-Item $serviceExe.FullName $uiPublish.FullName -Force
+
+          Write-Host "Merged Service.exe into UI publish folder:"
+          Write-Host $uiPublish.FullName
+
+      # ----------------------------
+      # Upload final artifact
+      # ----------------------------
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AppWatchdog_Windows_Release
-          path: artifacts
+          name: AppWatchdog_Publish
+          path: |
+            **/AppWatchdog.UI/**/publish/**
