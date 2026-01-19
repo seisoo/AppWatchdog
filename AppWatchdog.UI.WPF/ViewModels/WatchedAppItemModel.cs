@@ -22,8 +22,6 @@ public partial class WatchedAppItemViewModel : ObservableObject
     [ObservableProperty] private string _kumaPushToken = "";
     [ObservableProperty] private int _kumaIntervalSeconds = 60;
 
-    // -------------------- Dirty forwarding --------------------
-
     partial void OnNameChanged(string value) => _markDirty();
     partial void OnExePathChanged(string value) => _markDirty();
     partial void OnArgumentsChanged(string value) => _markDirty();
@@ -33,8 +31,6 @@ public partial class WatchedAppItemViewModel : ObservableObject
     partial void OnKumaBaseUrlChanged(string value) => _markDirty();
     partial void OnKumaPushTokenChanged(string value) => _markDirty();
     partial void OnKumaIntervalSecondsChanged(int value) => _markDirty();
-
-    // -------------------- Mapping --------------------
 
     public static WatchedAppItemViewModel FromModel(
         WatchedApp model,

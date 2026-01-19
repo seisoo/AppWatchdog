@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppWatchdog.UI", "AppWatchdog\AppWatchdog.UI.csproj", "{DAEA7FC3-F850-4AEC-ADF8-EDD87C323E80}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppWatchdog.Shared", "AppWatchdog.Shared\AppWatchdog.Shared.csproj", "{DC23178E-671D-42C8-92D8-60F76FFC9F97}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppWatchdog.Service", "AppWatchdog.Service\AppWatchdog.Service.csproj", "{784A624B-69BC-44B8-BAC2-AA3DB4CA582D}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DAEA7FC3-F850-4AEC-ADF8-EDD87C323E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DAEA7FC3-F850-4AEC-ADF8-EDD87C323E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DAEA7FC3-F850-4AEC-ADF8-EDD87C323E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DAEA7FC3-F850-4AEC-ADF8-EDD87C323E80}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DC23178E-671D-42C8-92D8-60F76FFC9F97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DC23178E-671D-42C8-92D8-60F76FFC9F97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC23178E-671D-42C8-92D8-60F76FFC9F97}.Release|Any CPU.ActiveCfg = Release|Any CPU

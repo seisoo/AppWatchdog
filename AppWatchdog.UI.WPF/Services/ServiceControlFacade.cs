@@ -14,7 +14,6 @@ public sealed class ServiceControlFacade
         _serviceName = serviceName;
     }
 
-
     public string GetServiceStatusText()
     {
         try

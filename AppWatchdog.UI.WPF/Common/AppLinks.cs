@@ -2,7 +2,7 @@
 
 public static class AppLinks
 {
-    public const string GitHub = "https://github.com/seisoo";
+    public const string GitHub = "https://github.com/seisoo/AppWatchdog";
     public const string Steam = "https://steamcommunity.com/id/call_me_seiso/";
     public const string Mail = "mailto:kreolen-mission9v@icloud.com";
 

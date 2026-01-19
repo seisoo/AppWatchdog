@@ -34,10 +34,6 @@ public sealed class PipeFacade
     public void TestNtfy()
         => Execute(PipeClient.TestNtfy);
 
-    // =========================
-    // ZENTRALE FEHLERBEHANDLUNG
-    // =========================
-
     private static T Execute<T>(Func<T> action)
     {
         try

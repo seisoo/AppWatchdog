@@ -12,7 +12,6 @@ namespace AppWatchdog.Service;
 
 public sealed class Worker : BackgroundService
 {
-    // ================= WATCHDOG STABILITY SETTINGS =================
     private const int DownConfirmChecks = 2;
 
     private static readonly TimeSpan StartBackoffMin = TimeSpan.FromSeconds(5);
@@ -148,7 +147,6 @@ public sealed class Worker : BackgroundService
                 .Select(a => a.ExePath!),
             StringComparer.OrdinalIgnoreCase);
 
-        // 🧹 States aufräumen
         foreach (var key in _appMailStates.Keys.ToList())
             if (!validExePaths.Contains(key))
                 _appMailStates.Remove(key);
@@ -177,7 +175,6 @@ public sealed class Worker : BackgroundService
                 Enabled = app.Enabled
             };
 
-            // ❌ Ungültige App
             if (!app.Enabled || string.IsNullOrWhiteSpace(exePath))
             {
                 st.IsRunning = false;
@@ -193,7 +190,6 @@ public sealed class Worker : BackgroundService
 
             st.IsRunning = IsRunning(exePath);
 
-            // ================= DOWN / UP TRACKING =================
             if (st.IsRunning)
             {
                 ms.ConsecutiveDown = 0;
@@ -205,12 +201,8 @@ public sealed class Worker : BackgroundService
                 ms.ConsecutiveDown++;
             }
 
-            // =========================
-            // 🔻 APP LÄUFT NICHT
-            // =========================
             if (!st.IsRunning)
             {
-                // ================= SHORT OUTAGE FILTER =================
                 if (ms.ConsecutiveDown < DownConfirmChecks)
                 {
                     st.LastStartError =
@@ -280,13 +272,9 @@ public sealed class Worker : BackgroundService
                         "Kein interaktiver Benutzer angemeldet (Start nicht möglich).";
                 }
 
-                // =========================
-                // ✅/❌ Ergebnis nach Startversuch
-                // =========================
                 if (!st.IsRunning)
                 {
-                    // ❌ App ist weiterhin DOWN (egal ob Backoff, kein User, Start fehlgeschlagen, Early-Exit)
-                    ms.RestartNotified = false;
+                                        ms.RestartNotified = false;
 
                     if (maySendDownMail)
                     {
@@ -294,7 +282,6 @@ public sealed class Worker : BackgroundService
                         ms.LastDownMail = now;
                     }
 
-                    // Backoff nur dann eskalieren, wenn wirklich ein Start versucht wurde
                     if (startAttempted)
                     {
                         ms.ConsecutiveStartFailures++;
@@ -307,7 +294,6 @@ public sealed class Worker : BackgroundService
                 }
                 else
                 {
-                    // ✅ App ist wieder UP
                     ms.ConsecutiveStartFailures = 0;
                     ms.NextStartAttemptUtc = DateTimeOffset.MinValue;
 
@@ -323,9 +309,6 @@ public sealed class Worker : BackgroundService
                     ms.WasRunning = true;
                 }
             }
-            // =========================
-            // 🟢 APP LÄUFT
-            // =========================
             else
             {
                 if (!ms.WasRunning)
@@ -368,7 +351,6 @@ public sealed class Worker : BackgroundService
             if ((now - ms.LastKumaPing) < interval)
                 continue;
 
-            // Einheitlich den Watchdog-State melden (nicht "neu messen")
             bool isRunning = ms.WasRunning;
 
             _ = UptimeKumaClient.SendAsync(
@@ -383,7 +365,6 @@ public sealed class Worker : BackgroundService
 
     private static TimeSpan ComputeBackoffDelay(int consecutiveStartFailures)
     {
-        // exponential backoff: 5s, 10s, 20s, 40s, ... capped at 10min
         double seconds = StartBackoffMin.TotalSeconds * Math.Pow(2, Math.Max(0, consecutiveStartFailures - 1));
         seconds = Math.Min(StartBackoffMax.TotalSeconds, seconds);
         return TimeSpan.FromSeconds(seconds);
@@ -426,8 +407,7 @@ public sealed class Worker : BackgroundService
                     continue;
 
                 if (tUtc < fromUtc)
-                    break; // älter als Fenster → fertig
-
+                    break; 
                 var src = e.Source ?? "";
                 if (src.Contains(".NET", StringComparison.OrdinalIgnoreCase) ||
                     src.Contains("Application Error", StringComparison.OrdinalIgnoreCase) ||
@@ -452,6 +432,7 @@ public sealed class Worker : BackgroundService
 
     private static bool PingApplicationOptional(WatchedApp app)
     {
+        // TODO: health check ping
         return true;
     }
 
@@ -566,18 +547,6 @@ public sealed class Worker : BackgroundService
                 LogError($"Notification (RESTART) fehlgeschlagen: {app.Name}", ex);
             }
         });
-    }
-
-    private void SendNotification_AppDownAsync(WatchedApp app, string errorMessage)
-    {
-        SendNotification_AppDownAsync(app, new AppStatus
-        {
-            Name = app.Name,
-            ExePath = app.ExePath ?? "",
-            Enabled = app.Enabled,
-            IsRunning = false,
-            LastStartError = errorMessage
-        }, startAttempted: true);
     }
 
     private void SendNotification_AppUpAsync(WatchedApp app)
@@ -739,6 +708,7 @@ public sealed class Worker : BackgroundService
         await Task.CompletedTask;
     }
 
+    // pipe command handler
     private PipeProtocol.Response HandlePipeRequest(PipeProtocol.Request req)
     {
         try
@@ -976,12 +946,10 @@ public sealed class Worker : BackgroundService
         return false;
     }
 
-    // Robust: works better than MainModule across sessions/UAC (best-effort)
     private static string? TryGetProcessPath(Process p)
     {
         try
         {
-            // 0x1000 = PROCESS_QUERY_LIMITED_INFORMATION
             const int PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
             IntPtr h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, p.Id);
@@ -1003,8 +971,6 @@ public sealed class Worker : BackgroundService
         catch
         {
         }
-
-        // fallback
         try { return p.MainModule?.FileName; } catch { return null; }
     }
 

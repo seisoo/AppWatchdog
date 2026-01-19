@@ -83,7 +83,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
             StartAutoRefresh();
         }
 
-        await ForceBackendRecheckAsync(); // 🔥 IMMER prüfen
+        await ForceBackendRecheckAsync(); 
     }
 
     public void StartAutoRefresh()
@@ -117,16 +117,13 @@ public partial class ServiceViewModel : DirtyViewModelBase
 
         try
         {
-            // 🔴 1. Service-Status prüfen
             if (!IsServiceRunning())
             {
                 _backend.SetOffline("Service ist gestoppt");
                 StatusLine = "Service ist gestoppt";
-                return;   // ❌ KEIN StopAutoRefresh mehr
+                return;   
             }
 
-
-            // 🔴 2. Pipe prüfen
             ServiceSnapshot snap;
             try
             {
@@ -139,7 +136,6 @@ public partial class ServiceViewModel : DirtyViewModelBase
                 return;
             }
 
-            // 🟢 BEIDES OK → READY
             _backend.SetReady("Service verbunden");
 
             StatusLine =
@@ -223,9 +219,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
 
     private async Task ForceBackendRecheckAsync()
     {
-        // kurze Verzögerung, damit der Service-Zustand stabil ist
         await Task.Delay(1500);
-
         RefreshSnapshot();
     }
 

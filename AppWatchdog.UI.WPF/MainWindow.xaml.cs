@@ -54,7 +54,7 @@ public partial class MainWindow : FluentWindow
         if (!ViewModel.AnyDirty)
             return;
 
-        e.Cancel = true; // ⛔ Schließen stoppen
+        e.Cancel = true;
 
         var content = new StackPanel
         {
@@ -92,21 +92,18 @@ public partial class MainWindow : FluentWindow
         switch (result)
         {
             case ContentDialogResult.Primary:
-                // 💾 speichern & schließen
                 ViewModel.SaveAll();
                 _isClosingConfirmed = true;
                 Close();
                 break;
 
             case ContentDialogResult.Secondary:
-                // 🗑 verwerfen & schließen
                 ViewModel.DiscardAll();
                 _isClosingConfirmed = true;
                 Close();
                 break;
 
             case ContentDialogResult.None:
-                // ❌ abbrechen
                 break;
         }
     }
