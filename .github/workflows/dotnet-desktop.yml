@@ -101,7 +101,7 @@ jobs:
       # 📦 COLLECT + ZIP
       # =========================
       - name: Collect Outputs + ZIPs
-        shell: pwsh
+        shell: powershell
         run: |
           $targets = @("win-x64", "win-x86", "win-arm64")
 
@@ -129,23 +129,25 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: AppWatchdog ${{ github.ref_name }}
+          name: AppWatchdog Release
           tag_name: ${{ github.ref_name }}
           body: |
-            ## AppWatchdog ${{ github.ref_name }}
+            ## ## AppWatchdog ${{ github.ref_name }}
 
             **Windows – Self-contained Builds**
-
-            Enthält jeweils:
+            
+            Each package contains:
             - AppWatchdog.Service.exe
             - AppWatchdog.UI.WPF.exe
-
-            Plattformen:
+            
+            Platforms:
             - win-x64
             - win-x86
             - win-arm64
-
-            Keine zusätzliche .NET Runtime erforderlich.
+            
+            No additional .NET runtime is required.
+            uwu
+            
           files: |
             AppWatchdog_${{ github.ref_name }}_win-x64.zip
             AppWatchdog_${{ github.ref_name }}_win-x86.zip
