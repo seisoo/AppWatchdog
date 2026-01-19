@@ -7,13 +7,13 @@
 		<UseWindowsService>true</UseWindowsService>
 
 		<OutputType>Exe</OutputType>
-		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
 		<SelfContained>true</SelfContained>
 		<PublishSingleFile>true</PublishSingleFile>
 		<PublishTrimmed>false</PublishTrimmed>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-		<FileVersion>2.0.0.0</FileVersion>
-		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+		<FileVersion>2.0.0.5</FileVersion>
+		<AssemblyVersion>2.0.0.5</AssemblyVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

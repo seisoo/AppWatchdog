@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
 
     <!-- Versioning -->
-    <FileVersion>2.0.0.0</FileVersion>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.1.5</FileVersion>
+    <AssemblyVersion>2.0.1.5</AssemblyVersion>
 
     <!-- Publish defaults (CI controls RuntimeIdentifier!) -->
     <SelfContained>true</SelfContained>
