@@ -3,63 +3,65 @@
 
 ![overview](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)
 
-**AppWatchdog** ist ein **robuster Windows Watchdog**, bestehend aus einem **Windows Service** und einer **WPF-Benutzeroberfläche**, entwickelt für den produktiven Einsatz auf Windows-Systemen.
+**AppWatchdog** is a Windows watchdog solution consisting of a **Windows Service** and a **WPF-based user interface**.
 
-Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt Prozesse oder Dienste automatisch wieder her – inklusive **Benachrichtigungen**, **Logging** und **Self-Healing-Mechanismen**.
+It monitors configured applications, detects failures reliably, and performs automatic recovery actions such as restarts.  
+Additional features include notifications, logging, and basic self-healing capabilities.
 
 ---
 
 ## ✨ Features
 
-- 🔍 **Zuverlässige Prozessüberwachung**
-  - Mehrstufige Down-Detection (keine False Positives)
-  - Zeitbasierte Bestätigung vor Recovery
-- 🔁 **Automatische Wiederherstellung**
-  - Neustart von Anwendungen
-  - Wiederholversuche mit Backoff-Strategie
+- 🔍 **Process Monitoring**
+  - Multi-step down detection to avoid false positives
+  - Time-based confirmation before recovery actions
+- 🔁 **Automatic Recovery**
+  - Application restarts
+  - Retry handling with backoff strategy
 - 🛠 **Windows Service + WPF UI**
-  - Service läuft unabhängig von der Benutzeranmeldung
-  - UI zur Konfiguration, Steuerung und Diagnose
-- 🔔 **Benachrichtigungen**
-  - SMTP (E-Mail)
+  - Service runs independently of user sessions
+  - UI for configuration, control, and diagnostics
+- 🔔 **Notifications**
+  - SMTP (email)
   - ntfy
-  - Optional: Uptime Kuma Push
-- 📜 **Integriertes Logging**
-  - Strukturierte Logfiles
-  - UI-Logviewer
-- 🔐 **IPC über Named Pipes**
-  - Versioniertes Protokoll
-  - Timeout- und Kompatibilitätsprüfung
+  - Optional: Uptime Kuma push monitoring
+- 📜 **Logging**
+  - Structured log files
+  - Integrated log viewer in the UI
+- 🔐 **IPC via Named Pipes**
+  - Versioned protocol
+  - Timeout and compatibility validation
 - 🧠 **Self-Healing**
-  - Erkennt fehlenden oder inkompatiblen Service
-  - Reparatur & Neuinstallation direkt aus der UI
+  - Detects missing or incompatible service versions
+  - Repair or reinstall directly from the UI
 
 ---
 
-## 🧩 Architektur
-      
-┌──────────────────────┐      
-│ AppWatchdog.UI.WPF │ ← Konfiguration & Monitoring (WPF)
-└──────────▲───────────┘  
-│ Named Pipes (IPC)        
-┌──────────┴───────────┐      
-│ AppWatchdog.Service │ ← Windows Service (Watchdog Engine)
-└──────────────────────┘      
-      
+## 🧩 Architecture
 
-### Komponenten
+```
+┌──────────────────────┐
+│ AppWatchdog.UI.WPF │ ← Configuration & Monitoring (WPF)
+└──────────▲───────────┘
+│ Named Pipes (IPC)
+┌──────────┴───────────┐
+│ AppWatchdog.Service │ ← Windows Service (Watchdog Engine)
+└──────────────────────┘
+```
+
+### Components
 
 - **AppWatchdog.Service**
   - Windows Service
-  - Führt die Überwachung aus
-  - Startet Prozesse neu und protokolliert Status
+  - Executes monitoring logic
+  - Restarts applications and records status
 - **AppWatchdog.UI.WPF**
-  - MVVM-Architektur
-  - Konfiguration der überwachten Anwendungen
-  - Anzeige von Status, Logs und Benachrichtigungen
+  - MVVM-based WPF application
+  - Configuration of monitored applications
+  - Displays status, logs, and notification settings
 - **IPC (Named Pipes)**
-  - Versioniert & fehlertolerant
-  - Schutz vor Inkompatibilitäten und Timeouts
+  - Versioned and fault-tolerant
+  - Protection against protocol mismatches and timeouts
 
 ---
 
@@ -81,81 +83,81 @@ Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt 
 
 ## 🚀 Installation
 
-### Voraussetzungen
+### Requirements
 
 - Windows 10 / 11 (x64)
-- **Administratorrechte** (für Service-Installation)
+- **Administrator privileges** (required for service installation)
 
-> ℹ️ Die bereitgestellten Builds sind **self-contained**  
-> → **keine .NET Runtime Installation erforderlich**
-
----
-
-### Schritte
-
-1. Lade das passende Release herunter
-2. Entpacke beide Dateien in ein gemeinsames Verzeichnis:
-AppWatchdog.Service.exe
-AppWatchdog.UI.WPF.exe
-
-3. Starte **AppWatchdog.UI.WPF.exe**
-4. Installiere und starte den Service über die UI
-5. Konfiguriere die zu überwachenden Anwendungen
-6. Aktiviere Benachrichtigungen (optional)
+> ℹ️ All provided builds are **self-contained**  
+> → No separate .NET runtime installation required
 
 ---
 
-## ⚙️ Konfiguration
+### Steps
 
-- Über die UI konfigurierbar:
-- Executable-Pfad
-- Argumente
-- Startverhalten
-- Benachrichtigungen:
-- SMTP (Host, Port, Benutzer, TLS)
-- ntfy Topic & Server
-- Logs werden **lokal gespeichert**
+1. Download the appropriate release
+2. Extract both executables into the same directory:
+   - `AppWatchdog.Service.exe`
+   - `AppWatchdog.UI.WPF.exe`
+3. Start **AppWatchdog.UI.WPF.exe**
+4. Install and start the service via the UI
+5. Configure the applications to monitor
+6. Configure notifications (optional)
 
-> 🔒 **Hinweis**  
-> Zugangsdaten werden lokal abgelegt.  
-> Für produktive Umgebungen wird empfohlen, den Zugriff auf Konfigurationsdateien entsprechend abzusichern.
+---
+
+## ⚙️ Configuration
+
+Configuration is handled via the UI:
+
+- Executable path
+- Command-line arguments
+- Enable/disable monitoring
+- Notification settings:
+  - SMTP (host, port, credentials, TLS)
+  - ntfy server and topic
+
+Logs are stored **locally on disk**.
+
+> 🔒 **Note**  
+> Credentials are stored locally.  
+> For production systems, access to configuration files should be restricted appropriately.
 
 ---
 
 ## 🧪 Build & Releases
 
-- Builds werden über **GitHub Actions** erzeugt
-- Zielplattform:
-- **Windows x64**
-- Service und UI werden als **getrennte, self-contained Single-EXEs** ausgeliefert
-- Keine Abhängigkeiten zur Laufzeit
+- Builds are created using **GitHub Actions**
+- Target platform:
+  - **Windows x64**
+- Service and UI are distributed as **separate, self-contained single executables**
+- No runtime dependencies
 
 ---
 
-## 🔐 Sicherheit
+## 🔐 Security
 
-- Keine externen Netzwerkverbindungen ohne explizite Konfiguration
-- IPC ist versioniert und validiert
-- Service läuft mit minimal notwendigen Rechten
+- No external network communication unless explicitly configured
+- IPC communication is validated and versioned
+- Service runs with only the required privileges
 
-Sicherheitsrelevante Themen bitte **nicht öffentlich** melden, sondern über einen privaten Kontakt.
-
----
-
-## 📄 Lizenz
-
-Dieses Projekt ist unter der **MIT License** lizenziert.  
-Siehe [LICENSE](LICENSE) für Details.
+Please report security-related issues **privately** and not via public issue trackers.
 
 ---
 
-## 📌 Projektstatus
+## 📄 License
 
-**AppWatchdog ist produktionsreif** und wird aktiv weiterentwickelt.  
-Der Fokus liegt bewusst auf **Windows-Systemen**, um eine tiefe Integration in:
+This project is licensed under the **MIT License**.  
+See [LICENSE](LICENSE) for details.
 
-- Service Control Manager
+---
+
+## 📌 Project Status
+
+**AppWatchdog is early-access and not production-ready**, but under active development.
+
+The project is intentionally focused on **Windows systems** to allow deep integration with:
+
+- Windows Service Control Manager
 - Event Logs
-- Desktop- & Server-Umgebungen
-
-zu ermöglichen.
+- Desktop and server environments
