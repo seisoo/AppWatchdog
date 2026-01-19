@@ -1,4 +1,4 @@
-name: Publish & Release (Windows x64)
+name: Publish & Release (Windows)
 
 on:
   workflow_dispatch:
@@ -28,8 +28,10 @@ jobs:
       - name: Restore
         run: dotnet restore AppWatchdog.sln
 
-      # 4️⃣ Publish Service (x64)
-      - name: Publish Service
+      # =========================
+      # 🔹 BUILD: win-x64
+      # =========================
+      - name: Publish Service (win-x64)
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
@@ -39,8 +41,7 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # 5️⃣ Publish WPF UI (x64)
-      - name: Publish WPF UI
+      - name: Publish UI (win-x64)
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
           -c Release
@@ -50,26 +51,81 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # 6️⃣ Collect Output + ZIP
-      - name: Collect Final Output
+      # =========================
+      # 🔹 BUILD: win-x86
+      # =========================
+      - name: Publish Service (win-x86)
+        run: >
+          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
+          -c Release
+          -r win-x86
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Publish UI (win-x86)
+        run: >
+          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
+          -c Release
+          -r win-x86
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      # =========================
+      # 🔹 BUILD: win-arm64
+      # =========================
+      - name: Publish Service (win-arm64)
+        run: >
+          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
+          -c Release
+          -r win-arm64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Publish UI (win-arm64)
+        run: >
+          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
+          -c Release
+          -r win-arm64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      # =========================
+      # 📦 COLLECT + ZIP
+      # =========================
+      - name: Collect Outputs + ZIPs
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force release | Out-Null
+          $targets = @("win-x64", "win-x86", "win-arm64")
 
-          Copy-Item `
-            AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe `
-            release -Force
+          foreach ($t in $targets) {
+            $outDir = "release\$t"
+            New-Item -ItemType Directory -Force $outDir | Out-Null
 
-          Copy-Item `
-            AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe `
-            release -Force
+            Copy-Item `
+              "AppWatchdog.Service/bin/Release/net8.0-windows/$t/publish/AppWatchdog.Service.exe" `
+              $outDir -Force
 
-          Compress-Archive `
-            -Path release\* `
-            -DestinationPath AppWatchdog_${{ github.ref_name }}_win-x64.zip `
-            -Force
+            Copy-Item `
+              "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$t/publish/AppWatchdog.UI.WPF.exe" `
+              $outDir -Force
 
-      # 7️⃣ Create GitHub Release
+            Compress-Archive `
+              -Path "$outDir\*" `
+              -DestinationPath "AppWatchdog_${{ github.ref_name }}_$t.zip" `
+              -Force
+          }
+
+      # =========================
+      # 🚀 GITHUB RELEASE
+      # =========================
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -78,12 +134,19 @@ jobs:
           body: |
             ## AppWatchdog ${{ github.ref_name }}
 
-            **Windows x64 – Self-contained**
+            **Windows – Self-contained Builds**
 
-            Enthält:
+            Enthält jeweils:
             - AppWatchdog.Service.exe
             - AppWatchdog.UI.WPF.exe
+
+            Plattformen:
+            - win-x64
+            - win-x86
+            - win-arm64
 
             Keine zusätzliche .NET Runtime erforderlich.
           files: |
             AppWatchdog_${{ github.ref_name }}_win-x64.zip
+            AppWatchdog_${{ github.ref_name }}_win-x86.zip
+            AppWatchdog_${{ github.ref_name }}_win-arm64.zip
