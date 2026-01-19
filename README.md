@@ -1,7 +1,7 @@
 # 🛡️ AppWatchdog  
 **Windows Application & Service Watchdog**
 
-![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
+![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service2.png)
 
 **AppWatchdog** is a Windows watchdog solution consisting of a **Windows Service** and a **WPF-based user interface**.
 
@@ -68,7 +68,7 @@ Additional features include notifications, logging, and basic self-healing capab
 ## 🖥️ Screenshots
 
 ### Service Management
-![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
+![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service2.png)
 
 ### Application Monitoring
 ![Apps Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png)
