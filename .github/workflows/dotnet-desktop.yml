@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  publish:
     runs-on: windows-latest
 
     steps:
@@ -19,17 +19,17 @@ jobs:
         uses: actions/checkout@v4
 
       # 2️⃣ Setup .NET
-      - name: Setup .NET SDK
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
       # 3️⃣ Restore
-      - name: Restore solution
+      - name: Restore
         run: dotnet restore AppWatchdog.sln
 
       # 4️⃣ Publish Service (x64)
-      - name: Publish Service (win-x64)
+      - name: Publish Service
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
@@ -40,7 +40,7 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
 
       # 5️⃣ Publish WPF UI (x64)
-      - name: Publish WPF UI (win-x64)
+      - name: Publish WPF UI
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
           -c Release
@@ -50,26 +50,40 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # 6️⃣ Verify outputs
-      - name: Verify EXEs
-        shell: pwsh
-        run: |
-          $svc = "AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe"
-          $ui  = "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe"
-
-          if (!(Test-Path $svc)) {
-            Write-Error "❌ Service EXE missing"
-          }
-
-          if (!(Test-Path $ui)) {
-            Write-Error "❌ UI EXE missing"
-          }
-
-      # 7️⃣ Package ZIP
-      - name: Package
+      # 6️⃣ Collect Output + ZIP
+      - name: Collect Final Output
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release | Out-Null
 
-          Copy-Item "AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe" release
-          Copy-It
+          Copy-Item `
+            AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe `
+            release -Force
+
+          Copy-Item `
+            AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe `
+            release -Force
+
+          Compress-Archive `
+            -Path release\* `
+            -DestinationPath AppWatchdog_${{ github.ref_name }}_win-x64.zip `
+            -Force
+
+      # 7️⃣ Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: AppWatchdog ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## AppWatchdog ${{ github.ref_name }}
+
+            **Windows x64 – Self-contained**
+
+            Enthält:
+            - AppWatchdog.Service.exe
+            - AppWatchdog.UI.WPF.exe
+
+            Keine zusätzliche .NET Runtime erforderlich.
+          files: |
+            AppWatchdog_${{ github.ref_name }}_win-x64.zip
