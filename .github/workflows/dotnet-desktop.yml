@@ -1,4 +1,4 @@
-name: Publish & Release (Windows x64)
+name: Publish & Release (Windows x64 / x86 / ARM64)
 
 on:
   workflow_dispatch:
@@ -6,13 +6,19 @@ on:
     tags:
       - "v*"
 
-# 🔑 WICHTIG: Rechte für Releases
 permissions:
   contents: write
 
 jobs:
   publish:
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        rid:
+          - win-x64
+          - win-x86
+          - win-arm64
 
     steps:
       # 1️⃣ Checkout
@@ -30,41 +36,46 @@ jobs:
         run: dotnet restore AppWatchdog.sln
 
       # 4️⃣ Publish Service
-      - name: Publish Service
+      - name: Publish Service (${{ matrix.rid }})
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
-          -r win-x64
+          -r ${{ matrix.rid }}
           --self-contained true
           /p:PublishSingleFile=true
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
       # 5️⃣ Publish WPF UI
-      # 🔴 CopyServiceExe MUSS deaktiviert sein
-      - name: Publish WPF UI
+      - name: Publish WPF UI (${{ matrix.rid }})
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
           -c Release
-          -r win-x64
+          -r ${{ matrix.rid }}
           --self-contained true
           /p:PublishSingleFile=true
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
           /p:CopyServiceExe=false
 
-      # 6️⃣ Gemeinsamen Ordner erzeugen + ZIP
-      - name: Collect Final Output
+      # 6️⃣ Collect Output + ZIP
+      - name: Collect Final Output (${{ matrix.rid }})
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release | Out-Null
+          $rid = "${{ matrix.rid }}"
+          $outDir = "release/$rid"
 
-          Copy-Item AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe release -Force
-          Copy-Item AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe release -Force
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
-          Compress-Archive -Path release\* -DestinationPath AppWatchdog_${{ github.ref_name }}_win-x64.zip
+          Copy-Item "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe" $outDir -Force
+          Copy-Item "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe" $outDir -Force
 
-      # 7️⃣ GitHub Release erstellen
+          Compress-Archive `
+            -Path "$outDir/*" `
+            -DestinationPath "AppWatchdog_${{ github.ref_name }}_$rid.zip" `
+            -Force
+
+      # 7️⃣ GitHub Release (einmal, alle ZIPs anhängen)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -73,12 +84,19 @@ jobs:
           body: |
             ## AppWatchdog ${{ github.ref_name }}
 
-            **Windows x64 – Self-contained**
+            **Windows – Self-contained Builds**
 
-            Enthält:
+            Enthält je Architektur:
             - AppWatchdog.Service.exe
             - AppWatchdog.UI.WPF.exe
+
+            Unterstützte Plattformen:
+            - win-x64
+            - win-x86
+            - win-arm64
 
             Keine zusätzliche .NET Runtime erforderlich.
           files: |
             AppWatchdog_${{ github.ref_name }}_win-x64.zip
+            AppWatchdog_${{ github.ref_name }}_win-x86.zip
+            AppWatchdog_${{ github.ref_name }}_win-arm64.zip
