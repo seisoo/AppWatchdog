@@ -12,32 +12,54 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ Repo auschecken
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2️⃣ .NET SDK (für net8.0-windows Projekte)
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # 3️⃣ MSBuild (für .NET Framework Projekte)
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      # 4️⃣ NuGet Restore (klassisch + stabil)
       - name: Restore NuGet
-        run: nuget restore
+        run: nuget restore AppWatchdog.sln
 
-      - name: Build Solution (Release | Any CPU)
+      # 5️⃣ Build – Release | Any CPU
+      # KEIN publish, KEIN RuntimeIdentifier
+      - name: Build Solution
         run: msbuild AppWatchdog.sln /m /p:Configuration=Release /p:Platform="Any CPU"
 
+      # 6️⃣ Artefakte sammeln (nur relevante EXEs)
       - name: Collect Artifacts
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path artifacts
+          $out = "artifacts"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
 
-          # ALLE Release-EXEs sammeln (UI + Service)
+          Write-Host "Collecting UI and Service executables..."
+
           Get-ChildItem -Recurse -Filter *.exe |
-            Where-Object { $_.FullName -match "\\bin\\Release\\" } |
+            Where-Object {
+              $_.FullName -match "\\bin\\Release\\" -and
+              ($_.Name -match "AppWatchdog.*UI" -or $_.Name -match "AppWatchdog.*Service")
+            } |
             ForEach-Object {
-              Copy-Item $_.FullName artifacts -Force
+              Write-Host "  -> $($_.FullName)"
+              Copy-Item $_.FullName $out -Force
             }
 
+          Write-Host "Artifacts collected:"
+          Get-ChildItem $out
+
+      # 7️⃣ Upload als GitHub Artifact
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AppWatchdog_Release_AnyCPU
+          name: AppWatchdog_Windows_Release
           path: artifacts
