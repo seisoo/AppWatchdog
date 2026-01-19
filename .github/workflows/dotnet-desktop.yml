@@ -1,9 +1,10 @@
-name: Publish (Windows x64)
+name: Publish & Release (Windows x64)
 
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    tags:
+      - "v*"
 
 jobs:
   publish:
@@ -25,7 +26,6 @@ jobs:
         run: dotnet restore AppWatchdog.sln
 
       # 4️⃣ Publish Service
-      # WICHTIG: GENAU in den Pfad, den die UI erwartet
       - name: Publish Service
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
@@ -35,11 +35,8 @@ jobs:
           /p:PublishSingleFile=true
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
-          /p:FileVersion=2.0.0.0
-          /p:AssemblyVersion=2.0.0.0
 
       # 5️⃣ Publish WPF UI
-      # Jetzt findet CopyServiceExe die Service-EXE
       - name: Publish WPF UI
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
@@ -49,24 +46,35 @@ jobs:
           /p:PublishSingleFile=true
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
-          /p:FileVersion=2.0.0.0
-          /p:AssemblyVersion=2.0.0.0
 
       # 6️⃣ Gemeinsamen Ordner erzeugen
       - name: Collect Final Output
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path publish | Out-Null
+          New-Item -ItemType Directory -Force -Path release | Out-Null
 
-          Copy-Item AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe publish -Force
-          Copy-Item AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe publish -Force
+          Copy-Item AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe release -Force
+          Copy-Item AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe release -Force
 
-          Write-Host "Final files:"
-          Get-ChildItem publish
+          Compress-Archive -Path release\* -DestinationPath AppWatchdog_${{ github.ref_name }}_win-x64.zip
 
-      # 7️⃣ Upload
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      # 7️⃣ GitHub Release erstellen
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: AppWatchdog_Windows_x64
-          path: publish
+          name: AppWatchdog ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## AppWatchdog ${{ github.ref_name }}
+
+            **Windows x64 – Self-contained**
+
+            Enthält:
+            - AppWatchdog.Service.exe
+            - AppWatchdog.UI.WPF.exe
+
+            Keine zusätzliche .NET Runtime erforderlich.
+          files: |
+            AppWatchdog_${{ github.ref_name }}_win-x64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
