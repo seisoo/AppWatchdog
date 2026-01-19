@@ -1,4 +1,4 @@
-name: Publish & Release (Windows x64 / x86 / ARM64)
+name: Publish & Release (Windows)
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  build:
     runs-on: windows-latest
 
     strategy:
@@ -22,21 +22,17 @@ jobs:
           - win-arm64
 
     steps:
-      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup .NET
-      - name: Setup .NET SDK
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      # 3️⃣ Restore
-      - name: Restore solution
+      - name: Restore
         run: dotnet restore AppWatchdog.sln
 
-      # 4️⃣ Publish Service
       - name: Publish Service (${{ matrix.rid }})
         continue-on-error: ${{ matrix.rid != 'win-x64' }}
         run: >
@@ -48,7 +44,6 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # 5️⃣ Publish WPF UI
       - name: Publish WPF UI (${{ matrix.rid }})
         continue-on-error: ${{ matrix.rid != 'win-x64' }}
         run: >
@@ -60,34 +55,44 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # 6️⃣ Collect output only if EXEs exist
-      - name: Collect final output (${{ matrix.rid }})
+      - name: Package (${{ matrix.rid }})
         shell: pwsh
         run: |
           $rid = "${{ matrix.rid }}"
-          $outDir = "release/$rid"
+          $out = "package/$rid"
+          New-Item -ItemType Directory -Force $out | Out-Null
 
-          $serviceExe = "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe"
-          $uiExe      = "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe"
+          $svc = "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe"
+          $ui  = "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe"
 
-          if (!(Test-Path $serviceExe) -or !(Test-Path $uiExe)) {
-            Write-Host "⚠️ Skipping $rid – EXE(s) not generated"
+          if (!(Test-Path $svc) -or !(Test-Path $ui)) {
+            Write-Host "Skipping $rid – EXE not available"
             exit 0
           }
 
-          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          Copy-Item $svc $out
+          Copy-Item $ui $out
 
-          Copy-Item $serviceExe $outDir -Force
-          Copy-Item $uiExe $outDir -Force
+          Compress-Archive $out/* "AppWatchdog_${{ github.ref_name }}_$rid.zip" -Force
 
-          Compress-Archive `
-            -Path "$outDir/*" `
-            -DestinationPath "AppWatchdog_${{ github.ref_name }}_$rid.zip" `
-            -Force
+      - name: Upload Artifact (${{ matrix.rid }})
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppWatchdog-${{ matrix.rid }}
+          path: AppWatchdog_${{ github.ref_name }}_${{ matrix.rid }}.zip
 
-           # 7️⃣ Create GitHub Release (nur einmal!)
+  release:
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
       - name: Create GitHub Release
-        if: matrix.rid == 'win-x64'
         uses: softprops/action-gh-release@v2
         with:
           name: AppWatchdog ${{ github.ref_name }}
@@ -97,15 +102,10 @@ jobs:
 
             **Windows – Self-contained Builds**
 
-            Enthält (falls unterstützt):
-            - AppWatchdog.Service.exe
-            - AppWatchdog.UI.WPF.exe
-
-            Plattformen:
+            Enthält (je nach Support):
             - win-x64 ✅
-            - win-arm64 ⚠️ (best effort)
-            - win-x86 ⚠️ (best effort)
+            - win-arm64 ⚠️
+            - win-x86 ⚠️
 
             Keine zusätzliche .NET Runtime erforderlich.
-          files: |
-            AppWatchdog_${{ github.ref_name }}_*.zip
+          files: artifacts/**/*.zip
