@@ -85,7 +85,7 @@ Additional features include notifications, logging, and basic self-healing capab
 
 ### Requirements
 
-- Windows 10 / 11 (x64)
+- Windows 10 / 11 (x64/x86/Arm64)
 - **Administrator privileges** (required for service installation)
 
 > ℹ️ All provided builds are **self-contained**  
@@ -129,7 +129,9 @@ Logs are stored **locally on disk**.
 
 - Builds are created using **GitHub Actions**
 - Target platform:
-  - **Windows x64**
+  - **Windows win-x64**
+  - **Windows win-x86**
+  - **Windows win-arm64**
 - Service and UI are distributed as **separate, self-contained single executables**
 - No runtime dependencies
 
