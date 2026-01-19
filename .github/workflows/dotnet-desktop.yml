@@ -1,7 +1,6 @@
-name: Publish & Release (Windows)
+name: Publish & Release (Windows x64 / x86 / ARM64)
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -14,7 +13,7 @@ jobs:
     runs-on: windows-latest
 
     strategy:
-      fail-fast: false
+      fail-fast: true   # 🔥 JETZT ABSICHTLICH
       matrix:
         rid:
           - win-x64
@@ -22,19 +21,22 @@ jobs:
           - win-arm64
 
     steps:
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      # 2️⃣ Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Restore
+      # 3️⃣ Restore
+      - name: Restore solution
         run: dotnet restore AppWatchdog.sln
 
+      # 4️⃣ Publish Service (MUSS funktionieren)
       - name: Publish Service (${{ matrix.rid }})
-        continue-on-error: ${{ matrix.rid != 'win-x64' }}
         run: >
           dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
@@ -44,8 +46,8 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
+      # 5️⃣ Publish WPF UI (MUSS funktionieren)
       - name: Publish WPF UI (${{ matrix.rid }})
-        continue-on-error: ${{ matrix.rid != 'win-x64' }}
         run: >
           dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
           -c Release
@@ -55,6 +57,23 @@ jobs:
           /p:PublishTrimmed=false
           /p:IncludeNativeLibrariesForSelfExtract=true
 
+      # 6️⃣ Verify output (hart)
+      - name: Verify EXEs (${{ matrix.rid }})
+        shell: pwsh
+        run: |
+          $rid = "${{ matrix.rid }}"
+          $svc = "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe"
+          $ui  = "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe"
+
+          if (!(Test-Path $svc)) {
+            Write-Error "Service EXE missing for $rid"
+          }
+
+          if (!(Test-Path $ui)) {
+            Write-Error "UI EXE missing for $rid"
+          }
+
+      # 7️⃣ Package ZIP
       - name: Package (${{ matrix.rid }})
         shell: pwsh
         run: |
@@ -62,21 +81,16 @@ jobs:
           $out = "package/$rid"
           New-Item -ItemType Directory -Force $out | Out-Null
 
-          $svc = "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe"
-          $ui  = "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe"
+          Copy-Item "AppWatchdog.Service/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.Service.exe" $out
+          Copy-Item "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$rid/publish/AppWatchdog.UI.WPF.exe" $out
 
-          if (!(Test-Path $svc) -or !(Test-Path $ui)) {
-            Write-Host "Skipping $rid – EXE not available"
-            exit 0
-          }
+          Compress-Archive `
+            -Path "$out/*" `
+            -DestinationPath "AppWatchdog_${{ github.ref_name }}_$rid.zip" `
+            -Force
 
-          Copy-Item $svc $out
-          Copy-Item $ui $out
-
-          Compress-Archive $out/* "AppWatchdog_${{ github.ref_name }}_$rid.zip" -Force
-
+      # 8️⃣ Upload ZIP
       - name: Upload Artifact (${{ matrix.rid }})
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: AppWatchdog-${{ matrix.rid }}
@@ -87,11 +101,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Download all artifacts
+      # 9️⃣ Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
+      # 🔟 Create Release (NUR wenn ALLES grün)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -102,10 +118,14 @@ jobs:
 
             **Windows – Self-contained Builds**
 
-            Enthält (je nach Support):
-            - win-x64 ✅
-            - win-arm64 ⚠️
-            - win-x86 ⚠️
+            Enthaltene Plattformen (alle verpflichtend):
+            - win-x64
+            - win-x86
+            - win-arm64
+
+            ZIPs enthalten:
+            - AppWatchdog.Service.exe
+            - AppWatchdog.UI.WPF.exe
 
             Keine zusätzliche .NET Runtime erforderlich.
           files: artifacts/**/*.zip
