@@ -1,7 +1,7 @@
 # AppWatchdog  
 **Windows Application & Service Watchdog**
 
-![AppWatchdog Overview]([assets/screenshots/overview.png]([https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true)))
+![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?token=GHSAT0AAAAAADTOT3SAAFQNM65K22VAZ2L22LNT5EA)
 
 AppWatchdog ist ein **robuster Windows Watchdog**, bestehend aus einem **Windows Service** und einer **WPF UI**, entwickelt für den produktiven Einsatz.  
 Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt Prozesse oder Dienste automatisch wieder her – inklusive Benachrichtigungen, Logging und Self-Healing.
@@ -58,16 +58,16 @@ Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt 
 ## 🖥️ Screenshots
 
 ### Service Management
-![Service Page](assets/screenshots/service.png)
+![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?token=GHSAT0AAAAAADTOT3SAAFQNM65K22VAZ2L22LNT5EA)
 
 ### Application Monitoring
-![Apps Page](assets/screenshots/apps.png)
+![Apps Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png?token=GHSAT0AAAAAADTOT3SB5YNB6YGG2V47ZS242LNT7UA)
 
 ### Notifications
-![Notifications Page](assets/screenshots/notifications.png)
+![Notifications Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png?token=GHSAT0AAAAAADTOT3SAYIR6Z7BEEWYCS7XW2LNT76Q)
 
 ### Logs
-![Logs Page](assets/screenshots/logs.png)
+![Logs Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png?token=GHSAT0AAAAAADTOT3SB53NNSXKWBDKZIU7W2LNUAEQ)
 
 ---
 
