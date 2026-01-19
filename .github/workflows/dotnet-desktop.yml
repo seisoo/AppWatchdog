@@ -85,8 +85,9 @@ jobs:
             -DestinationPath "AppWatchdog_${{ github.ref_name }}_$rid.zip" `
             -Force
 
-      # 7️⃣ Create GitHub Release
+           # 7️⃣ Create GitHub Release (nur einmal!)
       - name: Create GitHub Release
+        if: matrix.rid == 'win-x64'
         uses: softprops/action-gh-release@v2
         with:
           name: AppWatchdog ${{ github.ref_name }}
@@ -101,12 +102,10 @@ jobs:
             - AppWatchdog.UI.WPF.exe
 
             Plattformen:
-            - win-x64 ✅ (voll unterstützt)
+            - win-x64 ✅
             - win-arm64 ⚠️ (best effort)
             - win-x86 ⚠️ (best effort)
 
             Keine zusätzliche .NET Runtime erforderlich.
           files: |
-            AppWatchdog_${{ github.ref_name }}_win-x64.zip
-            AppWatchdog_${{ github.ref_name }}_win-arm64.zip
-            AppWatchdog_${{ github.ref_name }}_win-x86.zip
+            AppWatchdog_${{ github.ref_name }}_*.zip
