@@ -1,7 +1,7 @@
 # AppWatchdog  
 **Windows Application & Service Watchdog**
 
-![AppWatchdog Overview](assets/screenshots/overview.png)
+![AppWatchdog Overview]([assets/screenshots/overview.png](https://github.com/seisoo/AppWatchdog/blob/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png?raw=true))
 
 AppWatchdog ist ein **robuster Windows Watchdog**, bestehend aus einem **Windows Service** und einer **WPF UI**, entwickelt für den produktiven Einsatz.  
 Er überwacht definierte Anwendungen, erkennt Ausfälle zuverlässig und stellt Prozesse oder Dienste automatisch wieder her – inklusive Benachrichtigungen, Logging und Self-Healing.
