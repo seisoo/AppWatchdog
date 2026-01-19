@@ -163,3 +163,7 @@ The project is intentionally focused on **Windows systems** to allow deep integr
 - Windows Service Control Manager
 - Event Logs
 - Desktop and server environments
+
+## Copyrights
+- Banner Image by **https://unsplash.com/de/fotos/lila-und-weisse-abstrakte-malerei-2CDRjyQw8aQ**
+- WPF-UI by **https://wpfui.lepo.co**
