@@ -17,8 +17,6 @@
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterScreen">
 
-
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
