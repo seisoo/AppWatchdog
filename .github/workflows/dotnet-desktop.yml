@@ -1,79 +1,67 @@
-name: Publish (UI + Service)
+name: Publish (Windows x64)
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
-  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2️⃣ .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
+      # 3️⃣ Restore (einmal global)
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore AppWatchdog.sln
 
-      # ----------------------------
-      # Publish UI (WPF)
-      # ----------------------------
-      - name: Publish UI
-        run: >
-          dotnet publish
-          src/AppWatchdog.UI/AppWatchdog.UI.csproj
-          -c Release
-
-      # ----------------------------
-      # Publish Service
-      # ----------------------------
+      # 4️⃣ Publish Service (self-contained, single-file)
       - name: Publish Service
         run: >
-          dotnet publish
-          src/AppWatchdog.Service/AppWatchdog.Service.csproj
+          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
           -c Release
+          -r win-x64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:FileVersion=2.0.0.0
+          /p:AssemblyVersion=2.0.0.0
+          -o publish
 
-      # ----------------------------
-      # Merge Service.exe into UI folder
-      # ----------------------------
-      - name: Merge Service into UI output
+      # 5️⃣ Publish WPF UI (gleicher Ordner!)
+      - name: Publish WPF UI
+        run: >
+          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:FileVersion=2.0.0.0
+          /p:AssemblyVersion=2.0.0.0
+          -o publish
+
+      # 6️⃣ Sanity Check (optional, aber hilfreich)
+      - name: Verify Output
         shell: pwsh
         run: |
-          $uiPublish = Get-ChildItem -Recurse -Directory -Filter publish |
-            Where-Object { $_.FullName -match "AppWatchdog.UI" } |
-            Select-Object -First 1
+          Write-Host "Published files:"
+          Get-ChildItem publish
 
-          if (-not $uiPublish) {
-            Write-Error "UI publish folder not found"
-            exit 1
-          }
-
-          $serviceExe = Get-ChildItem -Recurse -Filter *.exe |
-            Where-Object { $_.FullName -match "AppWatchdog.Service" } |
-            Select-Object -First 1
-
-          if (-not $serviceExe) {
-            Write-Error "Service exe not found"
-            exit 1
-          }
-
-          Copy-Item $serviceExe.FullName $uiPublish.FullName -Force
-
-          Write-Host "Merged Service.exe into UI publish folder:"
-          Write-Host $uiPublish.FullName
-
-      # ----------------------------
-      # Upload final artifact
-      # ----------------------------
+      # 7️⃣ Upload Artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AppWatchdog_Publish
-          path: |
-            **/AppWatchdog.UI/**/publish/**
+          name: AppWatchdog_Windows_x64
+          path: publish
