@@ -21,21 +21,13 @@
   </PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Images\banner.jpg" />
-	  <None Remove="Images\banner3.png" />
 	  <None Remove="Images\banner5.png" />
-	  <None Remove="Images\banner8.png" />
-	  <None Remove="Images\banner9.png" />
 	  <None Remove="Images\ico.png" />
 	  <None Remove="Images\uac.png" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Resource Include="Images\banner.jpg" />
-	  <Resource Include="Images\banner3.png" />
 	  <Resource Include="Images\banner5.png" />
-	  <Resource Include="Images\banner8.png" />
-	  <Resource Include="Images\banner9.png" />
 	  <Resource Include="Images\ico.png" />
 	  <Resource Include="Images\uac.png" />
 	</ItemGroup>
