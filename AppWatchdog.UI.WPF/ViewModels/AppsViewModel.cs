@@ -83,10 +83,10 @@ public partial class AppsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
-            await Task.Run(Load);   // oder Logs: LoadDaysAndAutoSelectToday()
+            await Task.Run(Load);   
         }
 
-        IsContentEnabled = true;    // 🔥 IMMER setzen
+        IsContentEnabled = true; 
     }
 
     public void Deactivate()

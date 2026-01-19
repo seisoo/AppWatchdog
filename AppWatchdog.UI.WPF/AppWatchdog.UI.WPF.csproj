@@ -1,23 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup> 
-    <!-- Target -->
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
-
-    <!-- Versioning -->
-    <FileVersion>2.0.1.5</FileVersion>
-    <AssemblyVersion>2.0.1.5</AssemblyVersion>
-
-    <!-- Publish defaults (CI controls RuntimeIdentifier!) -->
+    <FileVersion>2.0.1.6</FileVersion>
+    <AssemblyVersion>2.0.1.6</AssemblyVersion>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-
-    <!-- 🔴 WICHTIG: UI DARF DEN SERVICE NICHT SELBST KOPIEREN -->
     <CopyServiceExe>false</CopyServiceExe>
+		<ApplicationIcon>Images\ico.ico</ApplicationIcon>
   </PropertyGroup>
 
 	<ItemGroup>

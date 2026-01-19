@@ -27,7 +27,6 @@ public sealed class GlobalErrorDialogService
 
     public async Task ShowExceptionAsync(Exception ex)
     {
-        // 🔒 WICHTIG: sicherstellen, dass ein Host existiert
         if (MainWindow.GlobalDialogHost != null)
         {
             _dialogService.SetDialogHost(MainWindow.GlobalDialogHost);
@@ -53,16 +52,12 @@ public sealed class GlobalErrorDialogService
                 {
                     if (!IsRunningAsAdministrator())
                     {
-                        // 🔁 Neustart als Admin → Update
                         RestartAsAdministrator("--service-update");
                         Application.Current.Shutdown();
                         return;
                     }
 
-                    // 🔒 Admin-Modus: Service aktualisieren
                     RunServiceUpdate();
-
-                    // 🔁 App normal neu starten
                     RestartNormally();
                     Application.Current.Shutdown();
                 }
@@ -97,16 +92,12 @@ public sealed class GlobalErrorDialogService
                 {
                     if (!IsRunningAsAdministrator())
                     {
-                        // 🔁 Neustart als Admin → Service sicherstellen
                         RestartAsAdministrator("--service-ensure");
                         Application.Current.Shutdown();
                         return;
                     }
 
-                    // 🔒 Admin-Modus
                     EnsureServiceRunning();
-
-                    // 🔁 App normal neu starten
                     RestartNormally();
                     Application.Current.Shutdown();
                 }
@@ -122,9 +113,6 @@ public sealed class GlobalErrorDialogService
 
                 return;
             }
-
-
-
         }
 
         var (title, message, icon) = MapException(ex);
@@ -171,34 +159,12 @@ private static void EnsureServiceRunning()
         }
     }
 
-
-
-
-
-    private static void RunElevated(string args)
-    {
-        var psi = new ProcessStartInfo
-        {
-            FileName = "sc.exe",
-            Arguments = args,
-            Verb = "runas",           // 🔒 HIER passiert die Admin-Abfrage
-            UseShellExecute = true
-        };
-
-        using var p = Process.Start(psi);
-        if (p == null)
-            throw new InvalidOperationException("UAC-Abfrage wurde abgebrochen.");
-    }
-
-
-
     private static bool IsRunningAsAdministrator()
     {
         var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
-
     private static void RestartAsAdministrator(string args)
     {
         var exePath = Process.GetCurrentProcess().MainModule!.FileName!;
@@ -207,7 +173,7 @@ private static void EnsureServiceRunning()
         {
             FileName = exePath,
             Arguments = args,
-            Verb = "runas",          // 🔒 UAC
+            Verb = "runas",         
             UseShellExecute = true
         });
     }
@@ -279,7 +245,6 @@ private static void EnsureServiceRunning()
                 Margin = new Thickness(0, 0, 0, 12)
             },
 
-            // 🔽 COLLAPSE / EXPAND 🔽
             new Expander
             {
                 Header = "Details anzeigen",

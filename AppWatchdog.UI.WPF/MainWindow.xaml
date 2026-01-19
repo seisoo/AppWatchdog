@@ -31,8 +31,8 @@
             ShowMinimize="True">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon
-                    Width="20"
-                    Height="20"
+                    Width="16"
+                    Height="16"
                     Source="/Images/ico.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>

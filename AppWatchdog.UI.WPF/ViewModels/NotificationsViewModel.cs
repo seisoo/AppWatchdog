@@ -93,10 +93,10 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
-            await Task.Run(Load);   // oder Logs: LoadDaysAndAutoSelectToday()
+            await Task.Run(Load);   
         }
 
-        IsContentEnabled = true;    // 🔥 IMMER setzen
+        IsContentEnabled = true;   
     }
 
     public void Deactivate()
@@ -187,7 +187,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         catch (Exception)
         {
             SaveStateText = "SMTP-Test fehlgeschlagen";
-            throw; // 👉 globaler Exception-Dialog übernimmt
+            throw;
         }
     }
 

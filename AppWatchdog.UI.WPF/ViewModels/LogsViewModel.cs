@@ -67,10 +67,7 @@ public partial class LogsViewModel : DirtyViewModelBase
 
         try
         {
-            // 🔹 I/O im Hintergrund
             var resp = await Task.Run(() => _pipe.GetLogDay(SelectedDay));
-
-            // 🔹 UI-Update
             await _dispatcher.InvokeAsync(() =>
             {
                 Header = $"Log vom {resp.Day} – letzte Aktualisierung {DateTime.Now:HH:mm:ss}";
@@ -111,8 +108,6 @@ public partial class LogsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
-
-            // 🔹 1. I/O im Hintergrund
             var days = await Task.Run(() =>
             {
                 var resp = _pipe.ListLogDays();
@@ -120,8 +115,6 @@ public partial class LogsViewModel : DirtyViewModelBase
                            .OrderByDescending(d => d)
                            .ToList();
             });
-
-            // 🔹 2. UI-Update im Dispatcher
             await _dispatcher.InvokeAsync(() =>
             {
                 Days.Clear();
@@ -160,36 +153,6 @@ public partial class LogsViewModel : DirtyViewModelBase
         else
             IsContentEnabled = false;
     }
-
-
-    private void LoadDaysAndAutoSelectToday()
-    {
-        try
-        {
-            Days.Clear();
-
-            var resp = _pipe.ListLogDays();
-            foreach (var d in resp.Days.OrderByDescending(d => d))
-                Days.Add(d);
-
-            if (Days.Count == 0)
-            {
-                Header = "Keine Logs vorhanden.";
-                return;
-            }
-
-            var today = DateTime.Now.ToString("yyyy-MM-dd");
-            SelectedDay = Days.Contains(today) ? today : Days.First();
-
-            LoadSelected();
-        }
-        catch (Exception ex)
-        {
-            Header = "Fehler beim Laden der Logs.";
-            LogText = ex.Message;
-        }
-    }
-
 
     [RelayCommand]
     private void LoadSelected()

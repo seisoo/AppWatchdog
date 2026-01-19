@@ -29,7 +29,7 @@ public partial class AppsPage : Page
         var content = new Grid
         {
             Margin = new Thickness(24),
-            Width = 500, // ca. 60 %
+            Width = 500, 
             HorizontalAlignment = HorizontalAlignment.Center,
             RowDefinitions =
     {

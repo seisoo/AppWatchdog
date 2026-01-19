@@ -70,7 +70,7 @@ public sealed class ServiceSnapshot
 
 public sealed class LogDaysResponse
 {
-    public List<string> Days { get; set; } = new(); // "yyyy-MM-dd"
+    public List<string> Days { get; set; } = new();
 }
 
 public sealed class LogDayResponse
@@ -81,7 +81,7 @@ public sealed class LogDayResponse
 
 public sealed class LogDayRequest
 {
-    public string Day { get; set; } = ""; // "yyyy-MM-dd"
+    public string Day { get; set; } = ""; 
 }
 
 public sealed class SystemInfo
