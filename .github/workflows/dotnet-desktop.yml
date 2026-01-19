@@ -1,47 +1,89 @@
-name: Build (Windows x86/x64)
+name: Publish & Release (Windows x64)
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  publish:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        platform: [ "x86", "x64" ]
-        config: [ "Release" ]
 
     steps:
+      # 1️⃣ Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+      # 2️⃣ Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
-      - name: Restore NuGet
-        run: nuget restore
+      # 3️⃣ Restore
+      - name: Restore
+        run: dotnet restore AppWatchdog.sln
 
-      - name: Build Solution
-        run: msbuild /m /p:Configuration=${{ matrix.config }} /p:Platform=${{ matrix.platform }}
+      # 4️⃣ Publish Service (x64)
+      - name: Publish Service
+        run: >
+          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
 
-      - name: Collect Artifacts
+      # 5️⃣ Publish WPF UI (x64)
+      - name: Publish WPF UI
+        run: >
+          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          /p:PublishSingleFile=true
+          /p:PublishTrimmed=false
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      # 6️⃣ Collect Output + ZIP
+      - name: Collect Final Output
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path artifacts/${{ matrix.platform }}
+          New-Item -ItemType Directory -Force release | Out-Null
 
-          # TODO: Passe diese Pfade exakt an DEINE Output-Namen an:
-          # Suche in deinem Repo nach den EXE-Namen und Output-Pfaden.
-          # Typisch: src/YourProject/bin/Release/...
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.exe" "artifacts/${{ matrix.platform }}/"
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.dll" "artifacts/${{ matrix.platform }}/" -ErrorAction SilentlyContinue
-          Copy-Item -Recurse -Force "**/bin/${{ matrix.config }}/**/*.config" "artifacts/${{ matrix.platform }}/" -ErrorAction SilentlyContinue
+          Copy-Item `
+            AppWatchdog.Service/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.Service.exe `
+            release -Force
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+          Copy-Item `
+            AppWatchdog.UI.WPF/bin/Release/net8.0-windows/win-x64/publish/AppWatchdog.UI.WPF.exe `
+            release -Force
+
+          Compress-Archive `
+            -Path release\* `
+            -DestinationPath AppWatchdog_${{ github.ref_name }}_win-x64.zip `
+            -Force
+
+      # 7️⃣ Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: AppWatchdog_${{ matrix.platform }}
-          path: artifacts/${{ matrix.platform }}
+          name: AppWatchdog ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## AppWatchdog ${{ github.ref_name }}
+
+            **Windows x64 – Self-contained**
+
+            Enthält:
+            - AppWatchdog.Service.exe
+            - AppWatchdog.UI.WPF.exe
+
+            Keine zusätzliche .NET Runtime erforderlich.
+          files: |
+            AppWatchdog_${{ github.ref_name }}_win-x64.zip
