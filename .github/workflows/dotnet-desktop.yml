@@ -33,14 +33,23 @@ jobs:
           echo "TAG=v$version" >> $env:GITHUB_ENV
 
       # 3️⃣ Ensure tag does NOT already exist
-      - name: Check tag does not exist
+      - name: Delete tag if it exists (local + remote)
         shell: powershell
         run: |
-          git fetch --tags
-          if (git tag -l "${{ env.TAG }}") {
-            Write-Error "Tag ${{ env.TAG }} already exists"
-            exit 1
-          }
+            git fetch --tags
+        
+            if (git tag -l "${{ env.TAG }}") {
+              Write-Host "Tag ${{ env.TAG }} exists – deleting it"
+        
+              # delete local tag
+              git tag -d "${{ env.TAG }}"
+        
+              # delete remote tag
+              git push origin ":refs/tags/${{ env.TAG }}"
+            } else {
+              Write-Host "Tag ${{ env.TAG }} does not exist – creating new"
+            }
+
 
       # 4️⃣ Create and push tag
       - name: Create Git tag
