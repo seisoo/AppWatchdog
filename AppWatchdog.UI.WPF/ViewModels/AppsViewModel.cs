@@ -109,11 +109,11 @@ public partial class AppsViewModel : DirtyViewModelBase
     }
 
 
-    private void Load()
+    private async void Load()
     {
         Apps.Clear();
 
-        var cfg = _pipe.GetConfig();
+        var cfg = await Task.Run(() => _pipe.GetConfig());
         CheckIntervalMinutes = cfg.CheckIntervalMinutes;
         MailIntervalHours = cfg.MailIntervalHours;
 
@@ -180,11 +180,11 @@ public partial class AppsViewModel : DirtyViewModelBase
 
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private void Save()
+    private async void Save()
     {
         try
         {
-            var cfg = _pipe.GetConfig();
+            var cfg = await Task.Run(() => _pipe.GetConfig());
 
             cfg.CheckIntervalMinutes = CheckIntervalMinutes;
             cfg.MailIntervalHours = MailIntervalHours;
@@ -194,7 +194,7 @@ public partial class AppsViewModel : DirtyViewModelBase
             foreach (var vm in Apps)
                 cfg.Apps.Add(vm.ToModel());
 
-            _pipe.SaveConfig(cfg);
+            await Task.Run(() => _pipe.SaveConfig(cfg));
 
             ClearDirty();
         }

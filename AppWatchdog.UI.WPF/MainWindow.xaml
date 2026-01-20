@@ -8,9 +8,9 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="AppWatchdog – Control Center"
     Width="1200"
-    Height="1060"
+    Height="1065"
     MinWidth="1024"
-    MinHeight="1060"
+    MinHeight="1065"
     ui:Background="DarkSlateBlue"
     ExtendsContentIntoTitleBar="True"
     Icon="/Images/ico.png"
@@ -45,12 +45,26 @@
         <ui:NavigationView
             x:Name="RootNavigationView"
             Grid.Row="1"
-            AlwaysShowHeader="false"
             IsBackButtonVisible="Collapsed"
-            IsPaneOpen="false"
-            IsPaneToggleVisible="false"
-            OpenPaneLength="135"
-            PaneDisplayMode="LeftMinimal">
+            IsFooterSeparatorVisible="False"
+            IsPaneOpen="True"
+            IsPaneToggleVisible="True"
+            IsTopSeparatorVisible="False"
+            OpenPaneLength="70"
+            PaneDisplayMode="LeftFluent">
+
+            <ui:NavigationView.PaneFooter>
+                <StackPanel Margin="3,0,0,8">
+                    <ComboBox
+                        IsEnabled="{Binding BackendState.IsReady}"
+                        SelectedValue="{Binding LanguageSelector.SelectedLanguage, Mode=TwoWay}"
+                        SelectedValuePath="Tag">
+
+                        <ComboBoxItem Content="🇬🇧" Tag="en-US" />
+                        <ComboBoxItem Content="🇩🇪" Tag="de-DE" />
+                    </ComboBox>
+                </StackPanel>
+            </ui:NavigationView.PaneFooter>
 
 
             <ui:NavigationView.MenuItems>
@@ -66,7 +80,7 @@
                     TargetPageType="{x:Type pages:AppsPage}" />
 
                 <ui:NavigationViewItem
-                    Content="Notifications"
+                    Content="Alerts"
                     Icon="{ui:SymbolIcon Megaphone24}"
                     TargetPageType="{x:Type pages:NotificationsPage}" />
 

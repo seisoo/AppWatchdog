@@ -109,7 +109,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
         catch { return false; }
     }
 
-    private void RefreshSnapshot()
+    private async void RefreshSnapshot()
     {
         if (_isRefreshing)
             return;
@@ -128,7 +128,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
             ServiceSnapshot snap;
             try
             {
-                snap = _pipe.GetStatus();
+                snap = await Task.Run(() => _pipe.GetStatus());
             }
             catch (Exception ex)
             {
@@ -136,6 +136,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
                 StatusLine = string.Format(AppStrings.pipe_not_available_ex, ex.Message);
                 return;
             }
+
 
             _backend.SetReady(AppStrings.service_connected);
 

@@ -5,6 +5,7 @@ using AppWatchdog.UI.WPF.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -18,9 +19,22 @@ namespace AppWatchdog.UI.WPF.ViewModels;
 public partial class LogsViewModel : DirtyViewModelBase
 {
     private readonly PipeFacade _pipe;
-    private readonly DispatcherTimer _timer;
     private readonly BackendStateService _backend;
     private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
+
+    [ObservableProperty]
+    private string _searchText = "";
+
+    private string _rawLogText = "";
+
+    [ObservableProperty]
+    private int _searchMatchCount;
+
+    public string SearchMatchText =>
+    string.Format(AppStrings.logs_search_matches, SearchMatchCount);
+
+
+    private const int SearchContextLines = 5;
 
 
     [ObservableProperty]
@@ -30,9 +44,6 @@ public partial class LogsViewModel : DirtyViewModelBase
     [ObservableProperty] private string? _selectedDay;
     [ObservableProperty] private string _logText = "";
     [ObservableProperty] private string _header = AppStrings.logs_loading;
-
-    [ObservableProperty] private bool _autoRefreshEnabled = true;
-    [ObservableProperty] private string _autoRefreshStatusText = string.Format(AppStrings.logs_autorefresh_aktiv_text, 5);
 
     private const int RefreshSeconds = 5;
     private bool _activated;
@@ -44,21 +55,10 @@ public partial class LogsViewModel : DirtyViewModelBase
         _backend = backend;
 
         _dispatcher = Dispatcher.CurrentDispatcher;
-        _timer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(RefreshSeconds)
-        };
-
-        _timer.Tick += OnTimerTick;
-
-
         _backend.PropertyChanged += OnBackendStateChanged;
     }
     private async void OnTimerTick(object? sender, EventArgs e)
     {
-        if (!AutoRefreshEnabled)
-            return;
-
         if (!_backend.IsReady)
             return;
 
@@ -134,7 +134,6 @@ public partial class LogsViewModel : DirtyViewModelBase
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
                 SelectedDay = Days.Contains(today) ? today : Days.First();
                 Header = string.Format(AppStrings.logs_loaded_text, DateTime.Now.ToString("HH:mm:ss")); ;
-                _timer.Start();
             });
         }
 
@@ -195,7 +194,8 @@ public partial class LogsViewModel : DirtyViewModelBase
                     .Reverse()
             );
 
-            LogText = reversed;
+            _rawLogText = reversed;
+            ApplySearchFilter();
         }
         catch (Exception ex)
         {
@@ -204,11 +204,61 @@ public partial class LogsViewModel : DirtyViewModelBase
         }
     }
 
-
-    partial void OnAutoRefreshEnabledChanged(bool value)
+    partial void OnSearchTextChanged(string value)
     {
-        AutoRefreshStatusText = value
-            ? string.Format(AppStrings.logs_autorefresh_aktiv_text, RefreshSeconds)
-            : AppStrings.logs_autorefresh_paused;
+        ApplySearchFilter();
     }
+
+    private void ApplySearchFilter()
+    {
+        if (string.IsNullOrWhiteSpace(_rawLogText))
+        {
+            LogText = "";
+            SearchMatchCount = 0;
+            return;
+        }
+
+        var allLines = _rawLogText
+            .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            LogText = _rawLogText;
+            SearchMatchCount = allLines.Length;
+            return;
+        }
+
+        var resultLines = new List<string>();
+        var addedIndices = new HashSet<int>();
+
+        int matchCount = 0; 
+
+        for (int i = 0; i < allLines.Length; i++)
+        {
+            if (!allLines[i].Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            matchCount++;
+
+            int start = Math.Max(0, i - SearchContextLines);
+            int end = Math.Min(allLines.Length - 1, i + SearchContextLines);
+
+            for (int j = start; j <= end; j++)
+            {
+                if (addedIndices.Add(j))
+                    resultLines.Add(allLines[j]);
+            }
+        }
+
+        SearchMatchCount = matchCount; 
+        LogText = string.Join(Environment.NewLine, resultLines);
+    }
+
+    partial void OnSearchMatchCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(SearchMatchText));
+    }
+
+
 }
+

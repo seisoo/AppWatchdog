@@ -511,6 +511,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are unsaved settings, what do you want to do?.
+        /// </summary>
+        public static string config_not_saved_changes {
+            get {
+                return ResourceManager.GetString("config_not_saved_changes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Config saved..
         /// </summary>
         public static string config_saved {
@@ -538,20 +547,83 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto-Refresh active ({0} s).
+        ///   Looks up a localized string similar to Discard.
         /// </summary>
-        public static string logs_autorefresh_aktiv_text {
+        public static string discard {
             get {
-                return ResourceManager.GetString("logs_autorefresh_aktiv_text", resourceCulture);
+                return ResourceManager.GetString("discard", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto-Refresh paused.
+        ///   Looks up a localized string similar to Show details.
         /// </summary>
-        public static string logs_autorefresh_paused {
+        public static string error_service_dialog_showdetails {
             get {
-                return ResourceManager.GetString("logs_autorefresh_paused", resourceCulture);
+                return ResourceManager.GetString("error_service_dialog_showdetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid state.
+        /// </summary>
+        public static string error_service_invalid_state {
+            get {
+                return ResourceManager.GetString("error_service_invalid_state", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service not available.
+        /// </summary>
+        public static string error_service_notavailable {
+            get {
+                return ResourceManager.GetString("error_service_notavailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The watchdog service is not running or cannot be reached..
+        /// </summary>
+        public static string error_service_notavailable_text {
+            get {
+                return ResourceManager.GetString("error_service_notavailable_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Timeout.
+        /// </summary>
+        public static string error_service_timeout {
+            get {
+                return ResourceManager.GetString("error_service_timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Watchdog service is not responding. (timeout).
+        /// </summary>
+        public static string error_service_timeout_text {
+            get {
+                return ResourceManager.GetString("error_service_timeout_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected error.
+        /// </summary>
+        public static string error_service_unexpected_error {
+            get {
+                return ResourceManager.GetString("error_service_unexpected_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto refresh?.
+        /// </summary>
+        public static string logs_autorefresh {
+            get {
+                return ResourceManager.GetString("logs_autorefresh", resourceCulture);
             }
         }
         
@@ -570,6 +642,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string logs_last_update_text {
             get {
                 return ResourceManager.GetString("logs_last_update_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Load Day.
+        /// </summary>
+        public static string logs_load_day {
+            get {
+                return ResourceManager.GetString("logs_load_day", resourceCulture);
             }
         }
         
@@ -597,6 +678,42 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string logs_no_logs_found {
             get {
                 return ResourceManager.GetString("logs_no_logs_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open logs folder.
+        /// </summary>
+        public static string logs_open_folder {
+            get {
+                return ResourceManager.GetString("logs_open_folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} matches.
+        /// </summary>
+        public static string logs_search_matches {
+            get {
+                return ResourceManager.GetString("logs_search_matches", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search logs ....
+        /// </summary>
+        public static string logs_search_placeholder {
+            get {
+                return ResourceManager.GetString("logs_search_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logs.
+        /// </summary>
+        public static string logs_title {
+            get {
+                return ResourceManager.GetString("logs_title", resourceCulture);
             }
         }
         
@@ -1083,6 +1200,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string service_username {
             get {
                 return ResourceManager.GetString("service_username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning!.
+        /// </summary>
+        public static string warn {
+            get {
+                return ResourceManager.GetString("warn", resourceCulture);
             }
         }
         

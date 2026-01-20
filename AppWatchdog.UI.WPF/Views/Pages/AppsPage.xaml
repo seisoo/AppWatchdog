@@ -11,7 +11,7 @@
 
             <ui:Card
                 Height="154"
-                Margin="0,0,0,12"
+                Margin="0,0,0,16"
                 Padding="0">
                 <Grid>
 
@@ -50,7 +50,7 @@
                     <TextBlock
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Text="{x:Static loc:AppStrings.apps_settings_title}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[apps_settings_title]}" />
 
                     <TextBlock
                         Margin="0,4,0,0"
@@ -61,13 +61,13 @@
                         <ui:Button
                             Margin="0,0,8,0"
                             Command="{Binding ReloadCommand}"
-                            Content="{x:Static loc:AppStrings.apps_reload}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[apps_reload]}"
                             Icon="{ui:SymbolIcon Symbol=SparkleCircle24}" />
 
                         <ui:Button
                             Appearance="Primary"
                             Command="{Binding SaveCommand}"
-                            Content="{x:Static loc:AppStrings.save}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[save]}"
                             Icon="{ui:SymbolIcon Symbol=Save24}"
                             IsEnabled="{Binding IsDirty}" />
                     </WrapPanel>
@@ -102,13 +102,13 @@
                         Margin="0,0,0,8"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Text="{x:Static loc:AppStrings.apps_general_monitoring}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[apps_general_monitoring]}" />
 
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="0"
                         VerticalAlignment="Center"
-                        Text="{x:Static loc:AppStrings.apps_check_interval}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[apps_check_interval]}" />
 
                     <ui:NumberBox
                         Grid.Row="2"
@@ -124,7 +124,7 @@
                         Grid.Column="0"
                         Margin="0,8,0,0"
                         VerticalAlignment="Center"
-                        Text="{x:Static loc:AppStrings.apps_mail_interval}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[apps_mail_interval]}" />
 
                     <ui:NumberBox
                         Grid.Row="3"
@@ -137,6 +137,7 @@
                         Value="{Binding MailIntervalHours, Mode=TwoWay}" />
                 </Grid>
             </ui:Card>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="280" />
@@ -150,27 +151,27 @@
                         <TextBlock
                             FontSize="16"
                             FontWeight="SemiBold"
-                            Text="{x:Static loc:AppStrings.apps_watched_apps_title}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[apps_watched_apps_title]}" />
 
                         <TextBlock
                             Margin="0,5,0,5"
                             FontFamily="Consolas"
                             FontSize="11"
                             Opacity="0.7"
-                            Text="{x:Static loc:AppStrings.apps_rename_hint}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[apps_rename_hint]}" />
 
                         <WrapPanel Margin="10,10,5,0" HorizontalAlignment="Right">
                             <ui:Button
                                 Margin="0,0,8,0"
                                 Appearance="Primary"
                                 Command="{Binding AddCommand}"
-                                Content="{x:Static loc:AppStrings.apps_add}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[apps_add]}"
                                 Icon="{ui:SymbolIcon Symbol=Add24}" />
 
                             <ui:Button
                                 Appearance="Secondary"
                                 Command="{Binding RemoveCommand}"
-                                Content="{x:Static loc:AppStrings.apps_remove}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[apps_remove]}"
                                 Icon="{ui:SymbolIcon Symbol=Delete24}"
                                 IsEnabled="{Binding SelectedApp}" />
                         </WrapPanel>
@@ -203,13 +204,13 @@
                                 Margin="0,0,0,12"
                                 FontSize="16"
                                 FontWeight="SemiBold"
-                                Text="{x:Static loc:AppStrings.apps_monitoring_title}" />
+                                Text="{Binding Source={StaticResource Strings}, Path=[apps_monitoring_title]}" />
 
-                            <ui:ToggleSwitch Content="{x:Static loc:AppStrings.apps_monitoring_enable}" IsChecked="{Binding Enabled}" />
+                            <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[apps_monitoring_enable]}" IsChecked="{Binding Enabled}" />
 
                             <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
 
-                                <TextBlock Text="{x:Static loc:AppStrings.apps_exe_path}" />
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_exe_path]}" />
 
                                 <Grid Margin="0,4,0,8">
                                     <Grid.ColumnDefinitions>
@@ -224,29 +225,29 @@
                                         Grid.Column="2"
                                         Command="{Binding BrowseExeCommand}"
                                         Icon="{ui:SymbolIcon Symbol=Folder24}"
-                                        ToolTip="{x:Static loc:AppStrings.apps_select_exe}" />
+                                        ToolTip="{Binding Source={StaticResource Strings}, Path=[apps_select_exe]}" />
                                 </Grid>
 
-                                <TextBlock Text="{x:Static loc:AppStrings.apps_arguments}" />
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_arguments]}" />
                                 <ui:TextBox Margin="0,4,0,0" Text="{Binding Arguments}" />
 
                             </StackPanel>
 
                             <ui:ToggleSwitch
                                 Margin="0,12,0,0"
-                                Content="{x:Static loc:AppStrings.apps_kuma_enable}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[apps_kuma_enable]}"
                                 IsChecked="{Binding KumaEnabled}"
                                 IsEnabled="{Binding Enabled}" />
 
                             <StackPanel Margin="0,12,0,0" IsEnabled="{Binding KumaEnabled}">
 
-                                <TextBlock Text="{x:Static loc:AppStrings.apps_kuma_base_url}" />
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_base_url]}" />
                                 <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaBaseUrl}" />
 
-                                <TextBlock Text="{x:Static loc:AppStrings.apps_kuma_token}" />
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_token]}" />
                                 <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaPushToken}" />
 
-                                <TextBlock Text="{x:Static loc:AppStrings.apps_kuma_interval}" />
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_interval]}" />
                                 <ui:NumberBox
                                     Margin="0,4,0,0"
                                     Maximum="3600"

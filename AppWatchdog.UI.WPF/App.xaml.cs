@@ -1,4 +1,5 @@
 ﻿using AppWatchdog.UI.WPF.Dialogs;
+using AppWatchdog.UI.WPF.Localization;
 using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels;
 using AppWatchdog.UI.WPF.Views.Pages;
@@ -6,8 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Wpf.Ui;
@@ -23,14 +26,14 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        FrameworkElement.LanguageProperty.OverrideMetadata(
+            typeof(FrameworkElement),
+            new FrameworkPropertyMetadata(
+                XmlLanguage.GetLanguage(CultureInfo.CurrentUICulture.IetfLanguageTag))
+        );
+
         base.OnStartup(e);
 
-        var culture = CultureInfo.CurrentUICulture;
-
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-
-        base.OnStartup(e);
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
@@ -38,15 +41,7 @@ public partial class App : Application
 
         ApplicationThemeManager.Apply(ApplicationTheme.Dark);
 
-        ApplicationAccentColorManager.Apply(
-                 systemAccent: Color.FromRgb(139, 92, 246),
-                 applicationTheme: ApplicationTheme.Dark,
-                 systemGlassColor: true,
-                 systemAccentColor: true
-             );
-
         var purple = Color.FromRgb(160, 96, 255);
-
         ApplicationAccentColorManager.Apply(
             systemAccent: purple,
             primaryAccent: purple,
@@ -77,11 +72,20 @@ public partial class App : Application
                 services.AddSingleton<AppsViewModel>();
                 services.AddSingleton<NotificationsViewModel>();
                 services.AddSingleton<MainWindow>();
+                services.AddSingleton<LanguageSelectorViewModel>();
+                services.AddSingleton<LocalizationService>();
+                //services.AddSingleton<AppStringsProxy>();
             })
             .Build();
 
         _host.Start();
+        var localization = _host.Services.GetRequiredService<LocalizationService>();
+        var languageSelector = _host.Services.GetRequiredService<LanguageSelectorViewModel>();
+
+        languageSelector.Initialize(localization.CurrentCultureName);
+
         _host.Services.GetRequiredService<MainWindow>().Show();
+
     }
 
     protected override async void OnExit(ExitEventArgs e)

@@ -1,4 +1,5 @@
 ﻿using AppWatchdog.UI.WPF.Common;
+using AppWatchdog.UI.WPF.Localization;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using System;
 using System.Diagnostics;
@@ -203,16 +204,16 @@ private static void EnsureServiceRunning()
         return ex switch
         {
             PipeTimeoutException =>
-                ("Timeout", "Der Watchdog-Dienst antwortet nicht rechtzeitig.", SymbolRegular.Clock24),
+                (AppStrings.error_service_timeout, AppStrings.error_service_timeout_text, SymbolRegular.Clock24),
 
             PipeUnavailableException =>
-                ("Dienst nicht erreichbar", "Der Watchdog-Dienst läuft nicht oder ist nicht erreichbar.", SymbolRegular.CloudOff24),
+                (AppStrings.error_service_notavailable, AppStrings.error_service_notavailable_text, SymbolRegular.CloudOff24),
 
             InvalidOperationException =>
-                ("Ungültiger Zustand", ex.Message, SymbolRegular.Warning24),
+                (AppStrings.error_service_invalid_state, ex.Message, SymbolRegular.Warning24),
 
             _ =>
-                ("Unerwarteter Fehler", ex.Message, SymbolRegular.ErrorCircle24)
+                (AppStrings.error_service_unexpected_error, ex.Message, SymbolRegular.ErrorCircle24)
         };
     }
 
@@ -247,7 +248,7 @@ private static void EnsureServiceRunning()
 
             new Expander
             {
-                Header = "Details anzeigen",
+                Header = AppStrings.error_service_dialog_showdetails,
                 IsExpanded = false,
                 Margin = new Thickness(0, 8, 0, 0),
                 Content = new ScrollViewer

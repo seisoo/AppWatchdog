@@ -4,8 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="Logs">
-
+    Title="{Binding Source={StaticResource Strings}, Path=[logs_title]}">
 
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16" VerticalAlignment="Top">
@@ -45,14 +44,16 @@
                 </Grid>
             </ui:Card>
 
-
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
+
+
+
 
                     <TextBlock
                         FontSize="18"
                         FontWeight="SemiBold"
-                        Text="Logs" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[logs_title]}" />
 
                     <TextBlock
                         Margin="0,6,0,6"
@@ -69,37 +70,37 @@
                         <ui:Button
                             Margin="0,0,12,0"
                             Command="{Binding LoadSelectedCommand}"
-                            Content="Laden"
+                            Content="{Binding Source={StaticResource Strings}, Path=[logs_load_day]}"
                             Icon="{ui:SymbolIcon Symbol=SparkleCircle24}" />
-
-
-                        <CheckBox
-                            Margin="0,0,8,0"
-                            VerticalAlignment="Center"
-                            Content="Auto-Refresh"
-                            IsChecked="{Binding AutoRefreshEnabled}" />
 
                         <ui:Button
                             HorizontalAlignment="Right"
                             Appearance="Secondary"
-                            Command="{Binding OpenConfigFolderCommand}">
-                            Log Ordner öffnen
-                        </ui:Button>
+                            Command="{Binding OpenConfigFolderCommand}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[logs_open_folder]}" />
 
                     </WrapPanel>
+
+                    <ui:TextBox
+                        Margin="0,12,0,8"
+                        ClearButtonEnabled="True"
+                        Icon="{ui:SymbolIcon Symbol=Search24}"
+                        PlaceholderText="{Binding Source={StaticResource Strings}, Path=[logs_search_placeholder]}"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
                     <TextBlock
-                        HorizontalAlignment="right"
-                        VerticalAlignment="Center"
-                        FontFamily="Consolas"
-                        Foreground="NavajoWhite"
-                        Text="{Binding AutoRefreshStatusText}" />
+                        Margin="0,0,0,8"
+                        Opacity="0.6"
+                        Text="{Binding SearchMatchText}" />
+
+
                 </StackPanel>
             </ui:Card>
 
-
             <ui:Card Padding="16">
                 <TextBox
-                    MinHeight="300"
+                    MinHeight="555"
+                    MaxHeight="555"
                     AcceptsReturn="True"
                     FontFamily="Consolas"
                     FontSize="12"
@@ -107,7 +108,7 @@
                     IsReadOnly="True"
                     Text="{Binding LogText}"
                     TextWrapping="NoWrap"
-                    VerticalScrollBarVisibility="Auto" />
+                    VerticalScrollBarVisibility="Visible" />
             </ui:Card>
 
         </StackPanel>

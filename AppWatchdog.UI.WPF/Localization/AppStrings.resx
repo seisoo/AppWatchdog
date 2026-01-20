@@ -268,6 +268,9 @@
   <data name="config_not_saved" xml:space="preserve">
     <value>Config not saved.</value>
   </data>
+  <data name="config_not_saved_changes" xml:space="preserve">
+    <value>There are unsaved settings, what do you want to do?</value>
+  </data>
   <data name="config_saved" xml:space="preserve">
     <value>Config saved.</value>
   </data>
@@ -277,11 +280,17 @@
   <data name="delete" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <data name="logs_autorefresh_aktiv_text" xml:space="preserve">
-    <value>Auto-Refresh active ({0} s)</value>
+  <data name="discard" xml:space="preserve">
+    <value>Discard</value>
   </data>
-  <data name="logs_autorefresh_paused" xml:space="preserve">
-    <value>Auto-Refresh paused</value>
+  <data name="error_service_timeout_text" xml:space="preserve">
+    <value>The Watchdog service is not responding. (timeout)</value>
+  </data>
+  <data name="error_service_notavailable_text" xml:space="preserve">
+    <value>The watchdog service is not running or cannot be reached.</value>
+  </data>
+  <data name="logs_autorefresh" xml:space="preserve">
+    <value>Auto refresh?</value>
   </data>
   <data name="logs_error_while_loading" xml:space="preserve">
     <value>Error while loading the log.</value>
@@ -295,8 +304,23 @@
   <data name="logs_loading" xml:space="preserve">
     <value>Logs loading...</value>
   </data>
+  <data name="logs_load_day" xml:space="preserve">
+    <value>Load Day</value>
+  </data>
   <data name="logs_no_logs_found" xml:space="preserve">
     <value>No logs found.</value>
+  </data>
+  <data name="logs_open_folder" xml:space="preserve">
+    <value>Open logs folder</value>
+  </data>
+  <data name="logs_search_matches" xml:space="preserve">
+    <value>{0} matches</value>
+  </data>
+  <data name="logs_search_placeholder" xml:space="preserve">
+    <value>Search logs ...</value>
+  </data>
+  <data name="logs_title" xml:space="preserve">
+    <value>Logs</value>
   </data>
   <data name="no" xml:space="preserve">
     <value>No</value>
@@ -460,7 +484,25 @@
   <data name="service_username" xml:space="preserve">
     <value>Username:</value>
   </data>
+  <data name="warn" xml:space="preserve">
+    <value>Warning!</value>
+  </data>
   <data name="yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="error_service_timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="error_service_notavailable" xml:space="preserve">
+    <value>Service not available</value>
+  </data>
+  <data name="error_service_invalid_state" xml:space="preserve">
+    <value>Invalid state</value>
+  </data>
+  <data name="error_service_unexpected_error" xml:space="preserve">
+    <value>Unexpected error</value>
+  </data>
+  <data name="error_service_dialog_showdetails" xml:space="preserve">
+    <value>Show details</value>
   </data>
 </root>

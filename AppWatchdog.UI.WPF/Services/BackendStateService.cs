@@ -35,6 +35,12 @@ namespace AppWatchdog.UI.WPF.Services
             State = BackendState.Error;
             StatusMessage = message;
         }
+
+        partial void OnStateChanged(BackendState value)
+        {
+            OnPropertyChanged(nameof(IsReady));
+        }
+
     }
 
 }

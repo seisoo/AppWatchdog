@@ -8,6 +8,7 @@
 
     <Grid>
         <StackPanel Margin="16">
+
             <ui:Card
                 Height="154"
                 Margin="0,0,0,16"
@@ -38,6 +39,7 @@
                     </StackPanel>
                 </Grid>
             </ui:Card>
+
             <ui:Card Margin="0,0,0,16">
                 <StackPanel>
 
@@ -45,11 +47,11 @@
                         FontSize="24"
                         FontWeight="SemiBold"
                         Foreground="White"
-                        Text="{x:Static loc:AppStrings.service_title}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[service_title]}" />
 
                     <TextBlock
                         Foreground="#E5E7EB"
-                        Text="{x:Static loc:AppStrings.service_description}"
+                        Text="{Binding Source={StaticResource Strings}, Path=[service_description]}"
                         TextWrapping="Wrap" />
 
                     <WrapPanel Margin="0,20,0,10">
@@ -57,30 +59,35 @@
                             Margin="0,0,5,0"
                             Appearance="Primary"
                             Command="{Binding StartServiceCommand}"
-                            Content="{x:Static loc:AppStrings.service_button_start}" />
+                            Content="{Binding Source={StaticResource Strings}, Path=[service_button_start]}"
+                            Icon="{ui:ImageIcon /Images/uac.png}" />
 
                         <ui:Button
                             Margin="0,0,5,0"
                             Appearance="Danger"
                             Command="{Binding StopServiceCommand}"
-                            Content="{x:Static loc:AppStrings.service_button_stop}" />
+                            Content="{Binding Source={StaticResource Strings}, Path=[service_button_stop]}"
+                            Icon="{ui:ImageIcon /Images/uac.png}" />
 
                         <ui:Button
                             Margin="0,0,5,0"
                             Appearance="Caution"
                             Command="{Binding InstallServiceCommand}"
-                            Content="{x:Static loc:AppStrings.service_button_install}" />
+                            Content="{Binding Source={StaticResource Strings}, Path=[service_button_install]}"
+                            Icon="{ui:ImageIcon /Images/uac.png}" />
 
                         <ui:Button
                             Margin="0,0,5,0"
                             Appearance="Secondary"
                             Command="{Binding UninstallServiceCommand}"
-                            Content="{x:Static loc:AppStrings.service_button_uninstall}" />
+                            Content="{Binding Source={StaticResource Strings}, Path=[service_button_uninstall]}"
+                            Icon="{ui:ImageIcon /Images/uac.png}" />
                     </WrapPanel>
 
                     <TextBlock Text="{Binding StatusLine}" />
                 </StackPanel>
             </ui:Card>
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
@@ -107,6 +114,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock
@@ -116,7 +124,7 @@
                             FontSize="18"
                             FontWeight="SemiBold"
                             Foreground="#E5E7EB"
-                            Text="{x:Static loc:AppStrings.service_systeminfo_title}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_systeminfo_title]}" />
 
                         <Separator
                             Grid.Row="1"
@@ -127,7 +135,7 @@
                             Grid.Row="2"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_username}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_username]}" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="1"
@@ -138,7 +146,7 @@
                             Grid.Row="3"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_machine_name}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_machine_name]}" />
                         <TextBlock
                             Grid.Row="3"
                             Grid.Column="1"
@@ -149,7 +157,7 @@
                             Grid.Row="4"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_os}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_os]}" />
                         <TextBlock
                             Grid.Row="4"
                             Grid.Column="1"
@@ -160,7 +168,7 @@
                             Grid.Row="5"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_dotnet}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_dotnet]}" />
                         <TextBlock
                             Grid.Row="5"
                             Grid.Column="1"
@@ -171,7 +179,7 @@
                             Grid.Row="6"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_uptime}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_uptime]}" />
                         <TextBlock
                             Grid.Row="6"
                             Grid.Column="1"
@@ -182,7 +190,7 @@
                             Grid.Row="7"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_memory}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_memory]}" />
                         <TextBlock
                             Grid.Row="7"
                             Grid.Column="1"
@@ -193,12 +201,25 @@
                             Grid.Row="8"
                             Margin="0,0,0,8"
                             Opacity="0.8"
-                            Text="{x:Static loc:AppStrings.service_pipe_client}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_pipe_client]}" />
+
                         <TextBlock
                             Grid.Row="8"
                             Grid.Column="1"
                             Margin="12,0,0,8"
                             Text="{Binding ClientProtocolVersion}" />
+
+                        <TextBlock
+                            Grid.Row="9"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{Binding Source={StaticResource Strings}, Path=[service_pipe_service]}" />
+
+                        <TextBlock
+                            Grid.Row="9"
+                            Grid.Column="1"
+                            Margin="12,0,0,8"
+                            Text="{Binding ServiceProtocolVersion}" />
                     </Grid>
                 </ui:Card>
 
@@ -215,11 +236,11 @@
                                 FontSize="18"
                                 FontWeight="SemiBold"
                                 Foreground="#E5E7EB"
-                                Text="{x:Static loc:AppStrings.service_active_apps_title}" />
+                                Text="{Binding Source={StaticResource Strings}, Path=[service_active_apps_title]}" />
                             <Separator Margin="0,6" />
                             <TextBlock
                                 Opacity="0.6"
-                                Text="{x:Static loc:AppStrings.service_no_active_apps}"
+                                Text="{Binding Source={StaticResource Strings}, Path=[service_no_active_apps]}"
                                 Visibility="{Binding HasNoEnabledApps, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=False}" />
                         </StackPanel>
 
@@ -240,7 +261,7 @@
                                             <TextBlock
                                                 Margin="12,0,0,0"
                                                 DockPanel.Dock="Right"
-                                                Text="{Binding IsRunning, StringFormat={x:Static loc:AppStrings.service_app_active}}" />
+                                                Text="{Binding IsRunning, StringFormat={Binding Source={StaticResource Strings}, Path=[service_app_active]}}" />
                                         </DockPanel>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -250,7 +271,6 @@
 
                     </Grid>
                 </ui:Card>
-
 
             </Grid>
         </StackPanel>
