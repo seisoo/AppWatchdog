@@ -52,7 +52,7 @@ jobs:
 
 
       # 4️⃣ Create and push tag
-      - name: Create Git tag
+      - name: Create and push tag
         shell: powershell
         run: |
           git tag "${{ env.TAG }}"
@@ -123,3 +123,5 @@ jobs:
             AppWatchdog_${{ env.TAG }}_win-x64.zip
             AppWatchdog_${{ env.TAG }}_win-x86.zip
             AppWatchdog_${{ env.TAG }}_win-arm64.zip
+          replace_existing_tag: true
+
