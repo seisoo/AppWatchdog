@@ -1,4 +1,5 @@
-﻿using AppWatchdog.UI.WPF.ViewModels;
+﻿using AppWatchdog.UI.WPF.Localization;
+using AppWatchdog.UI.WPF.ViewModels;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,7 +43,7 @@ public partial class AppsPage : Page
 
         var description = new Wpf.Ui.Controls.TextBlock
         {
-            Text = "Bitte gib einen neuen Namen für den Watch-Job dieser Anwendung ein ein.",
+            Text = AppStrings.apps_edit_job_description,
             Opacity = 0.8,
             TextWrapping = TextWrapping.Wrap
         };
@@ -50,13 +51,13 @@ public partial class AppsPage : Page
         var nameBox = new Wpf.Ui.Controls.TextBox
         {
             Text = vm.SelectedApp.Name,
-            PlaceholderText = "Name des Jobs",
+            PlaceholderText = AppStrings.apps_edit_job_placeholder,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
 
         var description2 = new Wpf.Ui.Controls.TextBlock
         {
-            Text = "Dieser Name hilft bei der Identifizierung aus der globaln Liste.",
+            Text = AppStrings.apps_edit_job_hint,
             Opacity = 0.8,
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0,16,0,0)
@@ -71,10 +72,10 @@ public partial class AppsPage : Page
         var result = await _contentDialogService.ShowSimpleDialogAsync(
             new SimpleContentDialogCreateOptions
             {
-                Title = "Jobnamen ändern",
+                Title = AppStrings.apps_edit_job_title,
                 Content = content,
-                PrimaryButtonText = "Speichern",
-                CloseButtonText = "Abbrechen"
+                PrimaryButtonText = AppStrings.save,
+                CloseButtonText = AppStrings.abort
             },
             CancellationToken.None
         );
