@@ -23,6 +23,7 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _headerText = "Service";
     [ObservableProperty] private string _statusText = "";
 
+
     public bool BackendReady => _backend.IsReady;
     public string BackendStatus => _backend.StatusMessage;
 

@@ -5,10 +5,11 @@
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
     xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="{x:Static loc:AppStrings.notifications_title}">
+    Title="{Binding Source={StaticResource Strings}, Path=[notifications_title]}">
 
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16" VerticalAlignment="Top">
+
             <ui:Card
                 Height="154"
                 Margin="0,0,0,16"
@@ -39,37 +40,38 @@
                     </StackPanel>
                 </Grid>
             </ui:Card>
+
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
                     <TextBlock
                         FontSize="18"
                         FontWeight="SemiBold"
-                        Text="{x:Static loc:AppStrings.notifications_header}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[notifications_header]}" />
 
                     <TextBlock
                         Margin="0,6,0,12"
                         Opacity="0.7"
-                        Text="{x:Static loc:AppStrings.notifications_description}"
+                        Text="{Binding Source={StaticResource Strings}, Path=[notifications_description]}"
                         TextWrapping="Wrap" />
 
                     <WrapPanel>
                         <ui:Button
                             Margin="0,0,8,0"
                             Command="{Binding TestSmtpCommand}"
-                            Content="{x:Static loc:AppStrings.notific_smtp_test}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[notific_smtp_test]}"
                             Icon="{ui:SymbolIcon Symbol=Mail24}" />
 
                         <ui:Button
                             Margin="0,0,12,0"
                             Command="{Binding TestNtfyCommand}"
-                            Content="{x:Static loc:AppStrings.notific_ntfy_test}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_test]}"
                             Icon="{ui:SymbolIcon Symbol=Send24}" />
 
                         <ui:Button
                             Margin="0,0,12,0"
                             Appearance="Primary"
                             Command="{Binding SaveCommand}"
-                            Content="{x:Static loc:AppStrings.save}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[save]}"
                             Icon="{ui:SymbolIcon Symbol=Save24}"
                             IsEnabled="{Binding IsDirty}" />
                     </WrapPanel>
@@ -81,6 +83,7 @@
                         Text="{Binding SaveStateText}" />
                 </StackPanel>
             </ui:Card>
+
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
 
@@ -90,7 +93,7 @@
                             Margin="5,0,0,0"
                             FontSize="16"
                             FontWeight="SemiBold"
-                            Text="{x:Static loc:AppStrings.notific_smtp_title}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_title]}" />
                     </StackPanel>
 
                     <Grid>
@@ -112,7 +115,7 @@
                         <TextBlock
                             Grid.Row="0"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_server}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_server]}" />
                         <TextBox
                             Grid.Row="0"
                             Grid.Column="1"
@@ -122,7 +125,7 @@
                         <TextBlock
                             Grid.Row="1"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_port}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_port]}" />
                         <TextBox
                             Grid.Row="1"
                             Grid.Column="1"
@@ -132,7 +135,7 @@
                         <TextBlock
                             Grid.Row="2"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_ssl}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_ssl]}" />
                         <CheckBox
                             Grid.Row="2"
                             Grid.Column="1"
@@ -142,7 +145,7 @@
                         <TextBlock
                             Grid.Row="3"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_user}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_user]}" />
                         <TextBox
                             Grid.Row="3"
                             Grid.Column="1"
@@ -152,7 +155,7 @@
                         <TextBlock
                             Grid.Row="4"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_password}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_password]}" />
                         <PasswordBox
                             x:Name="SmtpPasswordBox"
                             Grid.Row="4"
@@ -163,7 +166,7 @@
                         <TextBlock
                             Grid.Row="5"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_from}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_from]}" />
                         <TextBox
                             Grid.Row="5"
                             Grid.Column="1"
@@ -173,7 +176,7 @@
                         <TextBlock
                             Grid.Row="6"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_smtp_to}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_to]}" />
                         <TextBox
                             Grid.Row="6"
                             Grid.Column="1"
@@ -182,6 +185,7 @@
                     </Grid>
                 </StackPanel>
             </ui:Card>
+
             <ui:Card Padding="16">
                 <StackPanel>
 
@@ -194,7 +198,7 @@
                             Margin="5,0,0,12"
                             FontSize="16"
                             FontWeight="SemiBold"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_title}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_title]}" />
                     </StackPanel>
 
                     <Grid>
@@ -214,7 +218,7 @@
                         <TextBlock
                             Grid.Row="0"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_enabled}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_enabled]}" />
                         <CheckBox
                             Grid.Row="0"
                             Grid.Column="1"
@@ -224,7 +228,7 @@
                         <TextBlock
                             Grid.Row="1"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_base_url}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_base_url]}" />
                         <TextBox
                             Grid.Row="1"
                             Grid.Column="1"
@@ -234,7 +238,7 @@
                         <TextBlock
                             Grid.Row="2"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_topic}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_topic]}" />
                         <TextBox
                             Grid.Row="2"
                             Grid.Column="1"
@@ -244,7 +248,7 @@
                         <TextBlock
                             Grid.Row="3"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_token}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_token]}" />
                         <PasswordBox
                             x:Name="NtfyTokenBox"
                             Grid.Row="3"
@@ -255,7 +259,7 @@
                         <TextBlock
                             Grid.Row="4"
                             Margin="0,5,0,0"
-                            Text="{x:Static loc:AppStrings.notific_ntfy_priority}" />
+                            Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_priority]}" />
                         <ui:NumberBox
                             Grid.Row="4"
                             Grid.Column="1"

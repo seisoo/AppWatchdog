@@ -116,11 +116,11 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     }
 
 
-    private void Load()
+    private async void Load()
     {
         using var _ = SuppressDirty();
 
-        var cfg = _pipe.GetConfig();
+        var cfg = await Task.Run(() => _pipe.GetConfig());
 
         SmtpServer = cfg.Smtp.Server;
         SmtpPortText = cfg.Smtp.Port;
@@ -140,9 +140,9 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private void Save()
+    private async void Save()
     {
-        var cfg = _pipe.GetConfig();
+        var cfg = await Task.Run(() => _pipe.GetConfig());
 
         cfg.Smtp.Server = SmtpServer;
         cfg.Smtp.Port = SmtpPortText;
@@ -158,7 +158,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         cfg.Ntfy.Token = NtfyToken;
         cfg.Ntfy.Priority = NtfyPriorityText;
 
-        _pipe.SaveConfig(cfg);
+        await Task.Run(() => _pipe.SaveConfig(cfg));
         ClearDirty();
     }
 

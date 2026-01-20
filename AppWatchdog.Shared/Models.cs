@@ -7,9 +7,9 @@ public sealed class WatchdogConfig
     public List<WatchedApp> Apps { get; set; } = new();
     public int CheckIntervalMinutes { get; set; } = 5;
     public int MailIntervalHours { get; set; } = 12;
-
     public SmtpSettings Smtp { get; set; } = new();
     public NtfySettings Ntfy { get; set; } = new();
+    public string CultureName { get; set; } = "en-US";
 }
 
 public sealed class WatchedApp

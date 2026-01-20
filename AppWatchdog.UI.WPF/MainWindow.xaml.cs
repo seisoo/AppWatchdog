@@ -1,6 +1,9 @@
-﻿using AppWatchdog.UI.WPF.ViewModels;
+﻿using AppWatchdog.UI.WPF.Localization;
+using AppWatchdog.UI.WPF.Services;
+using AppWatchdog.UI.WPF.ViewModels;
 using AppWatchdog.UI.WPF.Views.Pages;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +18,8 @@ public partial class MainWindow : FluentWindow
 {
     public MainWindowViewModel ViewModel { get; }
     public static ContentDialogHost? GlobalDialogHost { get; private set; }
+    public LanguageSelectorViewModel LanguageSelector { get; }
+    public BackendStateService BackendState { get; }
 
     private readonly INavigationService _navigationService;
     private readonly INavigationViewPageProvider _pageProvider;
@@ -22,9 +27,12 @@ public partial class MainWindow : FluentWindow
     private readonly IContentDialogService _dialogService;
     private bool _isClosingConfirmed;
 
+    // 
     public MainWindow(
          MainWindowViewModel viewModel,
          INavigationService navigationService,
+         LanguageSelectorViewModel languageSelector,
+         BackendStateService backendStateService,
          INavigationViewPageProvider pageProvider,
          IContentDialogService contentDialogService,
          IContentDialogService dialogService)
@@ -36,12 +44,19 @@ public partial class MainWindow : FluentWindow
         _pageProvider = pageProvider;
         _contentDialogService = contentDialogService;
         _dialogService = dialogService;
+        BackendState = backendStateService;
 
         _contentDialogService.SetDialogHost(RootContentDialogHost);
         GlobalDialogHost = RootContentDialogHost;
 
         _navigationService.SetNavigationControl(RootNavigationView);
         RootNavigationView.SetPageProviderService(_pageProvider);
+
+        LanguageSelector = languageSelector;
+        LanguageSelector.Initialize(
+            CultureInfo.CurrentUICulture.Name
+        );
+
 
         Loaded += (_, __) => _navigationService.Navigate(typeof(ServicePage));
     }
@@ -69,9 +84,7 @@ public partial class MainWindow : FluentWindow
             },
             new Wpf.Ui.Controls.TextBlock
             {
-                Text =
-                    "Es gibt ungespeicherte Änderungen. " +
-                    "Was möchtest du tun?",
+                Text = AppStrings.config_not_saved_changes,
                 TextWrapping = TextWrapping.Wrap
             }
         }
@@ -80,11 +93,11 @@ public partial class MainWindow : FluentWindow
         var result = await _dialogService.ShowSimpleDialogAsync(
             new SimpleContentDialogCreateOptions
             {
-                Title = "Warnung!",
+                Title = AppStrings.warn,
                 Content = content,
-                PrimaryButtonText = "Speichern",
-                SecondaryButtonText = "Verwerfen",
-                CloseButtonText = "Abbrechen",
+                PrimaryButtonText = AppStrings.save,
+                SecondaryButtonText = AppStrings.discard,
+                CloseButtonText = AppStrings.abort,
             },
             CancellationToken.None
         );

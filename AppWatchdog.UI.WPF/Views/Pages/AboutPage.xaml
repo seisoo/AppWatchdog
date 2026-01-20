@@ -6,7 +6,7 @@
     xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="{x:Static loc:AppStrings.about}">
+    Title="{Binding Source={StaticResource Strings}, Path=[about]}">
 
     <Grid>
         <StackPanel Margin="16" VerticalAlignment="Top">
@@ -51,36 +51,36 @@
                         Margin="0,0,0,8"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Text="{x:Static loc:AppStrings.about_section_service_title}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[about_section_service_title]}" />
 
-                    <TextBlock Text="{x:Static loc:AppStrings.about_service_description_1}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_service_description_1]}" TextWrapping="Wrap" />
 
                     <TextBlock
                         Margin="0,14,0,0"
-                        Text="{x:Static loc:AppStrings.about_service_description_2}"
+                        Text="{Binding Source={StaticResource Strings}, Path=[about_service_description_2]}"
                         TextWrapping="Wrap" />
 
                     <StackPanel Margin="0,14,0,0">
 
-                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_mail_title}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[about_feature_mail_title]}" />
 
                         <TextBlock
                             Margin="12,2,0,12"
-                            Text="{x:Static loc:AppStrings.about_feature_mail_text}"
+                            Text="{Binding Source={StaticResource Strings}, Path=[about_feature_mail_text]}"
                             TextWrapping="Wrap" />
 
-                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_ntfy_title}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[about_feature_ntfy_title]}" />
 
                         <TextBlock
                             Margin="12,2,0,12"
-                            Text="{x:Static loc:AppStrings.about_feature_ntfy_text}"
+                            Text="{Binding Source={StaticResource Strings}, Path=[about_feature_ntfy_text]}"
                             TextWrapping="Wrap" />
 
-                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_uptime_title}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[about_feature_uptime_title]}" />
 
                         <TextBlock
                             Margin="12,2,0,0"
-                            Text="{x:Static loc:AppStrings.about_feature_uptime_text}"
+                            Text="{Binding Source={StaticResource Strings}, Path=[about_feature_uptime_text]}"
                             TextWrapping="Wrap" />
                     </StackPanel>
 
@@ -89,26 +89,26 @@
                     <ui:TextBlock
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Text="{x:Static loc:AppStrings.about_section_contact_title}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[about_section_contact_title]}" />
 
                     <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                        <ui:Anchor Margin="0,0,5,0" NavigateUri="{x:Static common:AppLinks.Mail}">
-                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_email}" />
+                        <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.Mail}">
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_contact_email]}" />
                         </ui:Anchor>
 
                         <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.GitHub}">
-                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_github}" />
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_contact_github]}" />
                         </ui:Anchor>
 
                         <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.Steam}">
-                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_steam}" />
+                            <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_contact_steam]}" />
                         </ui:Anchor>
                     </StackPanel>
 
                     <Separator Margin="0,12" />
 
                     <WrapPanel>
-                        <TextBlock Text="{x:Static loc:AppStrings.about_version_label}" />
+                        <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_version_label]}" />
                         <TextBlock>
                             <Run Text=" V." />
                             <Run Text="{x:Static common:AppInfo.Version}" />
@@ -126,14 +126,14 @@
                     <TextBlock
                         Margin="0,10,0,5"
                         Opacity="0.85"
-                        Text="{x:Static loc:AppStrings.about_external_resources_title}" />
+                        Text="{Binding Source={StaticResource Strings}, Path=[about_external_resources_title]}" />
 
                     <ui:Anchor Margin="0,0,0,5" NavigateUri="{x:Static common:AppLinks.WpfUi}">
-                        <TextBlock Text="{x:Static loc:AppStrings.about_external_wpfui}" />
+                        <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_external_wpfui]}" />
                     </ui:Anchor>
 
                     <ui:Anchor NavigateUri="{x:Static common:AppLinks.Unsplash}">
-                        <TextBlock Text="{x:Static loc:AppStrings.about_external_assets}" />
+                        <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[about_external_assets]}" />
                     </ui:Anchor>
 
                 </StackPanel>
