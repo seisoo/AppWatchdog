@@ -1,44 +1,25 @@
-# 🛡️ AppWatchdog  
+![AppWatchdog Banner](https://repository-images.githubusercontent.com/1137178517/5aff3f7d-291a-4316-a3ab-aa8dcb3bd138)
+
+# 🛡️ AppWatchdog
 **Windows Application & Service Watchdog**
 
-![overview](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service2.png)
-
-**AppWatchdog** is a Windows watchdog solution consisting of a **Windows Service** and a **WPF-based user interface**.
-
-It monitors configured applications, detects failures reliably, and performs automatic recovery actions such as restarts.  
-Additional features include notifications, logging, and basic self-healing capabilities.
+AppWatchdog is a lightweight **Windows watchdog** consisting of a **Windows Service** and a **WPF UI**.  
+It monitors applications, detects failures reliably, and performs automatic recovery.
 
 ---
 
 ## ✨ Features
-
-- 🔍 **Process Monitoring**
-  - Multi-step down detection to avoid false positives
-  - Time-based confirmation before recovery actions
-- 🔁 **Automatic Recovery**
-  - Application restarts
-  - Retry handling with backoff strategy
-- 🛠 **Windows Service + WPF UI**
-  - Service runs independently of user sessions
-  - UI for configuration, control, and diagnostics
-- 🔔 **Notifications**
-  - SMTP (email)
-  - ntfy
-  - Optional: Uptime Kuma push monitoring (heartbeat)
-- 📜 **Logging**
-  - Structured log files
-  - Integrated log viewer in the UI
-- 🔐 **IPC via Named Pipes**
-  - Versioned protocol
-  - Timeout and compatibility validation
-- 🧠 **Self-Healing**
-  - Detects missing or incompatible service versions
-  - Repair or reinstall directly from the UI
+- 🔍 Process monitoring with multi-step failure detection
+- 🔁 Automatic application restart with retry logic
+- 🛠 Windows Service + WPF UI (session-independent)
+- 🔔 Notifications: SMTP · ntfy · Uptime Kuma (heartbeat)
+- 📜 Structured logging with UI log viewer
+- 🔐 Named Pipes IPC (versioned & validated)
+- 🧠 Self-healing service detection and repair
 
 ---
 
 ## 🧩 Architecture
-
 ```
 ┌──────────────────────┐
 │ AppWatchdog.UI.WPF │ ← Configuration & Monitoring (WPF)
@@ -49,138 +30,63 @@ Additional features include notifications, logging, and basic self-healing capab
 └──────────────────────┘
 ```
 
-### Components
-
-- **AppWatchdog.Service**
-  - Windows Service
-  - Executes monitoring logic
-  - Restarts applications and records status
-- **AppWatchdog.UI.WPF**
-  - MVVM-based WPF application
-  - Configuration of monitored applications
-  - Displays status, logs, and notification settings
-- **IPC (Named Pipes)**
-  - Versioned and fault-tolerant
-  - Protection against protocol mismatches and timeouts
-
----
-
 ## 🖥️ Screenshots
+**Service**
+![Service](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service2.png)
 
-### Service Management
-![Service Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service2.png)
+**Applications**
+![Apps](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png)
 
-### Application Monitoring
-![Apps Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png)
+**Notifications**
+![Notifications](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png)
 
-### Notifications
-![Notifications Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png)
-
-### Logs
-![Logs Page](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png)
+**Logs**
+![Logs](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png)
 
 ---
 
 ## 🚀 Installation
+- Windows 10 / 11 (x64 · x86 · ARM64)
+- Administrator privileges required
 
-### Requirements
-
-- Windows 10 / 11 (x64/x86/Arm64)
-- **Administrator privileges** (required for service installation)
-
-> ℹ️ All provided builds are **self-contained**  
-> → No separate .NET runtime installation required
-
----
-
-### Steps
-
-1. Download the appropriate release
-2. Extract both executables into the same directory:
+**Steps**
+1. Download release
+2. Extract:
    - `AppWatchdog.Service.exe`
    - `AppWatchdog.UI.WPF.exe`
-3. Start **AppWatchdog.UI.WPF.exe**
-4. Install and start the service via the UI
-5. Configure the applications to monitor
-6. Configure notifications (optional)
+3. Start UI → install & start service → configure apps
+
+> Builds are **self-contained** (no .NET runtime required)
 
 ---
 
 ## ⚙️ Configuration
+Configured entirely via the UI:
 
-Configuration is handled via the UI:
-
-- Executable path
-- Command-line arguments
+- Executable & arguments
 - Enable/disable monitoring
-- KUMA-Uptime passive push (heartbeat)
-- Notification settings:
-  - SMTP (host, port, credentials, TLS)
-  - ntfy server and topic
+- Notifications (SMTP, ntfy)
+- Uptime Kuma heartbeat
 
-Logs are stored **locally on disk**.
-
-> 🔒 **Note**  
-> Credentials are stored locally.  
-> For production systems, access to configuration files should be restricted appropriately.
+Logs are stored locally.
 
 ---
 
-## 🧪 Build & Releases
-
-- Builds are created using **GitHub Actions**
-- Target platform:
-  - **Windows win-x64**
-  - **Windows win-x86**
-  - **Windows win-arm64**
-- Service and UI are distributed as **separate, self-contained single executables**
-- No runtime dependencies
-
----
-
-## 🔐 Security
-
-- No external network communication unless explicitly configured
-- IPC communication is validated and versioned
-- Service runs with only the required privileges
-
-Please report security-related issues **privately** and not via public issue trackers.
-
----
-
-## 🔐 TODO:
-
-1. ~~Culture based translations (+german, +english, +italian,...)~~ (implemented 20.01.2026)
-2. Different type of checks (+service +website?)
-3. Linux implementation?
-4. Telegram messages
-5. Discord messages
-6. ~~Encryption~~ (implemented 20.01.2026)
+## 🧭 Roadmap
+- ~~Multi-language UI~~ ✔️
+- Service & website checks
+- Linux support?
+- Telegram & Discord notifications
 
 ---
 
 ## 📄 License
-
-This project is licensed under the **MIT License**.  
-See [LICENSE](LICENSE) for details.
-(the license is still missing)
+MIT License  
+*(LICENSE file pending)*
 
 ---
 
-## 📌 Project Status
-
-**AppWatchdog is early-access and not production-ready**, but under active development.
-
-The project is intentionally focused on **Windows systems** to allow deep integration with:
-
-- Windows Service Control Manager
-- Event Logs
-- Desktop and server environments
-
-## Copyrights
-- Banner Image by **https://unsplash.com/de/fotos/lila-und-weisse-abstrakte-malerei-2CDRjyQw8aQ**
-- WPF-UI by **https://wpfui.lepo.co**
-
-## Issues?
-- If you have any issues, don't hesistate to open an issue or contact me via the provided info.
+## 📌 Status
+Early-access, under active development.  
+Windows-only by design for deep OS integration.
 
