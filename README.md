@@ -150,11 +150,12 @@ Please report security-related issues **privately** and not via public issue tra
 
 ## 🔐 TODO:
 
-1. Culture based translations (+german, +english, +italian,...)
+1. ~~Culture based translations (+german, +english, +italian,...)~~ (implemented 20.01.2026)
 2. Different type of checks (+service +website?)
 3. Linux implementation?
 4. Telegram messages
 5. Discord messages
+6. ~~Encryption~~ (implemented 20.01.2026)
 
 ---
 
