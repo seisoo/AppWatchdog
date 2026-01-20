@@ -113,6 +113,7 @@ Configuration is handled via the UI:
 - Executable path
 - Command-line arguments
 - Enable/disable monitoring
+- KUMA-Uptime passive push (heartbeat)
 - Notification settings:
   - SMTP (host, port, credentials, TLS)
   - ntfy server and topic
@@ -147,10 +148,21 @@ Please report security-related issues **privately** and not via public issue tra
 
 ---
 
+## 🔐 TODO:
+
+1. Culture based translations (+german, +english, +italian,...)
+2. Different type of checks (+service +website?)
+3. Linux implementation?
+4. Telegram messages
+5. Discord messages
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License**.  
 See [LICENSE](LICENSE) for details.
+(the license is still missing)
 
 ---
 
@@ -167,3 +179,7 @@ The project is intentionally focused on **Windows systems** to allow deep integr
 ## Copyrights
 - Banner Image by **https://unsplash.com/de/fotos/lila-und-weisse-abstrakte-malerei-2CDRjyQw8aQ**
 - WPF-UI by **https://wpfui.lepo.co**
+
+## Issues?
+- If you have any issues, don't hesistate to open an issue or contact me via the provided info.
+
