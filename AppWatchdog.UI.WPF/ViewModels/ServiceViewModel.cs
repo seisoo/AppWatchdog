@@ -1,5 +1,6 @@
 ﻿using AppWatchdog.Shared;
 using AppWatchdog.UI.WPF.Common;
+using AppWatchdog.UI.WPF.Localization;
 using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -63,7 +64,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
         _svc = svc;
         _backend = backend;
 
-        IsAdminText = IsAdmin() ? "Ja" : "Nein";
+        IsAdminText = IsAdmin() ? AppStrings.yes : AppStrings.no;
 
         _snapshotTimer = new DispatcherTimer
         {
@@ -119,8 +120,8 @@ public partial class ServiceViewModel : DirtyViewModelBase
         {
             if (!IsServiceRunning())
             {
-                _backend.SetOffline("Service ist gestoppt");
-                StatusLine = "Service ist gestoppt";
+                _backend.SetOffline(AppStrings.service_stopped);
+                StatusLine = AppStrings.service_stopped;
                 return;   
             }
 
@@ -131,12 +132,12 @@ public partial class ServiceViewModel : DirtyViewModelBase
             }
             catch (Exception ex)
             {
-                _backend.SetOffline($"Pipe nicht erreichbar ({ex.Message})");
-                StatusLine = $"Pipe nicht erreichbar ({ex.Message})";
+                _backend.SetOffline(string.Format(AppStrings.pipe_not_available_ex, ex.Message));
+                StatusLine = string.Format(AppStrings.pipe_not_available_ex, ex.Message);
                 return;
             }
 
-            _backend.SetReady("Service verbunden");
+            _backend.SetReady(AppStrings.service_connected);
 
             StatusLine =
                 $"Snapshot: {snap.Timestamp:HH:mm:ss} | Session: {snap.SessionState}";
@@ -157,7 +158,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
         OsVersion = sys.OsVersion;
         DotNetVersion = sys.DotNetVersion;
         Uptime = sys.Uptime.ToString(@"dd\.hh\:mm\:ss");
-        MemoryInfo = $"{sys.AvailableMemoryMb:n0} MB frei / {sys.TotalMemoryMb:n0} MB gesamt";
+        MemoryInfo = string.Format(AppStrings.service_system_info_memory, sys.AvailableMemoryMb, sys.TotalMemoryMb);
         ClientProtocolVersion = $"V. {PipeProtocol.ProtocolVersion}";
         ServiceProtocolVersion = $"V. {sys.PipeProtocol}";
         Username = sys.UserName;
@@ -197,25 +198,25 @@ public partial class ServiceViewModel : DirtyViewModelBase
     private async Task StartService()
        => await RunServiceActionAsync(
             () => _svc.StartService(),
-            "Erfolgreich Dienst gestartet");
+            AppStrings.service_succesfully_started);
 
     [RelayCommand]
     private async Task StopService()
         => await RunServiceActionAsync(
             () => _svc.StopService(),
-            "Erfolgreich Dienst gestoppt");
+            AppStrings.service_succesfully_stopped);
 
     [RelayCommand]
     private async Task InstallService()
         => await RunServiceActionAsync(
             () => _svc.InstallServiceFromLocalExe(),
-            "Erfolgreich Dienst installiert");
+            AppStrings.service_succesfully_installed);
 
     [RelayCommand]
     private async Task UninstallService()
         => await RunServiceActionAsync(
             () => _svc.UninstallService(),
-            "Erfolgreich Dienst deinstalliert");
+            AppStrings.service_succesfully_uninstalled);
 
     private async Task ForceBackendRecheckAsync()
     {
@@ -291,7 +292,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
                 await _dialogService.ShowSimpleDialogAsync(
                     new SimpleContentDialogCreateOptions
                     {
-                        Title = "Service-Fehler",
+                        Title = AppStrings.service_error,
                         Content = ex.Message,
                         CloseButtonText = "OK"
                     },

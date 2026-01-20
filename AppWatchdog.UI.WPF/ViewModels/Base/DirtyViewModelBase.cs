@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using AppWatchdog.UI.WPF.Localization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Diagnostics;
@@ -19,7 +20,7 @@ public abstract partial class DirtyViewModelBase : ObservableObject
         }
     }
 
-    private string _saveStateText = "Konfig nicht gespeichert.";
+    private string _saveStateText = AppStrings.config_not_saved;
     public string SaveStateText
     {
         get => _saveStateText;
@@ -40,13 +41,13 @@ public abstract partial class DirtyViewModelBase : ObservableObject
             return;
 
         IsDirty = true;
-        SaveStateText = "Konfig nicht gespeichert.";
+        SaveStateText = AppStrings.config_not_saved;
     }
 
     public void ClearDirty()
     {
         IsDirty = false;
-        SaveStateText = "Konfig gespeichert.";
+        SaveStateText = AppStrings.config_saved;
     }
 
     /// <summary>

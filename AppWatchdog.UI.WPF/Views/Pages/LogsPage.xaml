@@ -12,7 +12,7 @@
 
             <ui:Card
                 Height="154"
-                Margin="0,0,0,12"
+                Margin="0,0,0,16"
                 Padding="0">
                 <Grid>
 
@@ -46,7 +46,7 @@
             </ui:Card>
 
 
-            <ui:Card Margin="0,0,0,12" Padding="16">
+            <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
 
                     <TextBlock
@@ -79,6 +79,12 @@
                             Content="Auto-Refresh"
                             IsChecked="{Binding AutoRefreshEnabled}" />
 
+                        <ui:Button
+                            HorizontalAlignment="Right"
+                            Appearance="Secondary"
+                            Command="{Binding OpenConfigFolderCommand}">
+                            Log Ordner öffnen
+                        </ui:Button>
 
                     </WrapPanel>
                     <TextBlock

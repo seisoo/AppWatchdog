@@ -13,7 +13,10 @@ public partial class NotificationsPage : Page
         InitializeComponent();
         _vm = vm;
         DataContext = vm;
+
+        Loaded += OnLoaded;
     }
+
 
     private void SmtpPasswordChanged(object sender, RoutedEventArgs e)
     {
@@ -26,4 +29,12 @@ public partial class NotificationsPage : Page
         _vm.NtfyToken = ((PasswordBox)sender).Password;
         _vm.MarkDirty();
     }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        // 🔓 entschlüsselten Klartext explizit in die PasswordBox schreiben
+        SmtpPasswordBox.Password = _vm.SmtpPassword ?? string.Empty;
+        NtfyTokenBox.Password = _vm.NtfyToken ?? string.Empty;
+    }
+
 }

@@ -31,6 +31,9 @@ public static class PipeClient
     public static LogDaysResponse ListLogDays()
         => SendRequestNoPayload<LogDaysResponse>(PipeProtocol.CmdListLogDays);
 
+    public static LogPathResponse GetLogPath()
+        => SendRequestNoPayload<LogPathResponse>(PipeProtocol.CmdGetLogPath);
+
     public static LogDayResponse GetLogDay(string day)
         => SendRequestWithPayload<LogDayResponse>(PipeProtocol.CmdGetLogDay, new LogDayRequest { Day = day });
 

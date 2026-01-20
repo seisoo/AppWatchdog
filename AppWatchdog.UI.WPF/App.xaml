@@ -7,8 +7,6 @@
     ShutdownMode="OnMainWindowClose">
 
     <Application.Resources>
-
-
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
@@ -24,11 +22,6 @@
 
             <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#8B5CF6" />
 
-            <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
-
-            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
-
         </ResourceDictionary>
     </Application.Resources>
-
 </Application>

@@ -5,7 +5,7 @@ namespace AppWatchdog.Shared;
 
 public static class PipeProtocol
 {
-    public const int ProtocolVersion = 13;
+    public const int ProtocolVersion = 16;
 
     public const string PipeName = "AppWatchdogPipe";
 
@@ -21,6 +21,7 @@ public static class PipeProtocol
 
     public const string CmdTestSmtp = "TestSmtp";
     public const string CmdTestNtfy = "TestNtfy";
+    public const string CmdGetLogPath = "GetLogPath";
 
 
     public static readonly JsonSerializerOptions JsonOptions = new()

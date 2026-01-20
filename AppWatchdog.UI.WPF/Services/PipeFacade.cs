@@ -28,6 +28,9 @@ public sealed class PipeFacade
     public LogDayResponse GetLogDay(string day)
         => Execute(() => PipeClient.GetLogDay(day));
 
+    public LogPathResponse GetLogPath()
+        => Execute(() => PipeClient.GetLogPath());
+
     public void TestSmtp()
         => Execute(PipeClient.TestSmtp);
 

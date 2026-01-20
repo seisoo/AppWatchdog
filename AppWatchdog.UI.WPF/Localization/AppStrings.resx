@@ -1,0 +1,466 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="abort" xml:space="preserve">
+    <value>Abort</value>
+  </data>
+  <data name="about" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="about_contact_email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="about_contact_github" xml:space="preserve">
+    <value>GitHub</value>
+    <comment>test</comment>
+  </data>
+  <data name="about_contact_steam" xml:space="preserve">
+    <value>Steam</value>
+  </data>
+  <data name="about_external_assets" xml:space="preserve">
+    <value>Images &amp; external assets</value>
+  </data>
+  <data name="about_external_resources_title" xml:space="preserve">
+    <value>External libraries &amp; resources:</value>
+  </data>
+  <data name="about_external_wpfui" xml:space="preserve">
+    <value>WPF UI (Fluent Design Library)</value>
+  </data>
+  <data name="about_feature_mail_text" xml:space="preserve">
+    <value>Status changes and errors can be sent via email to stay informed even without an active user interface.</value>
+  </data>
+  <data name="about_feature_mail_title" xml:space="preserve">
+    <value>• Email notifications</value>
+  </data>
+  <data name="about_feature_ntfy_text" xml:space="preserve">
+    <value>ntfy allows sending push notifications to mobile devices or other clients to immediately inform about relevant events.</value>
+  </data>
+  <data name="about_feature_ntfy_title" xml:space="preserve">
+    <value>• ntfy (push notifications)</value>
+  </data>
+  <data name="about_feature_uptime_text" xml:space="preserve">
+    <value>Integration with Uptime Kuma allows embedding into existing monitoring dashboards and centralized monitoring of multiple systems.</value>
+  </data>
+  <data name="about_feature_uptime_title" xml:space="preserve">
+    <value>• Uptime Kuma</value>
+  </data>
+  <data name="about_section_contact_title" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="about_section_service_title" xml:space="preserve">
+    <value>Windows service</value>
+  </data>
+  <data name="about_service_description_1" xml:space="preserve">
+    <value>The actual monitoring is performed by a standalone Windows service that runs independently of the user interface in the background and regularly checks the status of the configured applications.</value>
+  </data>
+  <data name="about_service_description_2" xml:space="preserve">
+    <value>In addition to local status tracking, the service can actively report events. Various notification options are available for status changes or errors.</value>
+  </data>
+  <data name="about_version_label" xml:space="preserve">
+    <value>Application version:</value>
+  </data>
+  <data name="apps_add" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="apps_arguments" xml:space="preserve">
+    <value>Arguments (e.g. --version)</value>
+  </data>
+  <data name="apps_check_interval" xml:space="preserve">
+    <value>Check interval (minutes)</value>
+  </data>
+  <data name="apps_edit_job_description" xml:space="preserve">
+    <value>Please enter a new name for the watch job of this application.</value>
+  </data>
+  <data name="apps_edit_job_hint" xml:space="preserve">
+    <value>This name helps to identify the job in the global list.</value>
+  </data>
+  <data name="apps_edit_job_placeholder" xml:space="preserve">
+    <value>Job name</value>
+  </data>
+  <data name="apps_edit_job_title" xml:space="preserve">
+    <value>Edit job name</value>
+  </data>
+  <data name="apps_exe_path" xml:space="preserve">
+    <value>Path to EXE</value>
+  </data>
+  <data name="apps_general_monitoring" xml:space="preserve">
+    <value>General monitoring</value>
+  </data>
+  <data name="apps_hint_text" xml:space="preserve">
+    <value>Here, the applications monitored by the watchdog are configured.</value>
+  </data>
+  <data name="apps_kuma_base_url" xml:space="preserve">
+    <value>Base URL (e.g. https://url.com)</value>
+  </data>
+  <data name="apps_kuma_enable" xml:space="preserve">
+    <value>Enable Uptime Kuma</value>
+  </data>
+  <data name="apps_kuma_interval" xml:space="preserve">
+    <value>Ping interval (seconds)</value>
+  </data>
+  <data name="apps_kuma_token" xml:space="preserve">
+    <value>Push token</value>
+  </data>
+  <data name="apps_mail_interval" xml:space="preserve">
+    <value>Mail interval (hours)</value>
+  </data>
+  <data name="apps_monitoring_enable" xml:space="preserve">
+    <value>Enable monitoring</value>
+  </data>
+  <data name="apps_monitoring_title" xml:space="preserve">
+    <value>Monitoring</value>
+  </data>
+  <data name="apps_new_application" xml:space="preserve">
+    <value>New application</value>
+  </data>
+  <data name="apps_reload" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="apps_remove" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="apps_remove_application" xml:space="preserve">
+    <value>Remove application</value>
+  </data>
+  <data name="apps_remove_question" xml:space="preserve">
+    <value>Do you really want to delete the Watch-Job "{0}"?</value>
+  </data>
+  <data name="apps_rename_hint" xml:space="preserve">
+    <value>Double click to rename job.</value>
+  </data>
+  <data name="apps_select_exe" xml:space="preserve">
+    <value>Select EXE</value>
+  </data>
+  <data name="apps_select_executable" xml:space="preserve">
+    <value>Select executable</value>
+  </data>
+  <data name="apps_select_file_filter" xml:space="preserve">
+    <value>Executable (*.exe)|*.exe|All files (*.*)|*.*</value>
+  </data>
+  <data name="apps_settings_title" xml:space="preserve">
+    <value>Monitoring settings</value>
+  </data>
+  <data name="apps_title" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="apps_watched_apps_title" xml:space="preserve">
+    <value>Watched applications</value>
+  </data>
+  <data name="config_loaded" xml:space="preserve">
+    <value>Config loaded.</value>
+  </data>
+  <data name="config_not_saved" xml:space="preserve">
+    <value>Config not saved.</value>
+  </data>
+  <data name="config_saved" xml:space="preserve">
+    <value>Config saved.</value>
+  </data>
+  <data name="config_saving_failed" xml:space="preserve">
+    <value>Saving failed</value>
+  </data>
+  <data name="delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="logs_autorefresh_aktiv_text" xml:space="preserve">
+    <value>Auto-Refresh active ({0} s)</value>
+  </data>
+  <data name="logs_autorefresh_paused" xml:space="preserve">
+    <value>Auto-Refresh paused</value>
+  </data>
+  <data name="logs_error_while_loading" xml:space="preserve">
+    <value>Error while loading the log.</value>
+  </data>
+  <data name="logs_last_update_text" xml:space="preserve">
+    <value>Log from {0} - last update {1}</value>
+  </data>
+  <data name="logs_loaded_text" xml:space="preserve">
+    <value>Logs loaded ({0})</value>
+  </data>
+  <data name="logs_loading" xml:space="preserve">
+    <value>Logs loading...</value>
+  </data>
+  <data name="logs_no_logs_found" xml:space="preserve">
+    <value>No logs found.</value>
+  </data>
+  <data name="no" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="notifications_description" xml:space="preserve">
+    <value>Configure notification channels for AppWatchdog. SMTP is used for email notifications, NTFY for push notifications.</value>
+  </data>
+  <data name="notifications_header" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="notifications_title" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="notific_ntfy_base_url" xml:space="preserve">
+    <value>Base URL</value>
+  </data>
+  <data name="notific_ntfy_enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="notific_ntfy_priority" xml:space="preserve">
+    <value>Priority (1–5)</value>
+  </data>
+  <data name="notific_ntfy_successful" xml:space="preserve">
+    <value>NTFY-Test successful</value>
+  </data>
+  <data name="notific_ntfy_test" xml:space="preserve">
+    <value>NTFY-Test</value>
+  </data>
+  <data name="notific_ntfy_test_failed" xml:space="preserve">
+    <value>NTFY-Test failed</value>
+  </data>
+  <data name="notific_ntfy_test_success_finish" xml:space="preserve">
+    <value>NTFY-Test successfully finished.</value>
+  </data>
+  <data name="notific_ntfy_title" xml:space="preserve">
+    <value>NTFY</value>
+  </data>
+  <data name="notific_ntfy_token" xml:space="preserve">
+    <value>NTFY token</value>
+  </data>
+  <data name="notific_ntfy_topic" xml:space="preserve">
+    <value>Topic</value>
+  </data>
+  <data name="notific_smtp_from" xml:space="preserve">
+    <value>Sender (From)</value>
+  </data>
+  <data name="notific_smtp_password" xml:space="preserve">
+    <value>SMTP password</value>
+  </data>
+  <data name="notific_smtp_port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="notific_smtp_server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="notific_smtp_ssl" xml:space="preserve">
+    <value>Enable SSL</value>
+  </data>
+  <data name="notific_smtp_test" xml:space="preserve">
+    <value>SMTP-Test</value>
+  </data>
+  <data name="notific_smtp_test_failed" xml:space="preserve">
+    <value>SMTP-Test failed</value>
+  </data>
+  <data name="notific_smtp_test_success" xml:space="preserve">
+    <value>SMTP-Test successful</value>
+  </data>
+  <data name="notific_smtp_test_success_finish" xml:space="preserve">
+    <value>SMTP-Test successfully completed.</value>
+  </data>
+  <data name="notific_smtp_title" xml:space="preserve">
+    <value>E-Mail</value>
+  </data>
+  <data name="notific_smtp_to" xml:space="preserve">
+    <value>Recipient (To)</value>
+  </data>
+  <data name="notific_smtp_user" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="pipe_not_available_ex" xml:space="preserve">
+    <value>Pipe is not available ({0})</value>
+  </data>
+  <data name="save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="service_active_apps_title" xml:space="preserve">
+    <value>Active applications</value>
+  </data>
+  <data name="service_app_active" xml:space="preserve">
+    <value>Active: {0}</value>
+  </data>
+  <data name="service_button_install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="service_button_start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="service_button_stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="service_button_uninstall" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="service_connected" xml:space="preserve">
+    <value>Service connected</value>
+  </data>
+  <data name="service_description" xml:space="preserve">
+    <value>Status, system information and currently monitored applications of the AppWatchdog service.</value>
+  </data>
+  <data name="service_dotnet" xml:space="preserve">
+    <value>.NET version:</value>
+  </data>
+  <data name="service_error" xml:space="preserve">
+    <value>Service error</value>
+  </data>
+  <data name="service_machine_name" xml:space="preserve">
+    <value>Machine name:</value>
+  </data>
+  <data name="service_memory" xml:space="preserve">
+    <value>Memory:</value>
+  </data>
+  <data name="service_no_active_apps" xml:space="preserve">
+    <value>No active applications.</value>
+  </data>
+  <data name="service_os" xml:space="preserve">
+    <value>Operating system:</value>
+  </data>
+  <data name="service_pipe_client" xml:space="preserve">
+    <value>PipeProtocol (Client):</value>
+  </data>
+  <data name="service_pipe_service" xml:space="preserve">
+    <value>PipeProtocol (Service):</value>
+  </data>
+  <data name="service_stopped" xml:space="preserve">
+    <value>Service stopped</value>
+  </data>
+  <data name="service_succesfully_installed" xml:space="preserve">
+    <value>Service successfully installed</value>
+  </data>
+  <data name="service_succesfully_started" xml:space="preserve">
+    <value>Service successfully started</value>
+  </data>
+  <data name="service_succesfully_stopped" xml:space="preserve">
+    <value>Service successfully stopped</value>
+  </data>
+  <data name="service_succesfully_uninstalled" xml:space="preserve">
+    <value>Service successfully uninstalled</value>
+  </data>
+  <data name="service_systeminfo_title" xml:space="preserve">
+    <value>System information</value>
+  </data>
+  <data name="service_system_info_memory" xml:space="preserve">
+    <value>{0} MB free / {1} MB total</value>
+  </data>
+  <data name="service_title" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="service_uptime" xml:space="preserve">
+    <value>Service uptime:</value>
+  </data>
+  <data name="service_username" xml:space="preserve">
+    <value>Username:</value>
+  </data>
+  <data name="yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+</root>

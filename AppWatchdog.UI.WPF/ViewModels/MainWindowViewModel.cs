@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
+using AppWatchdog.UI.WPF.Localization;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -56,8 +57,8 @@ public partial class MainWindowViewModel : ObservableObject
             new NavigationViewItem { Content = "Logs",    Icon = new SymbolIcon { Symbol = SymbolRegular.DocumentText24 }, TargetPageType = typeof(Views.Pages.LogsPage) },
         };
 
-        var about = new NavigationViewItem { Content = "Über", Icon = new SymbolIcon { Symbol = SymbolRegular.Info24 }, TargetPageType = typeof(Views.Pages.ServicePage) };
-        about.Tag = "about";
+        var about = new NavigationViewItem { Content = AppStrings.about, Icon = new SymbolIcon { Symbol = SymbolRegular.Info24 }, TargetPageType = typeof(Views.Pages.ServicePage) };
+        about.Tag = AppStrings.about;
 
         FooterMenuItems = new ObservableCollection<object> { about };
     }
