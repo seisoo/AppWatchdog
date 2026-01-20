@@ -12,8 +12,6 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<PublishTrimmed>false</PublishTrimmed>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-		<FileVersion>2.0.0.5</FileVersion>
-		<AssemblyVersion>2.0.0.5</AssemblyVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

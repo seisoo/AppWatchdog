@@ -4,8 +4,6 @@
     <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
-    <FileVersion>2.0.1.6</FileVersion>
-    <AssemblyVersion>2.0.1.6</AssemblyVersion>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
