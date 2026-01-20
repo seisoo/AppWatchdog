@@ -110,18 +110,31 @@ jobs:
               -Force
           }
 
-      # =========================
-      # 🚀 GITHUB RELEASE
-      # =========================
+      - name: Generate changelog
+        shell: powershell
+        run: |
+          git fetch --tags
+      
+          $prevTag = git tag --sort=-creatordate | Select-Object -Skip 1 -First 1
+          if (-not $prevTag) {
+            $log = git log --pretty=format:"- %s"
+          } else {
+            $log = git log "$prevTag..HEAD" --pretty=format:"- %s"
+          }
+      
+          $log | Out-File changelog.txt -Encoding utf8
+
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
           name: AppWatchdog ${{ env.TAG }}
-          generate_release_notes: true
+          body_path: changelog.txt
+          replace_existing_tag: true
           files: |
             AppWatchdog_${{ env.TAG }}_win-x64.zip
             AppWatchdog_${{ env.TAG }}_win-x86.zip
             AppWatchdog_${{ env.TAG }}_win-arm64.zip
-          replace_existing_tag: true
+
 
