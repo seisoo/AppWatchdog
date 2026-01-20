@@ -2,9 +2,6 @@ name: Publish & Release (Windows)
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
 
 permissions:
   contents: write
@@ -14,88 +11,69 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1️⃣ Checkout
+      # 1️⃣ Checkout (FULL history required for tagging)
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2️⃣ Setup .NET
-      #- name: Setup .NET
-      #  uses: actions/setup-dotnet@v4
-      #  with:
-      #    dotnet-version: "8.0.x"
+      # 2️⃣ Read version from project
+      - name: Read project version
+        id: version
+        shell: powershell
+        run: |
+          [xml]$props = Get-Content Directory.Build.props
+          $version = $props.Project.PropertyGroup.Version
+          if (-not $version) {
+            Write-Error "Version not found in Directory.Build.props"
+            exit 1
+          }
 
-      # 3️⃣ Restore
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+          echo "TAG=v$version" >> $env:GITHUB_ENV
+
+      # 3️⃣ Ensure tag does NOT already exist
+      - name: Check tag does not exist
+        shell: powershell
+        run: |
+          git fetch --tags
+          if (git tag -l "${{ env.TAG }}") {
+            Write-Error "Tag ${{ env.TAG }} already exists"
+            exit 1
+          }
+
+      # 4️⃣ Create and push tag
+      - name: Create Git tag
+        shell: powershell
+        run: |
+          git tag "${{ env.TAG }}"
+          git push origin "${{ env.TAG }}"
+
+      # 5️⃣ Restore
       - name: Restore
         run: dotnet restore AppWatchdog.sln
 
       # =========================
-      # 🔹 BUILD: win-x64
+      # 🔹 BUILD ALL TARGETS
       # =========================
-      - name: Publish Service (win-x64)
-        run: >
-          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Publish Service + UI (all RIDs)
+        shell: powershell
+        run: |
+          $targets = @("win-x64", "win-x86", "win-arm64")
 
-      - name: Publish UI (win-x64)
-        run: >
-          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
-          -c Release
-          -r win-x64
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
+          foreach ($t in $targets) {
+            dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj `
+              -c Release -r $t --self-contained true `
+              /p:PublishSingleFile=true `
+              /p:PublishTrimmed=false `
+              /p:IncludeNativeLibrariesForSelfExtract=true
 
-      # =========================
-      # 🔹 BUILD: win-x86
-      # =========================
-      - name: Publish Service (win-x86)
-        run: >
-          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
-          -c Release
-          -r win-x86
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
-
-      - name: Publish UI (win-x86)
-        run: >
-          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
-          -c Release
-          -r win-x86
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
-
-      # =========================
-      # 🔹 BUILD: win-arm64
-      # =========================
-      - name: Publish Service (win-arm64)
-        run: >
-          dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj
-          -c Release
-          -r win-arm64
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
-
-      - name: Publish UI (win-arm64)
-        run: >
-          dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj
-          -c Release
-          -r win-arm64
-          --self-contained true
-          /p:PublishSingleFile=true
-          /p:PublishTrimmed=false
-          /p:IncludeNativeLibrariesForSelfExtract=true
+            dotnet publish AppWatchdog.UI.WPF/AppWatchdog.UI.WPF.csproj `
+              -c Release -r $t --self-contained true `
+              /p:PublishSingleFile=true `
+              /p:PublishTrimmed=false `
+              /p:IncludeNativeLibrariesForSelfExtract=true
+          }
 
       # =========================
       # 📦 COLLECT + ZIP
@@ -119,7 +97,7 @@ jobs:
 
             Compress-Archive `
               -Path "$outDir\*" `
-              -DestinationPath "AppWatchdog_${{ github.ref_name }}_$t.zip" `
+              -DestinationPath "AppWatchdog_${{ env.TAG }}_$t.zip" `
               -Force
           }
 
@@ -129,26 +107,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: AppWatchdog Release
-          tag_name: ${{ github.ref_name }}
-          body: |
-            ## ## AppWatchdog ${{ github.ref_name }}
-
-            **Windows – Self-contained Builds**
-            
-            Each package contains:
-            - AppWatchdog.Service.exe
-            - AppWatchdog.UI.WPF.exe
-            
-            Platforms:
-            - win-x64
-            - win-x86
-            - win-arm64
-            
-            No additional .NET runtime is required.
-            uwu
-            
+          tag_name: ${{ env.TAG }}
+          name: AppWatchdog ${{ env.TAG }}
+          generate_release_notes: true
           files: |
-            AppWatchdog_${{ github.ref_name }}_win-x64.zip
-            AppWatchdog_${{ github.ref_name }}_win-x86.zip
-            AppWatchdog_${{ github.ref_name }}_win-arm64.zip
+            AppWatchdog_${{ env.TAG }}_win-x64.zip
+            AppWatchdog_${{ env.TAG }}_win-x86.zip
+            AppWatchdog_${{ env.TAG }}_win-arm64.zip
