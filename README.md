@@ -24,7 +24,7 @@ Additional features include notifications, logging, and basic self-healing capab
 - 🔔 **Notifications**
   - SMTP (email)
   - ntfy
-  - Optional: Uptime Kuma push monitoring
+  - Optional: Uptime Kuma push monitoring (heartbeat)
 - 📜 **Logging**
   - Structured log files
   - Integrated log viewer in the UI
