@@ -1,14 +1,17 @@
 ﻿using AppWatchdog.Shared;
 using AppWatchdog.UI.WPF.Common;
 using AppWatchdog.UI.WPF.Dialogs;
+using AppWatchdog.UI.WPF.Localization;
 using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -56,7 +59,7 @@ public partial class AppsViewModel : DirtyViewModelBase
     private bool _activated;
 
 
-    public string HintText => "Hier werden die vom Watchdog überwachten Anwendungen konfiguriert.";
+    public string HintText => AppStrings.apps_hint_text;
 
 
     public AppsViewModel(
@@ -139,7 +142,7 @@ public partial class AppsViewModel : DirtyViewModelBase
     {
         var vm = new WatchedAppItemViewModel(MarkDirty)
         {
-            Name = "Neue Anwendung",
+            Name = AppStrings.apps_new_application,
             Enabled = true
         };
 
@@ -147,7 +150,7 @@ public partial class AppsViewModel : DirtyViewModelBase
         SelectedApp = vm;
 
         IsDirty = true;
-        SaveStateText = "Konfig nicht gespeichert.";
+        SaveStateText = AppStrings.config_not_saved;
     }
 
 
@@ -158,10 +161,10 @@ public partial class AppsViewModel : DirtyViewModelBase
             return;
 
         var confirm = await _dialog.ShowConfirmAsync(
-            title: "Anwendung entfernen",
-            message: $"Möchtest du den Watch-Job „{SelectedApp.Name}“ wirklich löschen?",
-            confirmText: "Löschen",
-            cancelText: "Abbrechen");
+            title: AppStrings.apps_remove_application,
+            message: string.Format(AppStrings.apps_remove_question, SelectedApp.Name),
+            confirmText: AppStrings.delete,
+            cancelText: AppStrings.abort);
 
         if (!confirm)
             return;
@@ -170,8 +173,11 @@ public partial class AppsViewModel : DirtyViewModelBase
         SelectedApp = null;
 
         IsDirty = true;
-        SaveStateText = "Konfig nicht gespeichert.";
+        SaveStateText = AppStrings.config_not_saved;
     }
+
+    
+
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void Save()
@@ -196,7 +202,7 @@ public partial class AppsViewModel : DirtyViewModelBase
         {
             MessageBox.Show(
                 ex.Message,
-                "Speichern fehlgeschlagen",
+                AppStrings.config_saving_failed,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }

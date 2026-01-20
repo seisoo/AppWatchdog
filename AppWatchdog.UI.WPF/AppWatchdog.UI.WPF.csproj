@@ -12,9 +12,10 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <CopyServiceExe>false</CopyServiceExe>
 		<ApplicationIcon>Images\ico.ico</ApplicationIcon>
+  <GenerateResourceDesignerPublicClass>true</GenerateResourceDesignerPublicClass>
   </PropertyGroup>
 
-	<ItemGroup>
+  <ItemGroup>
 	  <None Remove="Images\banner5.png" />
 	  <None Remove="Images\ico.png" />
 	  <None Remove="Images\uac.png" />
@@ -44,9 +45,26 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Localization\AppStrings.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>AppStrings.resx</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Pages\AboutPage.xaml.cs">
 	    <SubType>Code</SubType>
 	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="Localization\AppStrings.de.resx">
+      <Generator></Generator>
+	    <CustomToolNamespace>AppWatchdog.UI.WPF.Localization</CustomToolNamespace>
+	  </EmbeddedResource>
+	  <EmbeddedResource Update="Localization\AppStrings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+	    <CustomToolNamespace>AppWatchdog.UI.WPF.Localization</CustomToolNamespace>
+	    <LastGenOutput>AppStrings.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 	<Target Name="CopyServiceExe" AfterTargets="Build">

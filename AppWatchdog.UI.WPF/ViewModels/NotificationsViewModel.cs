@@ -8,6 +8,7 @@ using Wpf.Ui;
 using Wpf.Ui.Controls;
 using AppWatchdog.UI.WPF.Common;
 using System.Threading.Tasks;
+using AppWatchdog.UI.WPF.Localization;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -135,7 +136,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         NtfyToken = cfg.Ntfy.Token;
         NtfyPriorityText = cfg.Ntfy.Priority;
 
-        SaveStateText = "Konfig geladen.";
+        SaveStateText = AppStrings.config_loaded;
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -175,18 +176,18 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         try
         {
             _pipe.TestSmtp();
-            SaveStateText = "SMTP-Test erfolgreich";
+            SaveStateText = AppStrings.notific_smtp_test_success;
 
             await UiDialogHelper.ShowInfoAsync(
                 _dialogService,
-                "SMTP-Test",
-                "SMTP-Test erfolgreich abgeschlossen.",
+                AppStrings.notific_smtp_test,
+                AppStrings.notific_smtp_test_success_finish,
                 SymbolRegular.CheckmarkCircle24
             );
         }
         catch (Exception)
         {
-            SaveStateText = "SMTP-Test fehlgeschlagen";
+            SaveStateText = AppStrings.notific_smtp_test_failed;
             throw;
         }
     }
@@ -198,18 +199,18 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         try
         {
             _pipe.TestNtfy();
-            SaveStateText = "NTFY-Test erfolgreich";
+            SaveStateText = AppStrings.notific_ntfy_successful;
 
             await UiDialogHelper.ShowInfoAsync(
                 _dialogService,
-                "NTFY-Test",
-                "NTFY-Test erfolgreich abgeschlossen.",
+                AppStrings.notific_ntfy_test,
+                AppStrings.notific_ntfy_test_success_finish,
                 SymbolRegular.CheckmarkCircle24
             );
         }
         catch
         {
-            SaveStateText = "NTFY-Test fehlgeschlagen";
+            SaveStateText = AppStrings.notific_ntfy_test_failed;
             throw;
         }
     }

@@ -3,20 +3,18 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    mc:Ignorable="d">
+    xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <Grid>
         <StackPanel Margin="16">
 
+            <!--  Header  -->
             <ui:Card
                 Height="154"
-                Margin="0,0,0,12"
+                Margin="0,0,0,16"
                 Padding="0">
                 <Grid>
-
                     <Image Source="pack://application:,,,/Images/banner5.png" Stretch="UniformToFill" />
 
                     <Rectangle>
@@ -35,82 +33,70 @@
                             Foreground="White"
                             Text="AppWatchdog" />
 
-                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,12,0"
-                                Foreground="#E5E7EB"
-                                Text="天網恢恢、疎にして漏らさず" />
-                        </StackPanel>
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            Foreground="#E5E7EB"
+                            Text="天網恢恢、疎にして漏らさず" />
                     </StackPanel>
-
                 </Grid>
             </ui:Card>
 
+            <!--  Service Control  -->
+            <ui:Card Margin="0,0,0,16">
+                <StackPanel>
 
-
-
-            <ui:Card Margin="0,0,0,12">
-
-                <StackPanel Margin="0,0,0,0">
                     <TextBlock
-                        Margin="0,0,0,4"
                         FontSize="24"
                         FontWeight="SemiBold"
                         Foreground="White"
-                        Text="Service" />
+                        Text="{x:Static loc:AppStrings.service_title}" />
 
                     <TextBlock
                         Foreground="#E5E7EB"
-                        Text="Status, Systeminformationen und aktuell überwachte Anwendungen des AppWatchdog-Dienstes."
+                        Text="{x:Static loc:AppStrings.service_description}"
                         TextWrapping="Wrap" />
 
-
                     <WrapPanel Margin="0,20,0,10">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:Button
-                                Margin="0,0,8,0"
-                                Appearance="Primary"
-                                Command="{Binding StartServiceCommand}"
-                                Content="Starten"
-                                Icon="{ui:ImageIcon /Images/uac.png}" />
+                        <ui:Button
+                            Margin="0,0,5,0"
+                            Appearance="Primary"
+                            Command="{Binding StartServiceCommand}"
+                            Content="{x:Static loc:AppStrings.service_button_start}" />
 
-                            <ui:Button
-                                Margin="0,0,8,0"
-                                Appearance="Danger"
-                                Command="{Binding StopServiceCommand}"
-                                Content="Stoppen"
-                                Icon="{ui:ImageIcon /Images/uac.png}" />
+                        <ui:Button
+                            Margin="0,0,5,0"
+                            Appearance="Danger"
+                            Command="{Binding StopServiceCommand}"
+                            Content="{x:Static loc:AppStrings.service_button_stop}" />
 
-                            <ui:Button
-                                Margin="0,0,8,0"
-                                Appearance="Caution"
-                                Command="{Binding InstallServiceCommand}"
-                                Content="Installieren"
-                                Icon="{ui:ImageIcon /Images/uac.png}" />
+                        <ui:Button
+                            Margin="0,0,5,0"
+                            Appearance="Caution"
+                            Command="{Binding InstallServiceCommand}"
+                            Content="{x:Static loc:AppStrings.service_button_install}" />
 
-                            <ui:Button
-                                Appearance="Secondary"
-                                Command="{Binding UninstallServiceCommand}"
-                                Content="Deinstallieren"
-                                Icon="{ui:ImageIcon /Images/uac.png}" />
-                        </StackPanel>
+                        <ui:Button
+                            Margin="0,0,5,0"
+                            Appearance="Secondary"
+                            Command="{Binding UninstallServiceCommand}"
+                            Content="{x:Static loc:AppStrings.service_button_uninstall}" />
                     </WrapPanel>
 
                     <TextBlock Text="{Binding StatusLine}" />
                 </StackPanel>
             </ui:Card>
 
-
-            <Grid Grid.Row="2">
+            <!--  System Info  -->
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+
                 <ui:Card
                     Grid.Column="0"
-                    Margin="0,0,14,14"
+                    Margin="0,0,16,16"
                     VerticalAlignment="Top">
-
                     <Grid Margin="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="240" />
@@ -127,153 +113,151 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock
                             Grid.Row="0"
-                            Grid.Column="0"
-                            Margin="0,0,0,12"
+                            Grid.ColumnSpan="2"
+                            Margin="0,0,0,8"
                             FontSize="18"
                             FontWeight="SemiBold"
                             Foreground="#E5E7EB"
-                            Text="Systeminformationen" />
+                            Text="{x:Static loc:AppStrings.service_systeminfo_title}" />
+
+                        <Separator
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Margin="0,5" />
 
                         <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="Username:" />
+                            Grid.Row="2"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_username}" />
                         <TextBlock
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding Username}" />
 
                         <TextBlock
-                            Grid.Row="2"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="Rechnername:" />
+                            Grid.Row="3"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_machine_name}" />
                         <TextBlock
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding MachineName}" />
 
                         <TextBlock
-                            Grid.Row="3"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="Betriebssystem:" />
+                            Grid.Row="4"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_os}" />
                         <TextBlock
-                            Grid.Row="3"
+                            Grid.Row="4"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding OsVersion}" />
 
                         <TextBlock
-                            Grid.Row="4"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text=".NET Version:" />
+                            Grid.Row="5"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_dotnet}" />
                         <TextBlock
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding DotNetVersion}" />
 
                         <TextBlock
-                            Grid.Row="5"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="Service-Uptime:" />
+                            Grid.Row="6"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_uptime}" />
                         <TextBlock
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding Uptime}" />
 
                         <TextBlock
-                            Grid.Row="6"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="Arbeitsspeicher:" />
+                            Grid.Row="7"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_memory}" />
                         <TextBlock
-                            Grid.Row="6"
+                            Grid.Row="7"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding MemoryInfo}" />
 
                         <TextBlock
-                            Grid.Row="7"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="PipeProtocol (Client):" />
+                            Grid.Row="8"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{x:Static loc:AppStrings.service_pipe_client}" />
                         <TextBlock
-                            Grid.Row="7"
+                            Grid.Row="8"
                             Grid.Column="1"
-                            Margin="0,0,0,6"
+                            Margin="12,0,0,8"
                             Text="{Binding ClientProtocolVersion}" />
-
-                        <TextBlock
-                            Grid.Row="8"
-                            Grid.Column="0"
-                            Margin="0,0,0,6"
-                            Text="PipeProtocol (Service):" />
-                        <TextBlock
-                            Grid.Row="8"
-                            Grid.Column="1"
-                            Margin="0,0,0,6"
-                            Text="{Binding ServiceProtocolVersion}" />
                     </Grid>
-
-
-
-
                 </ui:Card>
-
 
                 <ui:Card Grid.Column="1" VerticalAlignment="Top">
-                    <StackPanel Margin="16">
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Foreground="#E5E7EB"
-                            Text="Aktive Anwendungen" />
-                        <ItemsControl
-                            Height="540"
-                            VerticalContentAlignment="Top"
-                            ItemsSource="{Binding EnabledApps}"
-                            ScrollViewer.CanContentScroll="False"
-                            ScrollViewer.VerticalScrollBarVisibility="Visible">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <DockPanel Margin="0,0,0,8">
-                                        <TextBlock
-                                            DockPanel.Dock="Left"
-                                            FontWeight="SemiBold"
-                                            Text="{Binding Name}" />
+                    <Grid Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="510" />
+                        </Grid.RowDefinitions>
 
-                                        <TextBlock
-                                            Margin="12,0,0,0"
-                                            HorizontalAlignment="Right"
-                                            DockPanel.Dock="Right"
-                                            Text="{Binding IsRunning, StringFormat=Aktiv: {0}}" />
-                                    </DockPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <StackPanel Grid.Row="0">
+                            <TextBlock
+                                Margin="0,0,0,5"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="#E5E7EB"
+                                Text="{x:Static loc:AppStrings.service_active_apps_title}" />
+                            <Separator Margin="0,6" />
+                            <TextBlock
+                                Opacity="0.6"
+                                Text="{x:Static loc:AppStrings.service_no_active_apps}"
+                                Visibility="{Binding HasNoEnabledApps, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=False}" />
+                        </StackPanel>
 
-                        <TextBlock
-                            Margin="0,8,0,0"
-                            Opacity="0.6"
-                            Text="Keine aktiven Anwendungen."
-                            Visibility="{Binding HasNoEnabledApps, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=False}" />
+                        <ScrollViewer
+                            Grid.Row="1"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
 
-                    </StackPanel>
+                            <ItemsControl ItemsSource="{Binding EnabledApps}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock
+                                                DockPanel.Dock="Left"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Name}" />
+
+                                            <TextBlock
+                                                Margin="12,0,0,0"
+                                                DockPanel.Dock="Right"
+                                                Text="{Binding IsRunning, StringFormat={x:Static loc:AppStrings.service_app_active}}" />
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </ScrollViewer>
+
+                    </Grid>
                 </ui:Card>
+
+
             </Grid>
         </StackPanel>
     </Grid>

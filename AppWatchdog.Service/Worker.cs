@@ -877,6 +877,28 @@ public sealed class Worker : BackgroundService
                             };
                         }
                     }
+                case PipeProtocol.CmdGetLogPath:
+                    {
+                        try
+                        {
+                            var logPath = FileLogStore.LogDir;
+                            LogInfo($"Log-Path requested '{logPath}'");
+                            return new PipeProtocol.Response
+                            {
+                                Ok = true,
+                                PayloadJson = PipeProtocol.Serialize(new LogPathResponse { Path = logPath })
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError("Log path not resolved.", ex);
+                            return new PipeProtocol.Response
+                            {
+                                Ok = false,
+                                Error = ex.Message
+                            };
+                        }
+                    }
 
                 default:
                     return new PipeProtocol.Response { Ok = false, Error = "Unknown command" };

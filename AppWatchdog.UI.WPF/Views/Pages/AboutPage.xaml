@@ -3,13 +3,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
+    xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="Über">
+    Title="{x:Static loc:AppStrings.about}">
 
     <Grid>
         <StackPanel Margin="16" VerticalAlignment="Top">
-
 
             <ui:Card
                 Height="154"
@@ -22,8 +22,8 @@
                     <Rectangle>
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Offset="0.0" Color="#AA000000" />
-                                <GradientStop Offset="1.0" Color="#AA000000" />
+                                <GradientStop Offset="0" Color="#AA000000" />
+                                <GradientStop Offset="1" Color="#AA000000" />
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                     </Rectangle>
@@ -35,19 +35,14 @@
                             Foreground="White"
                             Text="AppWatchdog" />
 
-                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,12,0"
-                                Foreground="#E5E7EB"
-                                Text="天網恢恢、疎にして漏らさず" />
-                        </StackPanel>
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            Foreground="#E5E7EB"
+                            Text="天網恢恢、疎にして漏らさず" />
                     </StackPanel>
 
                 </Grid>
             </ui:Card>
-
-
-
 
             <ui:Card Padding="16">
                 <StackPanel>
@@ -56,80 +51,66 @@
                         Margin="0,0,0,8"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Text="Windows-Dienst" />
+                        Text="{x:Static loc:AppStrings.about_section_service_title}" />
 
-                    <TextBlock TextWrapping="Wrap">
-                        Die eigentliche Überwachung erfolgt durch einen eigenständigen Windows-Dienst,
-                        der unabhängig von der Benutzeroberfläche im Hintergrund arbeitet und den
-                        Zustand der konfigurierten Anwendungen regelmäßig überprüft.
-                    </TextBlock>
+                    <TextBlock Text="{x:Static loc:AppStrings.about_service_description_1}" TextWrapping="Wrap" />
 
-                    <TextBlock Margin="0,14,0,0" TextWrapping="Wrap">
-                        Neben der lokalen Statuserfassung kann der Dienst Ereignisse aktiv melden.
-                        Bei Zustandsänderungen oder Fehlern stehen verschiedene
-                        Benachrichtigungsmöglichkeiten zur Verfügung.
-                    </TextBlock>
-
+                    <TextBlock
+                        Margin="0,14,0,0"
+                        Text="{x:Static loc:AppStrings.about_service_description_2}"
+                        TextWrapping="Wrap" />
 
                     <StackPanel Margin="0,14,0,0">
 
+                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_mail_title}" />
 
-                        <TextBlock FontWeight="SemiBold" Text="• E-Mail-Benachrichtigungen" />
+                        <TextBlock
+                            Margin="12,2,0,12"
+                            Text="{x:Static loc:AppStrings.about_feature_mail_text}"
+                            TextWrapping="Wrap" />
 
-                        <TextBlock Margin="12,2,0,12" TextWrapping="Wrap">
-                            Statusänderungen und Fehler können per E-Mail versendet werden,
-                            um auch ohne aktive Benutzeroberfläche informiert zu bleiben.
-                        </TextBlock>
+                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_ntfy_title}" />
 
+                        <TextBlock
+                            Margin="12,2,0,12"
+                            Text="{x:Static loc:AppStrings.about_feature_ntfy_text}"
+                            TextWrapping="Wrap" />
 
-                        <TextBlock FontWeight="SemiBold" Text="• ntfy (Push-Benachrichtigungen)" />
+                        <TextBlock FontWeight="SemiBold" Text="{x:Static loc:AppStrings.about_feature_uptime_title}" />
 
-                        <TextBlock Margin="12,2,0,12" TextWrapping="Wrap">
-                            Über ntfy lassen sich Push-Nachrichten an mobile Geräte oder
-                            andere Clients senden, die sofort über relevante Ereignisse informieren.
-                        </TextBlock>
-
-
-                        <TextBlock FontWeight="SemiBold" Text="• Uptime Kuma" />
-
-                        <TextBlock Margin="12,2,0,0" TextWrapping="Wrap">
-                            Die Anbindung an Uptime Kuma ermöglicht die Einbindung in bestehende
-                            Monitoring-Dashboards und die zentrale Überwachung mehrerer Systeme.
-                        </TextBlock>
-
+                        <TextBlock
+                            Margin="12,2,0,0"
+                            Text="{x:Static loc:AppStrings.about_feature_uptime_text}"
+                            TextWrapping="Wrap" />
                     </StackPanel>
-
 
                     <Separator Margin="0,12" />
 
                     <ui:TextBlock
-                        Margin="0,0,0,8"
                         FontSize="16"
                         FontWeight="SemiBold"
-                        Text="Kontakt" />
-
+                        Text="{x:Static loc:AppStrings.about_section_contact_title}" />
 
                     <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                        <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.Mail}">
-                            <TextBlock Text="E-Mail" />
+                        <ui:Anchor Margin="0,0,5,0" NavigateUri="{x:Static common:AppLinks.Mail}">
+                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_email}" />
                         </ui:Anchor>
 
                         <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.GitHub}">
-                            <TextBlock Text="GitHub" />
+                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_github}" />
                         </ui:Anchor>
 
-                        <ui:Anchor NavigateUri="{x:Static common:AppLinks.Steam}">
-                            <TextBlock Text="Steam" />
+                        <ui:Anchor Margin="0,0,10,0" NavigateUri="{x:Static common:AppLinks.Steam}">
+                            <TextBlock Text="{x:Static loc:AppStrings.about_contact_steam}" />
                         </ui:Anchor>
                     </StackPanel>
 
                     <Separator Margin="0,12" />
 
-
-
                     <WrapPanel>
-                        <TextBlock Text="Programmversion: " />
-                        <TextBlock Text=" V.">
+                        <TextBlock Text="{x:Static loc:AppStrings.about_version_label}" />
+                        <TextBlock>
+                            <Run Text=" V." />
                             <Run Text="{x:Static common:AppInfo.Version}" />
                         </TextBlock>
                     </WrapPanel>
@@ -142,17 +123,17 @@
                         </TextBlock.Text>
                     </TextBlock>
 
+                    <TextBlock
+                        Margin="0,10,0,5"
+                        Opacity="0.85"
+                        Text="{x:Static loc:AppStrings.about_external_resources_title}" />
 
-                    <TextBlock Margin="0,10,0,0" Opacity="0.85">
-                        Externe Bibliotheken &amp; Ressourcen:
-                    </TextBlock>
-
-                    <ui:Anchor Margin="0,4,0,0" NavigateUri="{x:Static common:AppLinks.WpfUi}">
-                        <TextBlock Text="WPF UI (Fluent Design Library)" />
+                    <ui:Anchor Margin="0,0,0,5" NavigateUri="{x:Static common:AppLinks.WpfUi}">
+                        <TextBlock Text="{x:Static loc:AppStrings.about_external_wpfui}" />
                     </ui:Anchor>
 
-                    <ui:Anchor Margin="0,4,0,0" NavigateUri="{x:Static common:AppLinks.Unsplash}">
-                        <TextBlock Text="Bildmaterial &amp; externe Assets" />
+                    <ui:Anchor NavigateUri="{x:Static common:AppLinks.Unsplash}">
+                        <TextBlock Text="{x:Static loc:AppStrings.about_external_assets}" />
                     </ui:Anchor>
 
                 </StackPanel>

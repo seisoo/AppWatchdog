@@ -1,10 +1,14 @@
-﻿using AppWatchdog.UI.WPF.Services;
+﻿using AppWatchdog.Shared;
+using AppWatchdog.UI.WPF.Localization;
+using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels.Base;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -25,10 +29,10 @@ public partial class LogsViewModel : DirtyViewModelBase
 
     [ObservableProperty] private string? _selectedDay;
     [ObservableProperty] private string _logText = "";
-    [ObservableProperty] private string _header = "Logs werden geladen …";
+    [ObservableProperty] private string _header = AppStrings.logs_loading;
 
     [ObservableProperty] private bool _autoRefreshEnabled = true;
-    [ObservableProperty] private string _autoRefreshStatusText = "Auto-Refresh aktiv (5 s)";
+    [ObservableProperty] private string _autoRefreshStatusText = string.Format(AppStrings.logs_autorefresh_aktiv_text, 5);
 
     private const int RefreshSeconds = 5;
     private bool _activated;
@@ -70,7 +74,7 @@ public partial class LogsViewModel : DirtyViewModelBase
             var resp = await Task.Run(() => _pipe.GetLogDay(SelectedDay));
             await _dispatcher.InvokeAsync(() =>
             {
-                Header = $"Log vom {resp.Day} – letzte Aktualisierung {DateTime.Now:HH:mm:ss}";
+                Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
 
                 if (string.IsNullOrWhiteSpace(resp.Content))
                 {
@@ -90,7 +94,7 @@ public partial class LogsViewModel : DirtyViewModelBase
         {
             await _dispatcher.InvokeAsync(() =>
             {
-                Header = "Fehler beim Laden des Logs.";
+                Header = AppStrings.logs_error_while_loading;
                 LogText = ex.Message;
             });
         }
@@ -123,13 +127,13 @@ public partial class LogsViewModel : DirtyViewModelBase
 
                 if (Days.Count == 0)
                 {
-                    Header = "Keine Logs vorhanden.";
+                    Header = AppStrings.logs_no_logs_found;
                     return;
                 }
 
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
                 SelectedDay = Days.Contains(today) ? today : Days.First();
-                Header = $"Logs geladen ({DateTime.Now:HH:mm:ss})";
+                Header = string.Format(AppStrings.logs_loaded_text, DateTime.Now.ToString("HH:mm:ss")); ;
                 _timer.Start();
             });
         }
@@ -155,6 +159,19 @@ public partial class LogsViewModel : DirtyViewModelBase
     }
 
     [RelayCommand]
+    private void OpenConfigFolder()
+    {
+        var cfg = _pipe.GetLogPath();
+
+        Process.Start(new ProcessStartInfo()
+        {
+            FileName = $"{cfg.Path}",
+            UseShellExecute = true,
+            Verb = "open"
+        });
+    }
+
+    [RelayCommand]
     private void LoadSelected()
     {
         if (string.IsNullOrWhiteSpace(SelectedDay))
@@ -163,8 +180,7 @@ public partial class LogsViewModel : DirtyViewModelBase
         try
         {
             var resp = _pipe.GetLogDay(SelectedDay);
-
-            Header = $"Log vom {resp.Day} – letzte Aktualisierung {DateTime.Now:HH:mm:ss}";
+            Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
 
             if (string.IsNullOrWhiteSpace(resp.Content))
             {
@@ -183,7 +199,7 @@ public partial class LogsViewModel : DirtyViewModelBase
         }
         catch (Exception ex)
         {
-            Header = "Fehler beim Laden des Logs.";
+            Header = AppStrings.logs_error_while_loading;
             LogText = ex.Message;
         }
     }
@@ -192,7 +208,7 @@ public partial class LogsViewModel : DirtyViewModelBase
     partial void OnAutoRefreshEnabledChanged(bool value)
     {
         AutoRefreshStatusText = value
-            ? $"Auto-Refresh aktiv ({RefreshSeconds} s)"
-            : "Auto-Refresh pausiert";
+            ? string.Format(AppStrings.logs_autorefresh_aktiv_text, RefreshSeconds)
+            : AppStrings.logs_autorefresh_paused;
     }
 }

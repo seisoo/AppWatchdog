@@ -1,6 +1,10 @@
 ﻿using AppWatchdog.Shared;
+using AppWatchdog.UI.WPF.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using System;
+using System.IO;
 using System.Xml.Linq;
 
 public partial class WatchedAppItemViewModel : ObservableObject
@@ -79,4 +83,37 @@ public partial class WatchedAppItemViewModel : ObservableObject
                 : null
         };
     }
+
+    [RelayCommand]
+    private void BrowseExe()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = AppStrings.apps_select_executable,
+            Filter = AppStrings.apps_select_file_filter,
+            CheckFileExists = true,
+            CheckPathExists = true
+        };
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(ExePath))
+            {
+                var dir = Path.GetDirectoryName(ExePath);
+                if (!string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir))
+                    dlg.InitialDirectory = dir;
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        if (dlg.ShowDialog() == true)
+        {
+            ExePath = dlg.FileName;
+            _markDirty();
+        }
+    }
+
 }

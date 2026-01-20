@@ -79,6 +79,11 @@ public sealed class LogDayResponse
     public string Content { get; set; } = "";
 }
 
+public sealed class LogPathResponse
+{
+    public string Path { get; set; } = "";
+}
+
 public sealed class LogDayRequest
 {
     public string Day { get; set; } = ""; 
