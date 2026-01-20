@@ -227,7 +227,7 @@
                     <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="510" />
+                            <RowDefinition Height="495" />
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
