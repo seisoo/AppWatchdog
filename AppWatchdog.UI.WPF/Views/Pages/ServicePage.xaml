@@ -8,8 +8,6 @@
 
     <Grid>
         <StackPanel Margin="16">
-
-            <!--  Header  -->
             <ui:Card
                 Height="154"
                 Margin="0,0,0,16"
@@ -40,8 +38,6 @@
                     </StackPanel>
                 </Grid>
             </ui:Card>
-
-            <!--  Service Control  -->
             <ui:Card Margin="0,0,0,16">
                 <StackPanel>
 
@@ -85,8 +81,6 @@
                     <TextBlock Text="{Binding StatusLine}" />
                 </StackPanel>
             </ui:Card>
-
-            <!--  System Info  -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*" />

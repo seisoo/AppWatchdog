@@ -9,8 +9,6 @@
 
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16" VerticalAlignment="Top">
-
-            <!--  Header  -->
             <ui:Card
                 Height="154"
                 Margin="0,0,0,16"
@@ -41,8 +39,6 @@
                     </StackPanel>
                 </Grid>
             </ui:Card>
-
-            <!--  Header Content  -->
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
                     <TextBlock
@@ -85,8 +81,6 @@
                         Text="{Binding SaveStateText}" />
                 </StackPanel>
             </ui:Card>
-
-            <!--  SMTP  -->
             <ui:Card Margin="0,0,0,16" Padding="16">
                 <StackPanel>
 
@@ -188,8 +182,6 @@
                     </Grid>
                 </StackPanel>
             </ui:Card>
-
-            <!--  NTFY  -->
             <ui:Card Padding="16">
                 <StackPanel>
 
