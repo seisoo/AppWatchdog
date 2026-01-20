@@ -9,7 +9,6 @@
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16">
 
-            <!--  HEADER  -->
             <ui:Card
                 Height="154"
                 Margin="0,0,0,12"
@@ -45,7 +44,6 @@
                 </Grid>
             </ui:Card>
 
-            <!--  SETTINGS  -->
             <ui:Card Margin="0,0,0,16">
                 <StackPanel>
 
@@ -84,7 +82,6 @@
                 </StackPanel>
             </ui:Card>
 
-            <!--  GENERAL MONITORING  -->
             <ui:Card Margin="0,0,0,16">
                 <Grid Margin="12">
                     <Grid.ColumnDefinitions>
@@ -140,8 +137,6 @@
                         Value="{Binding MailIntervalHours, Mode=TwoWay}" />
                 </Grid>
             </ui:Card>
-
-            <!--  APPS + DETAILS  -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="280" />
@@ -149,7 +144,6 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!--  APP LIST  -->
                 <ui:Card Grid.Column="0">
                     <StackPanel>
 
@@ -201,7 +195,6 @@
                     </StackPanel>
                 </ui:Card>
 
-                <!--  DETAILS  -->
                 <ui:Card Grid.Column="2">
                     <ScrollViewer>
                         <StackPanel DataContext="{Binding SelectedApp}">
