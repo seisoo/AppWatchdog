@@ -73,7 +73,8 @@ Logs are stored locally.
 ---
 
 ## 🧭 Roadmap
-- ~~Multi-language UI~~ ✔️
+- ~~Multi-language UI~~ ✔️ (missing config)
+- ~~Encryption~~ ✔️
 - Service & website checks
 - Linux support?
 - Telegram & Discord notifications
