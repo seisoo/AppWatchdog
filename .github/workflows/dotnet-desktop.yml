@@ -19,37 +19,32 @@ jobs:
 
       # 2️⃣ Read version from project
       - name: Read project version
-        id: version
         shell: powershell
         run: |
           [xml]$props = Get-Content Directory.Build.props
           $version = $props.Project.PropertyGroup.Version
+
           if (-not $version) {
             Write-Error "Version not found in Directory.Build.props"
             exit 1
           }
 
-          echo "VERSION=$version" >> $env:GITHUB_ENV
-          echo "TAG=v$version" >> $env:GITHUB_ENV
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       # 3️⃣ Ensure tag does NOT already exist
       - name: Delete tag if it exists (local + remote)
         shell: powershell
         run: |
-            git fetch --tags
-        
-            if (git tag -l "${{ env.TAG }}") {
-              Write-Host "Tag ${{ env.TAG }} exists – deleting it"
-        
-              # delete local tag
-              git tag -d "${{ env.TAG }}"
-        
-              # delete remote tag
-              git push origin ":refs/tags/${{ env.TAG }}"
-            } else {
-              Write-Host "Tag ${{ env.TAG }} does not exist – creating new"
-            }
+          git fetch --tags
 
+          if (git tag -l "${{ env.TAG }}") {
+            Write-Host "Tag exists – deleting ${{ env.TAG }}"
+            git tag -d "${{ env.TAG }}"
+            git push origin ":refs/tags/${{ env.TAG }}"
+          } else {
+            Write-Host "Tag does not exist – creating new"
+          }
 
       # 4️⃣ Create and push tag
       - name: Create and push tag
@@ -87,6 +82,32 @@ jobs:
       # =========================
       # 📦 COLLECT + ZIP
       # =========================
+      - name: Collect Outputs + ZIPs
+        shell: powershell
+        run: |
+          $targets = @("win-x64", "win-x86", "win-arm64")
+
+          foreach ($t in $targets) {
+            $outDir = "release\$t"
+            New-Item -ItemType Directory -Force $outDir | Out-Null
+
+            Copy-Item `
+              "AppWatchdog.Service/bin/Release/net8.0-windows/$t/publish/AppWatchdog.Service.exe" `
+              $outDir -Force
+
+            Copy-Item `
+              "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$t/publish/AppWatchdog.UI.WPF.exe" `
+              $outDir -Force
+
+            Compress-Archive `
+              -Path "$outDir\*" `
+              -DestinationPath "AppWatchdog_${{ env.TAG }}_$t.zip" `
+              -Force
+          }
+
+      # =========================
+      # 📝 CHANGELOG (TAG → TAG)
+      # =========================
       - name: Generate changelog
         shell: powershell
         run: |
@@ -94,26 +115,30 @@ jobs:
 
           $currentTag = "${{ env.TAG }}"
 
-          # Get previous tag (exclude current)
           $prevTag = git tag --sort=-creatordate |
-                     Where-Object { $_ -ne $currentTag } |
-                     Select-Object -First 1
+            Where-Object { $_ -ne $currentTag } |
+            Select-Object -First 1
 
-          if (-not $prevTag) {
-            Write-Host "No previous tag found – using full history"
-            $log = git log "$currentTag" --pretty=format:"- %s"
-          } else {
-            Write-Host "Generating changelog from $prevTag to $currentTag"
+          if ($null -eq $prevTag) {
+            Write-Host "No previous tag found – first release"
+            $log = git log $currentTag --pretty=format:"- %s"
+          }
+          else {
+            Write-Host "Changelog from $prevTag to $currentTag"
             $log = git log "$prevTag..$currentTag" --pretty=format:"- %s"
           }
 
           if (-not $log) {
-            $log = "- No code changes"
+            $log = @(
+              "- No code changes"
+            )
           }
 
           $log | Out-File changelog.txt -Encoding utf8
 
-
+      # =========================
+      # 🚀 GITHUB RELEASE
+      # =========================
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -125,5 +150,3 @@ jobs:
             AppWatchdog_${{ env.TAG }}_win-x64.zip
             AppWatchdog_${{ env.TAG }}_win-x86.zip
             AppWatchdog_${{ env.TAG }}_win-arm64.zip
-
-
