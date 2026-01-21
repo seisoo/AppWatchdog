@@ -84,6 +84,12 @@ public static class ConfigStore
         cfg.Smtp.Password = EncryptIfNotEmpty(cfg.Smtp.Password);
         cfg.Ntfy.Token = EncryptIfNotEmpty(cfg.Ntfy.Token);
 
+        cfg.Discord.WebhookUrl =
+       EncryptIfNotEmpty(cfg.Discord.WebhookUrl);
+
+        cfg.Telegram.BotToken =
+            EncryptIfNotEmpty(cfg.Telegram.BotToken);
+
         foreach (var app in cfg.Apps)
         {
             if (app.UptimeKuma != null)
@@ -98,6 +104,12 @@ public static class ConfigStore
     {
         cfg.Smtp.Password = DecryptIfNotEmpty(cfg.Smtp.Password);
         cfg.Ntfy.Token = DecryptIfNotEmpty(cfg.Ntfy.Token);
+
+        cfg.Discord.WebhookUrl =
+      DecryptIfNotEmpty(cfg.Discord.WebhookUrl);
+
+        cfg.Telegram.BotToken =
+            DecryptIfNotEmpty(cfg.Telegram.BotToken);
 
         foreach (var app in cfg.Apps)
         {

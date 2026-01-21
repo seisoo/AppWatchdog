@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using AppWatchdog.Shared;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Helpers;
 
 public static class UserSessionLauncher
 {
@@ -26,7 +26,7 @@ public static class UserSessionLauncher
             if (!DuplicateTokenEx(
                     userToken,
                     TOKEN_ALL_ACCESS,
-                    IntPtr.Zero,
+                    nint.Zero,
                     SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                     TOKEN_TYPE.TokenPrimary,
                     out var primaryToken))
@@ -48,11 +48,11 @@ public static class UserSessionLauncher
                         primaryToken,
                         null,
                         cmdLine,
-                        IntPtr.Zero,
-                        IntPtr.Zero,
+                        nint.Zero,
+                        nint.Zero,
                         false,
                         CREATE_UNICODE_ENVIRONMENT,
-                        IntPtr.Zero,
+                        nint.Zero,
                         Path.GetDirectoryName(exePath) ?? Environment.SystemDirectory,
                         ref si,
                         out var pi))
@@ -91,15 +91,15 @@ public static class UserSessionLauncher
         public int dwFlags;
         public short wShowWindow;
         public short cbReserved2;
-        public IntPtr lpReserved2;
-        public IntPtr hStdInput, hStdOutput, hStdError;
+        public nint lpReserved2;
+        public nint hStdInput, hStdOutput, hStdError;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct PROCESS_INFORMATION
     {
-        public IntPtr hProcess;
-        public IntPtr hThread;
+        public nint hProcess;
+        public nint hThread;
         public int dwProcessId;
         public int dwThreadId;
     }
@@ -108,31 +108,31 @@ public static class UserSessionLauncher
     private static extern uint WTSGetActiveConsoleSessionId();
 
     [DllImport("wtsapi32.dll", SetLastError = true)]
-    private static extern bool WTSQueryUserToken(uint SessionId, out IntPtr phToken);
+    private static extern bool WTSQueryUserToken(uint SessionId, out nint phToken);
 
     [DllImport("advapi32.dll", SetLastError = true)]
     private static extern bool DuplicateTokenEx(
-        IntPtr hExistingToken,
+        nint hExistingToken,
         int dwDesiredAccess,
-        IntPtr lpTokenAttributes,
+        nint lpTokenAttributes,
         SECURITY_IMPERSONATION_LEVEL ImpersonationLevel,
         TOKEN_TYPE TokenType,
-        out IntPtr phNewToken);
+        out nint phNewToken);
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool CreateProcessAsUser(
-        IntPtr hToken,
+        nint hToken,
         string? lpApplicationName,
         string lpCommandLine,
-        IntPtr lpProcessAttributes,
-        IntPtr lpThreadAttributes,
+        nint lpProcessAttributes,
+        nint lpThreadAttributes,
         bool bInheritHandles,
         uint dwCreationFlags,
-        IntPtr lpEnvironment,
+        nint lpEnvironment,
         string lpCurrentDirectory,
         ref STARTUPINFO lpStartupInfo,
         out PROCESS_INFORMATION lpProcessInformation);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
+    private static extern bool CloseHandle(nint hObject);
 }

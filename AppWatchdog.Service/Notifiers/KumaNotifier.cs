@@ -1,8 +1,9 @@
-﻿using System.Net.Http;
+﻿using AppWatchdog.Service.Helpers;
+using System.Net.Http;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Notifiers;
 
-internal static class UptimeKumaClient
+internal static class KumaNotifier
 {
     private static readonly HttpClient _http = new()
     {

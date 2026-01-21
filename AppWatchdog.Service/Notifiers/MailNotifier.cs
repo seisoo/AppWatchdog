@@ -3,10 +3,41 @@ using System.Net.Mail;
 using System.Text;
 using AppWatchdog.Shared;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Notifiers;
 
-public static class SmtpMailer
+public sealed class MailNotifier : NotifierBase<SmtpSettings>
 {
+    public MailNotifier(SmtpSettings settings)
+        : base(settings)
+    {
+    }
+
+    public override string Name => "smtp";
+
+    public override bool IsConfigured(out string? error)
+    {
+        if (string.IsNullOrWhiteSpace(Settings.Server))
+        {
+            error = "SMTP Server fehlt.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.From))
+        {
+            error = "SMTP From-Adresse fehlt.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.To))
+        {
+            error = "SMTP To-Adresse fehlt.";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
     public static void SendHtml(SmtpSettings smtp, string subject, string htmlBody)
     {
         if (string.IsNullOrWhiteSpace(smtp.Server) ||

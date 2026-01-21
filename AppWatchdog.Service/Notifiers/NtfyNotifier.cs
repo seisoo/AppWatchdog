@@ -2,15 +2,42 @@
 using System.Text;
 using AppWatchdog.Shared;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Notifiers;
 
-public static class NtfyNotifier
+public sealed class NtfyNotifier : NotifierBase<NtfySettings>
 {
+    public override string Name => "ntfy";
+    public NtfyNotifier(NtfySettings settings)
+        : base(settings)
+    {
+    }
+    public override bool IsConfigured(out string? error)
+    {
+        if (!Settings.Enabled)
+        {
+            error = "NTFY ist deaktiviert.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.BaseUrl))
+        {
+            error = "NTFY BaseUrl fehlt.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.Topic))
+        {
+            error = "NTFY Topic fehlt.";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
     private static readonly HttpClient _http = new HttpClient
     {
         Timeout = TimeSpan.FromSeconds(6)
     };
-
     public static async Task SendAsync(NtfySettings ntfy, string title, string message, string? tagsCsv = null, int? priority = null)
     {
         if (ntfy == null || !ntfy.Enabled)

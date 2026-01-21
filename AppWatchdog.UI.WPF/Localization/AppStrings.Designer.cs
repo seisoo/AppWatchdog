@@ -853,6 +853,60 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Test Discord.
+        /// </summary>
+        public static string notific_discord_test {
+            get {
+                return ResourceManager.GetString("notific_discord_test", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discord test successful.
+        /// </summary>
+        public static string notific_discord_test_success {
+            get {
+                return ResourceManager.GetString("notific_discord_test_success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discord.
+        /// </summary>
+        public static string notific_discord_title {
+            get {
+                return ResourceManager.GetString("notific_discord_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Displayname.
+        /// </summary>
+        public static string notific_discord_username {
+            get {
+                return ResourceManager.GetString("notific_discord_username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Webhook URL.
+        /// </summary>
+        public static string notific_discord_webhook {
+            get {
+                return ResourceManager.GetString("notific_discord_webhook", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        public static string notific_enabled {
+            get {
+                return ResourceManager.GetString("notific_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Base URL.
         /// </summary>
         public static string notific_ntfy_base_url {
@@ -1047,6 +1101,51 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string notific_smtp_user {
             get {
                 return ResourceManager.GetString("notific_smtp_user", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bot token.
+        /// </summary>
+        public static string notific_telegram_bot_token {
+            get {
+                return ResourceManager.GetString("notific_telegram_bot_token", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chat ID.
+        /// </summary>
+        public static string notific_telegram_chat_id {
+            get {
+                return ResourceManager.GetString("notific_telegram_chat_id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Test Telegram.
+        /// </summary>
+        public static string notific_telegram_test {
+            get {
+                return ResourceManager.GetString("notific_telegram_test", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telegram test successful.
+        /// </summary>
+        public static string notific_telegram_test_success {
+            get {
+                return ResourceManager.GetString("notific_telegram_test_success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Telegram.
+        /// </summary>
+        public static string notific_telegram_title {
+            get {
+                return ResourceManager.GetString("notific_telegram_title", resourceCulture);
             }
         }
         

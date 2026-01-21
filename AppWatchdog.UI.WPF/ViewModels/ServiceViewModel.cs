@@ -128,10 +128,15 @@ public partial class ServiceViewModel : DirtyViewModelBase
                 return;   
             }
 
-            ServiceSnapshot snap;
+                ServiceSnapshot snap;
             try
             {
                 snap = await Task.Run(() => _pipe.GetStatus());
+
+                if(snap == null)
+                {
+                    throw new Exception();
+                }
             }
             catch (Exception ex)
             {

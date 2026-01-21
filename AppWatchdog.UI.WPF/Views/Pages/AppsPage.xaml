@@ -117,7 +117,7 @@
                         HorizontalAlignment="Right"
                         Maximum="1440"
                         Minimum="1"
-                        Value="{Binding CheckIntervalMinutes, Mode=TwoWay}" />
+                        Value="{Binding CheckIntervalMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock
                         Grid.Row="3"
@@ -134,7 +134,7 @@
                         HorizontalAlignment="Right"
                         Maximum="168"
                         Minimum="0"
-                        Value="{Binding MailIntervalHours, Mode=TwoWay}" />
+                        Value="{Binding MailIntervalHours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </ui:Card>
 
@@ -219,7 +219,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <ui:TextBox Text="{Binding ExePath}" />
+                                    <ui:TextBox Text="{Binding ExePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                     <ui:Button
                                         Grid.Column="2"
@@ -229,7 +229,7 @@
                                 </Grid>
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_arguments]}" />
-                                <ui:TextBox Margin="0,4,0,0" Text="{Binding Arguments}" />
+                                <ui:TextBox Margin="0,4,0,0" Text="{Binding Arguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                             </StackPanel>
 
@@ -242,10 +242,10 @@
                             <StackPanel Margin="0,12,0,0" IsEnabled="{Binding KumaEnabled}">
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_base_url]}" />
-                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaBaseUrl}" />
+                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_token]}" />
-                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaPushToken}" />
+                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaPushToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_interval]}" />
                                 <ui:NumberBox

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Helpers;
 
 public static class FileLogStore
 {
