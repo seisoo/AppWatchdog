@@ -12,7 +12,7 @@ It monitors applications, detects failures reliably, and performs automatic reco
 - 🔍 Process monitoring with multi-step failure detection
 - 🔁 Automatic application restart with retry logic
 - 🛠 Windows Service + WPF UI (session-independent)
-- 🔔 Notifications: SMTP · ntfy · Uptime Kuma (heartbeat)
+- 🔔 Notifications: SMTP · ntfy · Discord · Telegram · Uptime Kuma (heartbeat)
 - 📜 Structured logging with UI log viewer
 - 🔐 Named Pipes IPC (versioned & validated)
 - 🧠 Self-healing service detection and repair
