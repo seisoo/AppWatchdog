@@ -31,6 +31,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
     private IContentDialogService? _dialogService;
     private bool _isRefreshing;
     private readonly BackendStateService _backend;
+    public LanguageSelectorViewModel LanguageSelector { get; }
 
     public void AttachDialogService(IContentDialogService dialogService)
         => _dialogService = dialogService;
@@ -58,11 +59,13 @@ public partial class ServiceViewModel : DirtyViewModelBase
     public ServiceViewModel(
         PipeFacade pipe, 
         ServiceControlFacade svc,
-        BackendStateService backend)
+        BackendStateService backend,
+        LanguageSelectorViewModel _languageSelector)
     {
         _pipe = pipe;
         _svc = svc;
         _backend = backend;
+        LanguageSelector = _languageSelector;
 
         IsAdminText = IsAdmin() ? AppStrings.yes : AppStrings.no;
 

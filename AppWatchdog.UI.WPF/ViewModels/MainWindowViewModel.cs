@@ -17,6 +17,12 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly NotificationsViewModel _notifications;
     private readonly BackendStateService _backend;
 
+    public ObservableCollection<LanguageItem> Languages { get; } =
+    [
+        new() { Culture = "de-DE", Flag = "/Images/Flags/de.png" },
+        new() { Culture = "en-GB", Flag = "/Images/Flags/gb.png" }
+    ];
+
     public ObservableCollection<object> MenuItems { get; }
     public ObservableCollection<object> FooterMenuItems { get; }
 
@@ -87,4 +93,12 @@ public partial class MainWindowViewModel : ObservableObject
         _apps.ClearDirty();
         _notifications.ClearDirty();
     }
+
+    public class LanguageItem
+    {
+        public string Culture { get; set; } = "";
+        public string Flag { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+    }
+
 }

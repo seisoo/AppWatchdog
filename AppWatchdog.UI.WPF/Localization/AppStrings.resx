@@ -505,4 +505,64 @@
   <data name="error_service_dialog_showdetails" xml:space="preserve">
     <value>Show details</value>
   </data>
+  <data name="language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="error_service_update_required" xml:space="preserve">
+    <value>Service update required</value>
+  </data>
+  <data name="error_service_update_required_text" xml:space="preserve">
+    <value>Your service is outdated and needs an update,\ndo you want to proceed with the update?</value>
+  </data>
+  <data name="ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="error_service_not_installed_title" xml:space="preserve">
+    <value>Service not installed</value>
+  </data>
+  <data name="error_service_not_installed_text" xml:space="preserve">
+    <value>The Watchdog service is not installed.\nDo you want to install it now?</value>
+  </data>
+  <data name="error_service_not_running_title" xml:space="preserve">
+    <value>Service is stopped</value>
+  </data>
+  <data name="error_service_not_running_text" xml:space="preserve">
+    <value>The Watchdog service is installed but not running. Do you want to start it now?</value>
+  </data>
+  <data name="install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="reinstall" xml:space="preserve">
+    <value>Reinstall</value>
+  </data>
+  <data name="start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="service_action_in_progress" xml:space="preserve">
+    <value>Performing action ...</value>
+  </data>
+  <data name="service_action_success_title" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="service_action_success_text" xml:space="preserve">
+    <value>The action was completed successfully.</value>
+  </data>
+  <data name="error_service_action_failed_title" xml:space="preserve">
+    <value>Action failed</value>
+  </data>
+  <data name="error_uac_cancelled_title" xml:space="preserve">
+    <value>Administrator privileges required</value>
+  </data>
+  <data name="error_uac_cancelled_text" xml:space="preserve">
+    <value>The action was cancelled or the UAC prompt was not confirmed.</value>
+  </data>
+  <data name="error_service_action_failed_text" xml:space="preserve">
+    <value>The service action could not be completed.</value>
+  </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

@@ -1,6 +1,5 @@
 ﻿using AppWatchdog.UI.WPF.Common;
 using AppWatchdog.UI.WPF.Localization;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using System;
 using System.Diagnostics;
 using System.Security.Principal;
@@ -14,119 +13,289 @@ using System.Windows.Media;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Extensions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AppWatchdog.UI.WPF.Services;
 
 public sealed class GlobalErrorDialogService
 {
     private readonly IContentDialogService _dialogService;
+    private readonly BackendStateService _backend;
+    private static readonly SemaphoreSlim _dialogGate = new(1, 1);
 
-    public GlobalErrorDialogService(IContentDialogService dialogService)
+    public GlobalErrorDialogService(
+        IContentDialogService dialogService,
+        BackendStateService backend)
     {
         _dialogService = dialogService;
+        _backend = backend;
     }
 
     public async Task ShowExceptionAsync(Exception ex)
     {
-        if (MainWindow.GlobalDialogHost != null)
+        if (ex is null)
+            return;
+
+        _backend.SetOffline(ex.Message);
+
+        await WaitForDialogHostAsync();
+        await RunOnUIAsync(() =>
         {
-            _dialogService.SetDialogHost(MainWindow.GlobalDialogHost);
+            _dialogService.SetDialogHost(MainWindow.GlobalDialogHost!);
+            return Task.CompletedTask;
+        });
+
+        await _dialogGate.WaitAsync();
+        try
+        {
+            // Spezialfälle zuerst
+            if (ex is PipeProtocolMismatchException)
+            {
+                await HandleProtocolMismatchAsync(ex);
+                return;
+            }
+
+            if (ex is PipeTimeoutException || ex is PipeUnavailableException || ex is System.TimeoutException)
+            {
+                await HandlePipeNotReachableAsync(ex);
+                return;
+            }
+
+            var (title, message, icon) = MapException(ex);
+
+            await RunOnUIAsync(async () =>
+            {
+                await _dialogService.ShowSimpleDialogAsync(
+                    new SimpleContentDialogCreateOptions
+                    {
+                        Title = title,
+                        Content = BuildContent(icon, message, ex),
+                        CloseButtonText = AppStrings.ok
+                    },
+                    CancellationToken.None
+                );
+            });
         }
-        else
+        finally
         {
-            if (ex is PipeProtocolMismatchException pmEx)
-            {
-                var result = System.Windows.MessageBox.Show(
-        ex.Message + "\n\n" +
-        "Der Dienst ist nicht kompatibel.\n\n" +
-        "Die Anwendung kann den Dienst jetzt automatisch aktualisieren.\n" +
-        "Dazu wird sie ggf. als Administrator neu gestartet.\n\n" +
-        "Möchtest du fortfahren?",
-        "Dienst-Aktualisierung erforderlich",
-        System.Windows.MessageBoxButton.YesNo,
-        MessageBoxImage.Warning);
+            _dialogGate.Release();
+        }
+    }
 
-                if (result != System.Windows.MessageBoxResult.Yes)
-                    return;
+    private async Task HandlePipeNotReachableAsync(Exception ex)
+    {
+        var serviceName = "AppWatchdog";
 
-                try
-                {
-                    if (!IsRunningAsAdministrator())
+        bool installed = IsServiceInstalled(serviceName);
+        if (!installed)
+        {
+            var result = await RunOnUIAsync(() =>
+                _dialogService.ShowSimpleDialogAsync(
+                    new SimpleContentDialogCreateOptions
                     {
-                        RestartAsAdministrator("--service-update");
-                        Application.Current.Shutdown();
-                        return;
-                    }
+                        Title = AppStrings.error_service_not_installed_title,
+                        Content = BuildContent(
+                            SymbolRegular.Wrench24,
+                            AppStrings.error_service_not_installed_text,
+                            ex),
+                        PrimaryButtonText = AppStrings.install,
+                        SecondaryButtonText = AppStrings.cancel,
+                        CloseButtonText = AppStrings.close
+                    },
+                    CancellationToken.None
+                )
+            );
 
-                    RunServiceUpdate();
-                    RestartNormally();
-                    Application.Current.Shutdown();
-                }
-                catch (Exception updateEx)
-                {
-                    System.Windows.MessageBox.Show(
-                        "Die automatische Dienst-Aktualisierung ist fehlgeschlagen:\n\n" +
-                        updateEx,
-                        "Kritischer Fehler",
-                        System.Windows.MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-
-                return;
-            }
-            else if (ex is PipeTimeoutException timeoutEx)
+            if (result == ContentDialogResult.Primary)
             {
-                var result = System.Windows.MessageBox.Show(
-                    timeoutEx.Message + "\n\n" +
-                    "Der Dienst ist momentan nicht erreichbar.\n\n" +
-                    "Die Anwendung kann prüfen, ob der Dienst installiert ist,\n" +
-                    "ihn starten oder bei Bedarf installieren.\n\n" +
-                    "Möchtest du fortfahren?",
-                    "Dienst nicht erreichbar",
-                    System.Windows.MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (result != System.Windows.MessageBoxResult.Yes)
-                    return;
-
-                try
-                {
-                    if (!IsRunningAsAdministrator())
-                    {
-                        RestartAsAdministrator("--service-ensure");
-                        Application.Current.Shutdown();
-                        return;
-                    }
-
-                    EnsureServiceRunning();
-                    RestartNormally();
-                    Application.Current.Shutdown();
-                }
-                catch (Exception ensureEx)
-                {
-                    System.Windows.MessageBox.Show(
-                        "Der Dienst konnte nicht gestartet oder installiert werden:\n\n" +
-                        ensureEx,
-                        "Kritischer Fehler",
-                        System.Windows.MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-
-                return;
+                await ExecuteServiceOperationAsync(ServiceOperation.Install);
             }
+
+            return;
+        }
+
+        bool running = IsServiceRunning(serviceName);
+        if (!running)
+        {
+            var result = await RunOnUIAsync(() =>
+                _dialogService.ShowSimpleDialogAsync(
+                    new SimpleContentDialogCreateOptions
+                    {
+                        Title = AppStrings.error_service_not_running_title,
+                        Content = BuildContent(
+                            SymbolRegular.Play24,
+                            AppStrings.error_service_not_running_text,
+                            ex),
+                        PrimaryButtonText = AppStrings.start,
+                        SecondaryButtonText = AppStrings.cancel,
+                        CloseButtonText = AppStrings.close
+                    },
+                    CancellationToken.None
+                )
+            );
+
+            if (result == ContentDialogResult.Primary)
+            {
+                await ExecuteServiceOperationAsync(ServiceOperation.Start);
+            }
+
+            return;
         }
 
         var (title, message, icon) = MapException(ex);
 
-        await _dialogService.ShowSimpleDialogAsync(
-            new SimpleContentDialogCreateOptions
-            {
-                Title = title,
-                Content = BuildContent(icon, message, ex),
-                CloseButtonText = "OK"
-            },
-            CancellationToken.None
+        await RunOnUIAsync(async () =>
+        {
+            await _dialogService.ShowSimpleDialogAsync(
+                new SimpleContentDialogCreateOptions
+                {
+                    Title = title,
+                    Content = BuildContent(icon, message, ex),
+                    CloseButtonText = AppStrings.ok
+                },
+                CancellationToken.None
+            );
+        });
+    }
+
+    private async Task HandleProtocolMismatchAsync(Exception ex)
+    {
+        var result = await RunOnUIAsync(() =>
+            _dialogService.ShowSimpleDialogAsync(
+                new SimpleContentDialogCreateOptions
+                {
+                    Title = AppStrings.error_service_update_required,
+                    Content = BuildContent(
+                        SymbolRegular.Warning24,
+                        AppStrings.error_service_update_required_text,
+                        ex),
+                    PrimaryButtonText = AppStrings.reinstall,
+                    SecondaryButtonText = AppStrings.cancel,
+                    CloseButtonText = AppStrings.close
+                },
+                CancellationToken.None
+            )
         );
+
+        if (result == ContentDialogResult.Primary)
+        {
+            await ExecuteServiceOperationAsync(ServiceOperation.Reinstall);
+        }
+    }
+
+    private enum ServiceOperation
+    {
+        Start,
+        Install,
+        Reinstall
+    }
+
+    private async Task ExecuteServiceOperationAsync(ServiceOperation op)
+    {
+        _backend.SetOffline(AppStrings.service_action_in_progress);
+
+        try
+        {
+            if (IsRunningAsAdministrator())
+            {
+                RunServiceAction(op);
+            }
+            else
+            {
+                bool ok = await RunElevatedHelperAndWaitAsync(op);
+                if (!ok)
+                {
+                    await ShowInfoAsync(
+                        AppStrings.error_uac_cancelled_title,
+                        AppStrings.error_uac_cancelled_text,
+                        SymbolRegular.ShieldError24);
+                    return;
+                }
+            }
+
+            _backend.SetReady(AppStrings.service_connected);
+
+            await ShowInfoAsync(
+                AppStrings.service_action_success_title,
+                AppStrings.service_action_success_text,
+                SymbolRegular.CheckmarkCircle24);
+        }
+        catch (Exception ex)
+        {
+            _backend.SetOffline(ex.Message);
+
+            await RunOnUIAsync(async () =>
+            {
+                await _dialogService.ShowSimpleDialogAsync(
+                    new SimpleContentDialogCreateOptions
+                    {
+                        Title = AppStrings.error_service_action_failed_title,
+                        Content = BuildContent(SymbolRegular.ErrorCircle24, AppStrings.error_service_action_failed_text, ex),
+                        CloseButtonText = AppStrings.ok
+                    },
+                    CancellationToken.None
+                );
+            });
+        }
+    }
+
+    private static void RunServiceAction(ServiceOperation op)
+    {
+        var service = new ServiceControlFacade("AppWatchdog");
+
+        switch (op)
+        {
+            case ServiceOperation.Start:
+                service.StartService();
+                break;
+
+            case ServiceOperation.Install:
+                service.InstallServiceFromLocalExe();
+                service.StartService();
+                break;
+
+            case ServiceOperation.Reinstall:
+                service.UninstallService();
+                service.InstallServiceFromLocalExe();
+                service.StartService();
+                break;
+        }
+    }
+
+    private static async Task<bool> RunElevatedHelperAndWaitAsync(ServiceOperation op)
+    {
+        string args = op switch
+        {
+            ServiceOperation.Start => "--svc-start",
+            ServiceOperation.Install => "--svc-install",
+            ServiceOperation.Reinstall => "--svc-reinstall",
+            _ => throw new ArgumentOutOfRangeException(nameof(op))
+        };
+
+        var exePath = Process.GetCurrentProcess().MainModule!.FileName!;
+
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = args,
+                Verb = "runas",            
+                UseShellExecute = true
+            };
+
+            var proc = Process.Start(psi);
+            if (proc == null)
+                return false;
+
+            await Task.Run(() => proc.WaitForExit());
+
+            return proc.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static bool IsServiceInstalled(string serviceName)
@@ -134,29 +303,25 @@ public sealed class GlobalErrorDialogService
         try
         {
             using var sc = new ServiceController(serviceName);
-            _ = sc.Status; // erzwingt Zugriff
+            _ = sc.Status;
             return true;
         }
-        catch (InvalidOperationException)
+        catch
         {
-            // Dienst existiert nicht
             return false;
         }
     }
 
-
-private static void EnsureServiceRunning()
+    private static bool IsServiceRunning(string serviceName)
     {
-        var service = new ServiceControlFacade("AppWatchdog");
-
-        if (IsServiceInstalled("AppWatchdog"))
+        try
         {
-            service.StartService();
+            using var sc = new ServiceController(serviceName);
+            return sc.Status == ServiceControllerStatus.Running;
         }
-        else
+        catch
         {
-            service.InstallServiceFromLocalExe();
-            service.StartService();
+            return false;
         }
     }
 
@@ -166,37 +331,57 @@ private static void EnsureServiceRunning()
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
-    private static void RestartAsAdministrator(string args)
-    {
-        var exePath = Process.GetCurrentProcess().MainModule!.FileName!;
 
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = exePath,
-            Arguments = args,
-            Verb = "runas",         
-            UseShellExecute = true
-        });
+    private static async Task WaitForDialogHostAsync()
+    {
+        while (MainWindow.GlobalDialogHost == null)
+            await Task.Delay(50);
     }
 
-    private static void RestartNormally()
+    private static async Task<T> RunOnUIAsync<T>(Func<Task<T>> action)
     {
-        var exePath = Process.GetCurrentProcess().MainModule!.FileName!;
+        var app = System.Windows.Application.Current;
+        if (app?.Dispatcher == null || app.Dispatcher.HasShutdownStarted)
+            return await action(); // best effort
 
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = exePath,
-            UseShellExecute = true  // normaler User
-        });
+        if (app.Dispatcher.CheckAccess())
+            return await action();
+
+        return await app.Dispatcher.InvokeAsync(action).Task.Unwrap();
     }
 
-    private static void RunServiceUpdate()
+    private static async Task RunOnUIAsync(Func<Task> action)
     {
-        var service = new ServiceControlFacade("AppWatchdog");
+        var app = System.Windows.Application.Current;
+        if (app?.Dispatcher == null || app.Dispatcher.HasShutdownStarted)
+        {
+            await action();
+            return;
+        }
 
-        service.UninstallService();
-        service.InstallServiceFromLocalExe();
-        service.StartService();
+        if (app.Dispatcher.CheckAccess())
+        {
+            await action();
+            return;
+        }
+
+        await app.Dispatcher.InvokeAsync(action).Task.Unwrap();
+    }
+
+    private async Task ShowInfoAsync(string title, string message, SymbolRegular icon)
+    {
+        await RunOnUIAsync(async () =>
+        {
+            await _dialogService.ShowSimpleDialogAsync(
+                new SimpleContentDialogCreateOptions
+                {
+                    Title = title,
+                    Content = BuildContent(icon, message, new Exception(message)),
+                    CloseButtonText = AppStrings.ok
+                },
+                CancellationToken.None
+            );
+        });
     }
 
     private static (string title, string message, SymbolRegular icon) MapException(Exception ex)
@@ -204,79 +389,78 @@ private static void EnsureServiceRunning()
         return ex switch
         {
             PipeTimeoutException =>
-                (AppStrings.error_service_timeout, AppStrings.error_service_timeout_text, SymbolRegular.Clock24),
+                (AppStrings.error_service_timeout,
+                 AppStrings.error_service_timeout_text,
+                 SymbolRegular.Clock24),
 
             PipeUnavailableException =>
-                (AppStrings.error_service_notavailable, AppStrings.error_service_notavailable_text, SymbolRegular.CloudOff24),
+                (AppStrings.error_service_notavailable,
+                 AppStrings.error_service_notavailable_text,
+                 SymbolRegular.CloudOff24),
 
             InvalidOperationException =>
-                (AppStrings.error_service_invalid_state, ex.Message, SymbolRegular.Warning24),
+                (AppStrings.error_service_invalid_state,
+                 ex.Message,
+                 SymbolRegular.Warning24),
 
             _ =>
-                (AppStrings.error_service_unexpected_error, ex.Message, SymbolRegular.ErrorCircle24)
+                (AppStrings.error_service_unexpected_error,
+                 ex.Message,
+                 SymbolRegular.ErrorCircle24)
         };
     }
 
-    private static StackPanel BuildContent(
-     SymbolRegular icon,
-     string message,
-     Exception ex)
+    private static StackPanel BuildContent(SymbolRegular icon, string message, Exception ex)
     {
-        var detailsText = BuildExceptionDetails(ex);
-
         return new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             MaxWidth = 520,
             Children =
-        {
-            new SymbolIcon
             {
-                Symbol = icon,
-                FontSize = 64,
-                Margin = new Thickness(0, 0, 0, 16),
-                HorizontalAlignment = HorizontalAlignment.Center
-            },
-
-            new Wpf.Ui.Controls.TextBlock
-            {
-                Text = message,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 0, 0, 12)
-            },
-
-            new Expander
-            {
-                Header = AppStrings.error_service_dialog_showdetails,
-                IsExpanded = false,
-                Margin = new Thickness(0, 8, 0, 0),
-                Content = new ScrollViewer
+                new SymbolIcon
                 {
-                    Height = 180,
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    Content = new Wpf.Ui.Controls.TextBox
+                    Symbol = icon,
+                    FontSize = 64,
+                    Margin = new Thickness(0, 0, 0, 16),
+                    HorizontalAlignment = HorizontalAlignment.Center
+                },
+
+                new Wpf.Ui.Controls.TextBlock
+                {
+                    Text = (message ?? "").Replace("\\n", Environment.NewLine),
+                    TextWrapping = TextWrapping.Wrap,
+                    TextAlignment = TextAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 12)
+                },
+
+                new Expander
+                {
+                    Header = AppStrings.error_service_dialog_showdetails,
+                    Content = new ScrollViewer
                     {
-                        Text = detailsText,
-                        IsReadOnly = true,
-                        TextWrapping = TextWrapping.NoWrap,
-                        FontFamily = new FontFamily("Consolas"),
-                        FontSize = 12,
-                        BorderThickness = new Thickness(0),
-                        Background = Brushes.Transparent
+                        Height = 180,
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        Content = new Wpf.Ui.Controls.TextBox
+                        {
+                            Text = BuildExceptionDetails(ex),
+                            IsReadOnly = true,
+                            FontFamily = new FontFamily("Consolas"),
+                            FontSize = 12,
+                            BorderThickness = new Thickness(0),
+                            Background = Brushes.Transparent
+                        }
                     }
                 }
             }
-        }
         };
     }
-
 
     private static string BuildExceptionDetails(Exception ex)
     {
         var sb = new StringBuilder();
-
         int level = 0;
+
         while (ex != null)
         {
             sb.AppendLine(level == 0 ? "Exception:" : $"Inner Exception {level}:");
@@ -292,5 +476,4 @@ private static void EnsureServiceRunning()
 
         return sb.ToString();
     }
-
 }

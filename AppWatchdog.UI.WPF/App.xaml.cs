@@ -26,6 +26,37 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        if (e.Args.Length > 0)
+        {
+            try
+            {
+                var service = new ServiceControlFacade("AppWatchdog");
+
+                switch (e.Args[0])
+                {
+                    case "--svc-start":
+                        service.StartService();
+                        Environment.Exit(0);
+                        break;
+                    case "--svc-install":
+                        service.InstallServiceFromLocalExe();
+                        service.StartService();
+                        Environment.Exit(0);
+                        break;
+                    case "--svc-reinstall":
+                        service.UninstallService();
+                        service.InstallServiceFromLocalExe();
+                        service.StartService();
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+            catch
+            {
+                Environment.Exit(1);
+            }
+        }
+
         FrameworkElement.LanguageProperty.OverrideMetadata(
             typeof(FrameworkElement),
             new FrameworkPropertyMetadata(
