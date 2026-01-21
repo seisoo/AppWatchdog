@@ -20,6 +20,12 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     private bool _activated;
 
     [ObservableProperty]
+    private bool _showSmtpPassword;
+
+    [ObservableProperty]
+    private bool _showNtfyToken;
+
+    [ObservableProperty]
     private bool _isContentEnabled;
     [ObservableProperty]
     
@@ -69,6 +75,25 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     
     private int _ntfyPriorityText = 3;
 
+    [ObservableProperty]
+    private bool _discordEnabled;
+
+    [ObservableProperty]
+    private string _discordWebhookUrl = "";
+
+    [ObservableProperty]
+    private string _discordUsername = "";
+
+    [ObservableProperty]
+    private bool _telegramEnabled;
+
+    [ObservableProperty]
+    private string _telegramBotToken = "";
+
+    [ObservableProperty]
+    private string _telegramChatId = "";
+
+
     public NotificationsViewModel(
     PipeFacade pipe,
     IContentDialogService dialogService,
@@ -94,7 +119,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
-            await Task.Run(Load);   
+            Load();
         }
 
         IsContentEnabled = true;   
@@ -136,6 +161,15 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         NtfyToken = cfg.Ntfy.Token;
         NtfyPriorityText = cfg.Ntfy.Priority;
 
+        DiscordEnabled = cfg.Discord.Enabled;
+        DiscordWebhookUrl = cfg.Discord.WebhookUrl;
+        DiscordUsername = cfg.Discord.Username;
+
+        TelegramEnabled = cfg.Telegram.Enabled;
+        TelegramBotToken = cfg.Telegram.BotToken;
+        TelegramChatId = cfg.Telegram.ChatId;
+
+
         SaveStateText = AppStrings.config_loaded;
     }
 
@@ -157,6 +191,15 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         cfg.Ntfy.Topic = NtfyTopic;
         cfg.Ntfy.Token = NtfyToken;
         cfg.Ntfy.Priority = NtfyPriorityText;
+
+        cfg.Discord.Enabled = DiscordEnabled;
+        cfg.Discord.WebhookUrl = DiscordWebhookUrl;
+        cfg.Discord.Username = DiscordUsername;
+
+        cfg.Telegram.Enabled = TelegramEnabled;
+        cfg.Telegram.BotToken = TelegramBotToken;
+        cfg.Telegram.ChatId = TelegramChatId;
+
 
         await Task.Run(() => _pipe.SaveConfig(cfg));
         ClearDirty();
@@ -215,6 +258,55 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         }
     }
 
+
+    [RelayCommand]
+    private async Task TestTelegramAsync()
+    {
+        try
+        {
+            _pipe.TestTelegram();
+            SaveStateText = AppStrings.notific_telegram_test;
+
+            await UiDialogHelper.ShowInfoAsync(
+                _dialogService,
+                AppStrings.notific_telegram_test,
+                AppStrings.notific_telegram_test_success,
+                SymbolRegular.CheckmarkCircle24
+            );
+        }
+        catch (Exception)
+        {
+            // todo
+            SaveStateText = AppStrings.notific_smtp_test_failed;
+            throw;
+        }
+    }
+
+
+    [RelayCommand]
+    private async Task TestDiscordAsync()
+    {
+        try
+        {
+            _pipe.TestDiscord();
+            SaveStateText = AppStrings.notific_discord_test_success;
+
+            await UiDialogHelper.ShowInfoAsync(
+                _dialogService,
+                AppStrings.notific_discord_test,
+                AppStrings.notific_discord_test_success,
+                SymbolRegular.CheckmarkCircle24
+            );
+        }
+        catch (Exception)
+        {
+            // todo
+            SaveStateText = AppStrings.notific_smtp_test_failed;
+            throw;
+        }
+    }
+
+
     #region Dirty-Events
     partial void OnSmtpServerChanged(string value)
     => MarkDirty();
@@ -251,6 +343,19 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         => MarkDirty();
 
     partial void OnNtfyPriorityTextChanged(int value)
+        => MarkDirty();
+
+    partial void OnDiscordEnabledChanged(bool value) 
+        => MarkDirty();
+    partial void OnDiscordWebhookUrlChanged(string value) 
+        => MarkDirty();
+    partial void OnDiscordUsernameChanged(string value) 
+        => MarkDirty();
+    partial void OnTelegramEnabledChanged(bool value) 
+        => MarkDirty();
+    partial void OnTelegramBotTokenChanged(string value) 
+        => MarkDirty();
+    partial void OnTelegramChatIdChanged(string value) 
         => MarkDirty();
 
 

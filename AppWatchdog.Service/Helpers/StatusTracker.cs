@@ -1,6 +1,6 @@
 ﻿using AppWatchdog.Shared;
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Helpers;
 
 public sealed class StatusTracker
 {
@@ -12,7 +12,7 @@ public sealed class StatusTracker
     public bool ShouldSendMail(string currentMessage, TimeSpan maxInterval)
     {
         bool changed = !string.Equals(_lastMessage, currentMessage, StringComparison.Ordinal);
-        bool interval = (DateTimeOffset.Now - _lastMailSent) >= maxInterval;
+        bool interval = DateTimeOffset.Now - _lastMailSent >= maxInterval;
 
         return changed || interval;
     }
@@ -20,7 +20,7 @@ public sealed class StatusTracker
     public void Update(string currentMessage)
     {
         if (!string.Equals(_lastMessage, currentMessage, StringComparison.Ordinal) ||
-            (DateTimeOffset.Now - _lastMailSent) > TimeSpan.FromSeconds(1))
+            DateTimeOffset.Now - _lastMailSent > TimeSpan.FromSeconds(1))
         {
             _lastMessage = currentMessage;
             _lastMailSent = DateTimeOffset.Now;

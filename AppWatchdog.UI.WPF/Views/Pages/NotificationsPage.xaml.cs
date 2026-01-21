@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using AppWatchdog.UI.WPF.ViewModels;
 
@@ -30,11 +31,12 @@ public partial class NotificationsPage : Page
         _vm.MarkDirty();
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // 🔓 entschlüsselten Klartext explizit in die PasswordBox schreiben
-        SmtpPasswordBox.Password = _vm.SmtpPassword ?? string.Empty;
-        NtfyTokenBox.Password = _vm.NtfyToken ?? string.Empty;
+        //SmtpPasswordBox.Password = _vm.SmtpPassword ?? string.Empty;
+        //NtfyTokenBox.Password = _vm.NtfyToken ?? string.Empty;
+
+        await _vm.ActivateAsync();
     }
 
 }

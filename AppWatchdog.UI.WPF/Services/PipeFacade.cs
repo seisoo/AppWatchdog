@@ -54,6 +54,12 @@ public sealed class PipeFacade
     public void TestNtfy()
         => Execute(PipeClient.TestNtfy);
 
+    public void TestDiscord()
+        => Execute(PipeClient.TestDiscord);
+
+    public void TestTelegram()
+        => Execute(PipeClient.TestTelegram);
+
     // =========================
     // CORE EXECUTION LOGIC
     // =========================

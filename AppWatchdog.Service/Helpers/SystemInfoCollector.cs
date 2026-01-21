@@ -10,7 +10,7 @@ using System.Security.Principal;
 using System.Text;
 
 
-namespace AppWatchdog.Service;
+namespace AppWatchdog.Service.Helpers;
 
 public static class SystemInfoCollector
 {
@@ -103,7 +103,7 @@ public static class SystemInfoCollector
             sb.Append("<tr><td colspan=\"2\" style=\"padding:6px 8px; border:1px solid #e5e7eb; background:#f3f4f6;\"><b>Datenträger</b></td></tr>");
             foreach (var d in s.Disks)
             {
-                var used = (d.TotalBytes > d.FreeBytes) ? (d.TotalBytes - d.FreeBytes) : 0;
+                var used = d.TotalBytes > d.FreeBytes ? d.TotalBytes - d.FreeBytes : 0;
                 Row(d.Name.TrimEnd('\\'), $"Frei: {FmtBytes(d.FreeBytes)} / Gesamt: {FmtBytes(d.TotalBytes)} (Belegt: {FmtBytes(used)})");
             }
         }

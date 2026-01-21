@@ -9,6 +9,8 @@ public sealed class WatchdogConfig
     public int MailIntervalHours { get; set; } = 12;
     public SmtpSettings Smtp { get; set; } = new();
     public NtfySettings Ntfy { get; set; } = new();
+    public DiscordSettings Discord { get; set; } = new();
+    public TelegramSettings Telegram { get; set; } = new();
     public string CultureName { get; set; } = "en-US";
 }
 
@@ -38,12 +40,29 @@ public sealed class SmtpSettings
 public sealed class NtfySettings
 {
     public bool Enabled { get; set; } = false;
-
     public string BaseUrl { get; set; } = "https://ntfy.sh";
     public string Topic { get; set; } = "";
     public string Token { get; set; } = "";
     public int Priority { get; set; } = 3;
 }
+
+public sealed class TelegramSettings
+{
+    public bool Enabled { get; set; } = false;
+    public string BotToken { get; set; } = "";
+    public string ChatId { get; set; } = "";
+    public bool UseMarkdown { get; set; } = true;
+}
+
+public sealed class DiscordSettings
+{
+    public bool Enabled { get; set; } = false;
+    public string WebhookUrl { get; set; } = "";
+    public string Username { get; set; } = "AppWatchdog";
+    public string AvatarUrl { get; set; } = "";
+}
+
+
 
 public enum UserSessionState
 {
@@ -66,6 +85,8 @@ public sealed class ServiceSnapshot
     public UserSessionState SessionState { get; set; }
     public List<AppStatus> Apps { get; set; } = new();
     public SystemInfo SystemInfo { get; set; } = new();
+
+    public int PipeProtocolVersion { get; set; } = 0;
 }
 
 public sealed class LogDaysResponse

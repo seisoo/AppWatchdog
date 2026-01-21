@@ -1,4 +1,6 @@
-﻿using AppWatchdog.Shared;
+﻿using AppWatchdog.Service.Helpers;
+using AppWatchdog.Service.Notifiers;
+using AppWatchdog.Shared;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -23,6 +25,8 @@ public sealed class Worker : BackgroundService
     private WatchdogConfig _cfg;
 
     private readonly StatusTracker _status = new();
+
+    private NotificationDispatcher _dispatcher = null!;
 
     private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(60);
     private Timer? _monitorTimer;
@@ -59,6 +63,7 @@ public sealed class Worker : BackgroundService
     {
         _log = log;
         _cfg = ConfigStore.LoadOrCreateDefault(_configPath);
+        _dispatcher = new NotificationDispatcher(_cfg, _log);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -100,7 +105,8 @@ public sealed class Worker : BackgroundService
             Timestamp = DateTimeOffset.Now,
             SessionState = UserSessionLauncher.GetSessionState(),
             Apps = BuildAppStatusSnapshot(),
-            SystemInfo = SystemInfoCollect()
+            SystemInfo = SystemInfoCollect(),
+            PipeProtocolVersion = PipeProtocol.ProtocolVersion
         };
 
         _status.LastSnapshot = snapshot;
@@ -140,6 +146,7 @@ public sealed class Worker : BackgroundService
     private void Tick()
     {
         _cfg = ConfigStore.LoadOrCreateDefault(_configPath);
+        _dispatcher = new NotificationDispatcher(_cfg, _log);
 
         var validExePaths = new HashSet<string>(
             _cfg.Apps
@@ -159,7 +166,8 @@ public sealed class Worker : BackgroundService
             Timestamp = DateTimeOffset.Now,
             SessionState = sessionState,
             Apps = new List<AppStatus>(),
-            SystemInfo = SystemInfoCollect()
+            SystemInfo = SystemInfoCollect(),
+            PipeProtocolVersion = PipeProtocol.ProtocolVersion
         };
 
         var now = DateTimeOffset.Now;
@@ -353,7 +361,7 @@ public sealed class Worker : BackgroundService
 
             bool isRunning = ms.WasRunning;
 
-            _ = UptimeKumaClient.SendAsync(
+            _ = KumaNotifier.SendAsync(
                 kuma.BaseUrl,
                 kuma.PushToken,
                 isRunning,
@@ -436,181 +444,64 @@ public sealed class Worker : BackgroundService
         return true;
     }
 
+
     private void SendNotification_AppDownAsync(WatchedApp app, AppStatus st, bool startAttempted)
     {
-        Task.Run(async () =>
+        _dispatcher.Dispatch(new NotificationContext
         {
-            try
-            {
-                var sys = SystemInfoCollector.Collect();
-                var sysHtml = SystemInfoCollector.FormatForHtml(sys);
+            Type = AppNotificationType.Down,
+            App = app,
+            Status = st,
+            StartAttempted = startAttempted,
 
-                var title = $"AppWatchdog – {app.Name} DOWN";
+            Title = $"AppWatchdog – {app.Name} DOWN",
+            SummaryStatus = "NICHT AKTIV",
+            SummaryColorHex = "#b91c1c",
 
-                var summaryHtml = BuildStatusSummaryHtml(
-                    status: "NICHT AKTIV",
-                    color: "#b91c1c",
-                    appName: app.Name);
+            NtfyTags = "warning,server",
+            NtfyPriority = 4,
 
-                var detailsHtml = $@"
-<ul style=""margin:0; padding-left:18px;"">
-  <li><b>Name:</b> {Html(app.Name)}</li>
-  <li><b>Exe:</b> {Html(st.ExePath)}</li>
-  <li><b>Startversuch:</b> {(startAttempted ? "ja" : "nein")}</li>
-  {(string.IsNullOrWhiteSpace(st.LastStartError)
-            ? ""
-            : $"<li><b>Fehler:</b> <span style=\"color:#b91c1c;\">{Html(st.LastStartError)}</span></li>")}
-</ul>";
-
-                var html = SmtpMailer.WrapHtmlTemplate(
-                    title: title,
-                    summaryHtml: summaryHtml,
-                    detailsHtml: detailsHtml,
-                    systemInfoHtml: sysHtml);
-
-                SmtpMailer.SendHtml(_cfg.Smtp, title, html);
-
-                var ntfyMsg =
-                    $"Status: DOWN\n" +
-                    $"App: {app.Name}\n" +
-                    $"Exe: {st.ExePath}\n" +
-                    $"Startversuch: {(startAttempted ? "ja" : "nein")}\n" +
-                    (string.IsNullOrWhiteSpace(st.LastStartError) ? "" : $"Fehler: {st.LastStartError}\n") +
-                    $"Host: {sys.MachineName}\n" +
-                    $"Uptime: {sys.Uptime}";
-
-                await NtfyNotifier.SendAsync(
-                    _cfg.Ntfy,
-                    title,
-                    ntfyMsg,
-                    tagsCsv: "warning,server",
-                    priority: 4);
-
-                LogWarn($"Notification DOWN gesendet: {app.Name}");
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(ex, "Notification (DOWN) fehlgeschlagen: {Name}", app.Name);
-                LogError($"Notification (DOWN) fehlgeschlagen: {app.Name}", ex);
-            }
+            DiscordEmoji = "🛑",
+            DiscordColor = 0xB91C1C
         });
     }
 
-
     private void SendNotification_AppRestartedAsync(WatchedApp app, AppStatus st)
     {
-        Task.Run(async () =>
+        _dispatcher.Dispatch(new NotificationContext
         {
-            try
-            {
-                var sys = SystemInfoCollector.Collect();
-                var sysHtml = SystemInfoCollector.FormatForHtml(sys);
+            Type = AppNotificationType.Restart,
+            App = app,
 
-                var title = $"AppWatchdog – {app.Name} RESTART";
+            Title = $"AppWatchdog – {app.Name} RESTART",
+            SummaryStatus = "NEU GESTARTET",
+            SummaryColorHex = "#2563eb",
 
-                var summaryHtml = BuildStatusSummaryHtml(
-                    status: "NEU GESTARTET",
-                    color: "#2563eb",
-                    appName: app.Name);
+            NtfyTags = "restart,server",
+            NtfyPriority = 3,
 
-                var detailsHtml = $@"
-<ul style=""margin:0; padding-left:18px;"">
-  <li><b>Name:</b> {Html(app.Name)}</li>
-  <li><b>Exe:</b> {Html(app.ExePath)}</li>
-</ul>";
-
-                var html = SmtpMailer.WrapHtmlTemplate(
-                    title: title,
-                    summaryHtml: summaryHtml,
-                    detailsHtml: detailsHtml,
-                    systemInfoHtml: sysHtml);
-
-                SmtpMailer.SendHtml(_cfg.Smtp, title, html);
-
-                var ntfyMsg =
-                    $"Status: RESTART\n" +
-                    $"App: {app.Name}\n" +
-                    $"Host: {sys.MachineName}\n" +
-                    $"Uptime: {sys.Uptime}";
-
-                await NtfyNotifier.SendAsync(
-                    _cfg.Ntfy,
-                    title,
-                    ntfyMsg,
-                    tagsCsv: "restart,server",
-                    priority: 3);
-
-                LogInfo($"Notification RESTART gesendet: {app.Name}");
-            }
-            catch (Exception ex)
-            {
-                LogError($"Notification (RESTART) fehlgeschlagen: {app.Name}", ex);
-            }
+            DiscordEmoji = "🔄",
+            DiscordColor = 0x2563EB
         });
     }
 
     private void SendNotification_AppUpAsync(WatchedApp app)
     {
-        Task.Run(async () =>
+        _dispatcher.Dispatch(new NotificationContext
         {
-            try
-            {
-                var sys = SystemInfoCollector.Collect();
-                var sysHtml = SystemInfoCollector.FormatForHtml(sys);
+            Type = AppNotificationType.Up,
+            App = app,
 
-                var title = $"AppWatchdog – {app.Name} UP";
+            Title = $"AppWatchdog – {app.Name} UP",
+            SummaryStatus = "WIEDER AKTIV",
+            SummaryColorHex = "#15803d",
 
-                var summaryHtml = BuildStatusSummaryHtml(
-                    status: "WIEDER AKTIV",
-                    color: "#15803d",
-                    appName: app.Name);
+            NtfyTags = "white_check_mark,server",
+            NtfyPriority = 2,
 
-                var detailsHtml = $@"
-<ul style=""margin:0; padding-left:18px;"">
-  <li><b>Name:</b> {Html(app.Name)}</li>
-  <li><b>Exe:</b> {Html(app.ExePath)}</li>
-</ul>";
-
-                var html = SmtpMailer.WrapHtmlTemplate(
-                    title: title,
-                    summaryHtml: summaryHtml,
-                    detailsHtml: detailsHtml,
-                    systemInfoHtml: sysHtml);
-
-                SmtpMailer.SendHtml(_cfg.Smtp, title, html);
-
-                var ntfyMsg =
-                    $"Status: UP\n" +
-                    $"App: {app.Name}\n" +
-                    $"Host: {sys.MachineName}\n" +
-                    $"Uptime: {sys.Uptime}";
-
-                await NtfyNotifier.SendAsync(
-                    _cfg.Ntfy,
-                    title,
-                    ntfyMsg,
-                    tagsCsv: "white_check_mark,server",
-                    priority: 2);
-
-                LogInfo($"Notification UP gesendet: {app.Name}");
-            }
-            catch (Exception ex)
-            {
-                _log.LogError(ex, "Notification (UP) fehlgeschlagen: {Name}", app.Name);
-                LogError($"Notification (UP) fehlgeschlagen: {app.Name}", ex);
-            }
+            DiscordEmoji = "✅",
+            DiscordColor = 0x15803D
         });
-    }
-
-
-
-    private static string BuildStatusSummaryHtml(string status, string color, string appName)
-    {
-        return
-            $"<div>Die Anwendung <b>{Html(appName)}</b> ist " +
-            $"<span style=\"color:{color};\"><b>{status}</b></span>.</div>" +
-            $"<div style=\"margin-top:6px; color:#6b7280;\">" +
-            $"Zeit: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}</div>";
     }
 
     private async Task PipeAcceptLoop(CancellationToken token)
@@ -760,7 +651,8 @@ public sealed class Worker : BackgroundService
                                 Timestamp = DateTimeOffset.Now,
                                 SessionState = UserSessionLauncher.GetSessionState(),
                                 Apps = new List<AppStatus>(),
-                                SystemInfo = SystemInfoCollect()
+                                SystemInfo = SystemInfoCollect(),
+                                PipeProtocolVersion = PipeProtocol.ProtocolVersion
                             };
                         }
 
@@ -805,78 +697,65 @@ public sealed class Worker : BackgroundService
 
                 case PipeProtocol.CmdTestSmtp:
                     {
-                        try
-                        {
-                            LogInfo("SMTP-Test gestartet (per Pipe)");
-
-                            var sys = SystemInfoCollector.Collect();
-                            var sysHtml = SystemInfoCollector.FormatForHtml(sys);
-
-                            var title = "AppWatchdog – SMTP Test";
-                            var summaryHtml =
-                                "<div>Dies ist eine <b>Test-E-Mail</b> zur Überprüfung der SMTP-Konfiguration.</div>" +
-                                $"<div style=\"margin-top:6px; color:#6b7280;\">Zeit: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}</div>";
-
-                            var detailsHtml =
-                                "<ul style=\"margin:0; padding-left:18px;\">" +
-                                "<li>Diese Nachricht wurde manuell über die UI ausgelöst.</li>" +
-                                "</ul>";
-
-                            var html = SmtpMailer.WrapHtmlTemplate(
-                                title: title,
-                                summaryHtml: summaryHtml,
-                                detailsHtml: detailsHtml,
-                                systemInfoHtml: sysHtml);
-
-                            SmtpMailer.SendHtml(_cfg.Smtp, title, html);
-
-                            LogInfo("SMTP-Test erfolgreich");
-                            return new PipeProtocol.Response { Ok = true };
-                        }
-                        catch (Exception ex)
-                        {
-                            LogError("SMTP-Test fehlgeschlagen", ex);
-                            return new PipeProtocol.Response
-                            {
-                                Ok = false,
-                                Error = ex.Message
-                            };
-                        }
+                        return RunNotificationTest(
+                            type: AppNotificationType.Up,
+                            title: "AppWatchdog – SMTP Test",
+                            summaryStatus: "SMTP TEST",
+                            summaryColor: "#2563eb",
+                            ntfyTags: "test,smtp",
+                            ntfyPriority: 3,
+                            emoji: "📧",
+                            discordColor: 0x2563EB,
+                            NotificationChannel.Mail
+                        );
                     }
 
                 case PipeProtocol.CmdTestNtfy:
                     {
-                        try
-                        {
-                            LogInfo("NTFY-Test gestartet (per Pipe)");
-
-                            var sys = SystemInfoCollector.Collect();
-
-                            var title = "AppWatchdog – NTFY Test";
-                            var msg =
-                                "Dies ist eine Test-Benachrichtigung von AppWatchdog.\n" +
-                                $"Zeit: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}\n" +
-                                $"Host: {sys.MachineName}\n" +
-                                $"Uptime: {sys.Uptime}\n";
-
-                            NtfyNotifier
-                                .SendAsync(_cfg.Ntfy, title, msg, tagsCsv: "test,appwatchdog", priority: 3)
-                                .GetAwaiter()
-                                .GetResult();
-
-                            LogInfo("NTFY-Test erfolgreich");
-                            return new PipeProtocol.Response { Ok = true };
-                        }
-                        catch (Exception ex)
-                        {
-                            LogError("NTFY-Test fehlgeschlagen", ex);
-                            return new PipeProtocol.Response
-                            {
-                                Ok = false,
-                                Error = ex.Message
-                            };
-                        }
+                        return RunNotificationTest(
+                            type: AppNotificationType.Up,
+                            title: "AppWatchdog – NTFY Test",
+                            summaryStatus: "NTFY TEST",
+                            summaryColor: "#22c55e",
+                            ntfyTags: "test,ntfy",
+                            ntfyPriority: 3,
+                            emoji: "📢",
+                            discordColor: 0x22C55E,
+                            NotificationChannel.Ntfy
+                        );
                     }
+
+                case PipeProtocol.CmdTestDiscord:
+                    {
+                        return RunNotificationTest(
+                            type: AppNotificationType.Up,
+                            title: "AppWatchdog – Discord Test",
+                            summaryStatus: "DISCORD TEST",
+                            summaryColor: "#5865F2",
+                            ntfyTags: "test,discord",
+                            ntfyPriority: 3,
+                            emoji: "💬",
+                            discordColor: 0x5865F2,
+                            NotificationChannel.Discord
+                        );
+                    }
+
+                case PipeProtocol.CmdTestTelegram:
+                    {
+                        return RunNotificationTest(
+                            type: AppNotificationType.Up,
+                            title: "AppWatchdog – Telegram Test",
+                            summaryStatus: "TELEGRAM TEST",
+                            summaryColor: "#0ea5e9",
+                            ntfyTags: "test,telegram",
+                            ntfyPriority: 3,
+                            emoji: "📨",
+                            discordColor: 0x0EA5E9,
+                            NotificationChannel.Telegram
+                        );
+                    }
+
+
                 case PipeProtocol.CmdGetLogPath:
                     {
                         try
@@ -915,6 +794,61 @@ public sealed class Worker : BackgroundService
             };
         }
     }
+
+    private PipeProtocol.Response RunNotificationTest(
+                AppNotificationType type,
+                string title,
+                string summaryStatus,
+                string summaryColor,
+                string ntfyTags,
+                int ntfyPriority,
+                string emoji,
+                int discordColor,
+                NotificationChannel channel)
+    {
+        try
+        {
+            LogInfo($"{type} Test gestartet (per Pipe) [{channel}]");
+
+            var dummyApp = new WatchedApp
+            {
+                Name = "AppWatchdog Test",
+                ExePath = "manual-test"
+            };
+
+            var ctx = new NotificationContext
+            {
+                Type = type,
+                App = dummyApp,
+
+                Title = title,
+                SummaryStatus = summaryStatus,
+                SummaryColorHex = summaryColor,
+
+                NtfyTags = ntfyTags,
+                NtfyPriority = ntfyPriority,
+
+                DiscordEmoji = emoji,
+                DiscordColor = discordColor,
+                
+                TestOnlyChannel = channel
+            };
+
+            _dispatcher.Dispatch(ctx);
+
+            return new PipeProtocol.Response { Ok = true };
+        }
+        catch (Exception ex)
+        {
+            LogError($"{type} Test fehlgeschlagen", ex);
+            return new PipeProtocol.Response
+            {
+                Ok = false,
+                Error = ex.Message
+            };
+        }
+    }
+
 
     private static string Html(string s)
         => (s ?? "").Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");

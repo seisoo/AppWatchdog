@@ -565,4 +565,37 @@
   <data name="cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="notific_discord_title" xml:space="preserve">
+    <value>Discord</value>
+  </data>
+  <data name="notific_discord_webhook" xml:space="preserve">
+    <value>Webhook URL</value>
+  </data>
+  <data name="notific_discord_username" xml:space="preserve">
+    <value>Displayname</value>
+  </data>
+  <data name="notific_discord_test" xml:space="preserve">
+    <value>Test Discord</value>
+  </data>
+  <data name="notific_discord_test_success" xml:space="preserve">
+    <value>Discord test successful</value>
+  </data>
+  <data name="notific_telegram_title" xml:space="preserve">
+    <value>Telegram</value>
+  </data>
+  <data name="notific_telegram_bot_token" xml:space="preserve">
+    <value>Bot token</value>
+  </data>
+  <data name="notific_telegram_chat_id" xml:space="preserve">
+    <value>Chat ID</value>
+  </data>
+  <data name="notific_telegram_test" xml:space="preserve">
+    <value>Test Telegram</value>
+  </data>
+  <data name="notific_telegram_test_success" xml:space="preserve">
+    <value>Telegram test successful</value>
+  </data>
+  <data name="notific_enabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
 </root>

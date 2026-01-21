@@ -160,4 +160,10 @@ public static class PipeClient
     public static void TestNtfy()
         => SendRequestNoPayload<object?>(PipeProtocol.CmdTestNtfy);
 
+    public static void TestDiscord()
+        => SendRequestNoPayload<object?>(PipeProtocol.CmdTestDiscord);
+
+    public static void TestTelegram()
+        => SendRequestNoPayload<object?>(PipeProtocol.CmdTestTelegram);
+
 }

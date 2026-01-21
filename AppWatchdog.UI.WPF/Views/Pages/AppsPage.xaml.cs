@@ -11,6 +11,7 @@ namespace AppWatchdog.UI.WPF.Views.Pages;
 
 public partial class AppsPage : Page
 {
+    private readonly AppsViewModel _vm;
     private readonly IContentDialogService _contentDialogService;
     private readonly CancellationTokenSource _dialogCts = new();
     public AppsPage(
@@ -18,8 +19,16 @@ public partial class AppsPage : Page
          IContentDialogService contentDialogService)
     {
         InitializeComponent();
+        _vm = vm;
         DataContext = vm;
         _contentDialogService = contentDialogService;
+
+        Loaded += OnLoaded;
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await _vm.ActivateAsync();
     }
 
     private async void AppsListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
