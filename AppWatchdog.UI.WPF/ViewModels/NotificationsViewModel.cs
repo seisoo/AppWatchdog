@@ -284,7 +284,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
 
 
     [RelayCommand]
-    private async Task TestDiscordAsync()
+    private async Task TestDiscordAsync() 
     {
         try
         {
