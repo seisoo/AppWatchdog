@@ -87,55 +87,31 @@ jobs:
       # =========================
       # 📦 COLLECT + ZIP
       # =========================
-      - name: Collect Outputs + ZIPs
+      - name: Generate changelog
         shell: powershell
         run: |
-          $targets = @("win-x64", "win-x86", "win-arm64")
+          git fetch --tags
 
-          foreach ($t in $targets) {
-            $outDir = "release\$t"
-            New-Item -ItemType Directory -Force $outDir | Out-Null
+          $currentTag = "${{ env.TAG }}"
 
-            Copy-Item `
-              "AppWatchdog.Service/bin/Release/net8.0-windows/$t/publish/AppWatchdog.Service.exe" `
-              $outDir -Force
+          # Get previous tag (exclude current)
+          $prevTag = git tag --sort=-creatordate |
+                     Where-Object { $_ -ne $currentTag } |
+                     Select-Object -First 1
 
-            Copy-Item `
-              "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$t/publish/AppWatchdog.UI.WPF.exe" `
-              $outDir -Force
-
-            Compress-Archive `
-              -Path "$outDir\*" `
-              -DestinationPath "AppWatchdog_${{ env.TAG }}_$t.zip" `
-              -Force
+          if (-not $prevTag) {
+            Write-Host "No previous tag found – using full history"
+            $log = git log "$currentTag" --pretty=format:"- %s"
+          } else {
+            Write-Host "Generating changelog from $prevTag to $currentTag"
+            $log = git log "$prevTag..$currentTag" --pretty=format:"- %s"
           }
 
-           - name: Generate changelog
-              shell: powershell
-              run: |
-              git fetch --tags
-    
-              $currentTag = "${{ env.TAG }}"
-    
-              # Get previous tag (exclude current)
-              $prevTag = git tag --sort=-creatordate |
-                         Where-Object { $_ -ne $currentTag } |
-                         Select-Object -First 1
-    
-              if (-not $prevTag) {
-                Write-Host "No previous tag found – using full history"
-                $log = git log "$currentTag" --pretty=format:"- %s"
-              } else {
-                Write-Host "Generating changelog from $prevTag to $currentTag"
-                $log = git log "$prevTag..$currentTag" --pretty=format:"- %s"
-              }
-    
-              if (-not $log) {
-                $log = "- No code changes"
-              }
-    
-              $log | Out-File changelog.txt -Encoding utf8
+          if (-not $log) {
+            $log = "- No code changes"
+          }
 
+          $log | Out-File changelog.txt -Encoding utf8
 
 
       - name: Create GitHub Release
