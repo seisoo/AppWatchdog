@@ -30,8 +30,10 @@ public partial class AppsViewModel : DirtyViewModelBase
     [ObservableProperty]
     private WatchedAppItemViewModel? _selectedApp;
 
+    public bool HasSelectedApp => SelectedApp != null;
+
     [ObservableProperty]
-    private int _checkIntervalMinutes = 5;
+    private int _checkIntervalSeconds = 5;
 
     [ObservableProperty]
     private int _mailIntervalHours = 12;
@@ -97,28 +99,67 @@ public partial class AppsViewModel : DirtyViewModelBase
     {
         using var _ = SuppressDirty();
 
-        Apps.Clear();
-
         var cfg = await Task.Run(() => _pipe.GetConfig());
 
-        CheckIntervalMinutes = cfg.CheckIntervalMinutes;
+        CheckIntervalSeconds = cfg.CheckIntervalSeconds;
         MailIntervalHours = cfg.MailIntervalHours;
 
-        foreach (var app in cfg.Apps)
-        {
-            var vm = WatchedAppItemViewModel.FromModel(app, MarkDirty);
-            Apps.Add(vm);
-        }
+        SyncApps(cfg.Apps);
 
-        SelectedApp = Apps.FirstOrDefault();
+        SelectedApp ??= Apps.FirstOrDefault();
+
         ClearDirty();
     }
+
 
     [RelayCommand]
     private async Task ReloadAsync()
     {
         await LoadAsync();
     }
+
+    private void SyncApps(System.Collections.Generic.IEnumerable<WatchedApp> models)
+    {
+        // 1️⃣ Entfernen, was es nicht mehr gibt
+        for (int i = Apps.Count - 1; i >= 0; i--)
+        {
+            var vm = Apps[i];
+            if (!models.Any(m => m.ExePath == vm.ExePath))
+                Apps.RemoveAt(i);
+        }
+
+        // 2️⃣ Updaten / Hinzufügen
+        foreach (var model in models)
+        {
+            var vm = Apps.FirstOrDefault(a => a.ExePath == model.ExePath);
+
+            if (vm == null)
+            {
+                Apps.Add(WatchedAppItemViewModel.FromModel(model, MarkDirty));
+            }
+            else
+            {
+                // 🔁 bestehendes VM aktualisieren
+                vm.Name = model.Name;
+                vm.Enabled = model.Enabled;
+                vm.Arguments = model.Arguments;
+                vm.ExePath = model.ExePath;
+
+                if (model.UptimeKuma != null)
+                {
+                    vm.KumaEnabled = model.UptimeKuma.Enabled;
+                    vm.KumaBaseUrl = model.UptimeKuma.BaseUrl;
+                    vm.KumaPushToken = model.UptimeKuma.PushToken;
+                    vm.KumaIntervalSeconds = model.UptimeKuma.IntervalSeconds;
+                }
+                else
+                {
+                    vm.KumaEnabled = false;
+                }
+            }
+        }
+    }
+
 
     [RelayCommand]
     private void Add()
@@ -165,7 +206,7 @@ public partial class AppsViewModel : DirtyViewModelBase
         {
             var cfg = await Task.Run(() => _pipe.GetConfig());
 
-            cfg.CheckIntervalMinutes = CheckIntervalMinutes;
+            cfg.CheckIntervalSeconds = CheckIntervalSeconds;
             cfg.MailIntervalHours = MailIntervalHours;
 
             cfg.Apps.Clear();
@@ -195,6 +236,11 @@ public partial class AppsViewModel : DirtyViewModelBase
             Application.Current.Dispatcher.Invoke(SaveCommand.NotifyCanExecuteChanged);
     }
 
-    partial void OnCheckIntervalMinutesChanged(int value) => MarkDirty();
+    partial void OnSelectedAppChanged(WatchedAppItemViewModel? value)
+    {
+        OnPropertyChanged(nameof(HasSelectedApp));
+    }
+
+    partial void OnCheckIntervalSecondsChanged(int value) => MarkDirty();
     partial void OnMailIntervalHoursChanged(int value) => MarkDirty();
 }

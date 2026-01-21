@@ -181,7 +181,7 @@
     <value>Argumente (z. B. --Version)</value>
   </data>
   <data name="apps_check_interval" xml:space="preserve">
-    <value>Prüfintervall (Minuten)</value>
+    <value>Prüfintervall (Sekunden)</value>
   </data>
   <data name="apps_edit_job_description" xml:space="preserve">
     <value>Bitte gib einen neuen Namen für den Watch-Job dieser Anwendung ein.</value>
@@ -596,5 +596,23 @@
   </data>
   <data name="notific_enabled" xml:space="preserve">
     <value>Aktiviert</value>
+  </data>
+  <data name="jobs_live_title" xml:space="preserve">
+    <value>Jobs in Ausführung</value>
+  </data>
+  <data name="jobs_live_description" xml:space="preserve">
+    <value>Hier kannst du alle aktuellen Jobs sehen welche im Dienst ausgeführt werden.</value>
+  </data>
+  <data name="UP" xml:space="preserve">
+    <value>AN</value>
+  </data>
+  <data name="DOWN" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="UNKNOWN" xml:space="preserve">
+    <value>Unbekannt</value>
+  </data>
+  <data name="RECOVERY_FAILED" xml:space="preserve">
+    <value>Neustart fehlgeschlagen</value>
   </data>
 </root>

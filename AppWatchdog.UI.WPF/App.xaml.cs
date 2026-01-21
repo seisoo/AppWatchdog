@@ -96,6 +96,7 @@ public partial class App : Application
                 services.AddSingleton<LogsViewModel>();
                 services.AddSingleton<AboutViewModel>();
                 services.AddSingleton<ServicePage>();
+                services.AddSingleton<JobsPage>();
                 services.AddSingleton<AppsPage>();
                 services.AddSingleton<NotificationsPage>();
                 services.AddSingleton<LogsPage>();
