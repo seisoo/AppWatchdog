@@ -73,11 +73,19 @@ Logs are stored locally.
 ---
 
 ## 🧭 Roadmap
-- ~~Multi-language UI~~ ✔️ (~~missing config~~)
+- ~~Multi-language UI~~ ✔️
 - ~~Encryption~~ ✔️
+- ~~Telegram & Discord notifications~~ ✔️
 - Service & website checks
-- Linux support? (currently discarded)
-- Telegram & Discord notifications
+- more? idk
+
+---
+
+## Support & Contact
+
+If you find a bug, have a question, or would like to suggest an improvement, please create an **issue** in this repository.  
+Alternatively, you can contact me directly. Feedback and contributions are always welcome!
+
 
 ---
 
