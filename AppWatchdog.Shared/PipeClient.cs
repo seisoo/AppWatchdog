@@ -37,6 +37,11 @@ public static class PipeClient
     public static LogDayResponse GetLogDay(string day)
         => SendRequestWithPayload<LogDayResponse>(PipeProtocol.CmdGetLogDay, new LogDayRequest { Day = day });
 
+    public static List<JobSnapshot> GetJobs()
+    => SendRequestNoPayload<List<JobSnapshot>>(PipeProtocol.CmdGetJobs);
+
+
+
     private static void SendRequest<TPayload>(string command, TPayload payload)
     {
         var req = new PipeProtocol.Request

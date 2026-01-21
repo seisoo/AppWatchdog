@@ -250,7 +250,7 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Check interval (minutes).
+        ///   Looks up a localized string similar to Check interval (seconds).
         /// </summary>
         public static string apps_check_interval {
             get {
@@ -574,6 +574,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DOWN.
+        /// </summary>
+        public static string DOWN {
+            get {
+                return ResourceManager.GetString("DOWN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The service action could not be completed..
         /// </summary>
         public static string error_service_action_failed_text {
@@ -732,6 +741,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string install {
             get {
                 return ResourceManager.GetString("install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Here you can see all currently running jobs in the service..
+        /// </summary>
+        public static string jobs_live_description {
+            get {
+                return ResourceManager.GetString("jobs_live_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jobs running.
+        /// </summary>
+        public static string jobs_live_title {
+            get {
+                return ResourceManager.GetString("jobs_live_title", resourceCulture);
             }
         }
         
@@ -1195,6 +1222,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restart failed.
+        /// </summary>
+        public static string RECOVERY_FAILED {
+            get {
+                return ResourceManager.GetString("RECOVERY_FAILED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reinstall.
         /// </summary>
         public static string reinstall {
@@ -1479,6 +1515,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string start {
             get {
                 return ResourceManager.GetString("start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to unknown.
+        /// </summary>
+        public static string UNKNOWN {
+            get {
+                return ResourceManager.GetString("UNKNOWN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ON.
+        /// </summary>
+        public static string UP {
+            get {
+                return ResourceManager.GetString("UP", resourceCulture);
             }
         }
         

@@ -1,11 +1,12 @@
-﻿using System.Text.Json.Serialization;
+﻿using AppWatchdog.Shared.Jobs;
+using System.Text.Json.Serialization;
 
 namespace AppWatchdog.Shared;
 
 public sealed class WatchdogConfig
 {
     public List<WatchedApp> Apps { get; set; } = new();
-    public int CheckIntervalMinutes { get; set; } = 5;
+    public int CheckIntervalSeconds { get; set; } = 5;
     public int MailIntervalHours { get; set; } = 12;
     public SmtpSettings Smtp { get; set; } = new();
     public NtfySettings Ntfy { get; set; } = new();
@@ -135,4 +136,38 @@ public sealed class UptimeKumaSettings
     public int IntervalSeconds { get; set; } = 60;
 
     public string? MonitorName { get; set; }
+}
+
+public sealed class JobSnapshot
+{
+    public JobKind Kind { get; init; }
+    public string JobId { get; set; } = "";
+    public string JobType { get; set; } = "";
+
+    public string AppName { get; set; } = "";
+    public string ExePath { get; set; } = "";
+
+    public bool Enabled { get; set; }
+
+    // Health
+    public bool IsRunning { get; set; }
+    public int ConsecutiveDown { get; set; }
+    public int ConsecutiveStartFailures { get; set; }
+
+    // Timing
+    public DateTimeOffset? LastCheckUtc { get; set; }
+    public DateTimeOffset? LastStartAttemptUtc { get; set; }
+    public DateTimeOffset? NextStartAttemptUtc { get; set; }
+
+    // Notifications
+    public bool DownNotified { get; set; }
+    public bool RestartNotified { get; set; }
+    public bool RecoveryFailedNotified { get; set; }
+
+    // Scheduler
+    public TimeSpan Interval { get; set; }
+    public DateTimeOffset? NextRunUtc { get; set; }
+
+    // Derived state (für UI!)
+    public string EffectiveState { get; set; } = ""; // UP / DOWN / RECOVERY_FAILED
 }

@@ -271,14 +271,14 @@
                                                 FontWeight="SemiBold"
                                                 Text="{Binding Name}" />
 
-                                            <TextBlock Margin="12,0,0,0" DockPanel.Dock="Right">
+                                            <!--<TextBlock Margin="12,0,0,0" DockPanel.Dock="Right">
                                                 <TextBlock.Text>
                                                     <MultiBinding StringFormat="{}{0}">
                                                         <Binding Path="[service_app_active]" Source="{StaticResource Strings}" />
                                                         <Binding Path="IsRunning" />
                                                     </MultiBinding>
                                                 </TextBlock.Text>
-                                            </TextBlock>
+                                            </TextBlock>-->
 
                                         </DockPanel>
                                     </DataTemplate>
