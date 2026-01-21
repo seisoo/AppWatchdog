@@ -56,10 +56,11 @@ public sealed class NotificationDispatcher
             }
             catch (Exception ex)
             {
-                FileLogStore.WriteLine("ERROR",string.Format("Notification dispatch failed: {1} {2} : {0}",
+                _log.LogError(
                     ex,
+                    "Notification dispatch failed: {Type} {App}",
                     ctx.Type,
-                    ctx.App.Name));
+                    ctx.App.Name);
             }
         });
     }
@@ -70,8 +71,7 @@ public sealed class NotificationDispatcher
 
     private async Task DispatchInternalAsync(NotificationContext ctx)
     {
-        // ❌ ValidateOnce bewusst NICHT mehr verwenden
-        // Jeder Kanal validiert sich selbst
+        ValidateOnce();
 
         var sys = SystemInfoCollector.Collect();
         var sysHtml = SystemInfoCollector.FormatForHtml(sys);
@@ -82,86 +82,91 @@ public sealed class NotificationDispatcher
             ctx.App.Name);
 
         var detailsHtml = BuildDetailsHtml(ctx);
+
         var textMessage = BuildPlainTextMessage(ctx, sys);
 
         // ---------------- MAIL ----------------
         if (_mail.IsConfigured(out _) &&
             (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Mail))
         {
-            try
-            {
-                var mailHtml = MailNotifier.WrapHtmlTemplate(
-                    ctx.Title,
-                    summaryHtml,
-                    detailsHtml,
-                    sysHtml);
+            var mailHtml = MailNotifier.WrapHtmlTemplate(
+                ctx.Title,
+                summaryHtml,
+                detailsHtml,
+                sysHtml);
 
-                MailNotifier.SendHtml(_cfg.Smtp, ctx.Title, mailHtml);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "SMTP send failed", ex);
-            }
+            MailNotifier.SendHtml(_cfg.Smtp, ctx.Title, mailHtml);
         }
 
         // ---------------- NTFY ----------------
         if (_ntfy.IsConfigured(out _) &&
             (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Ntfy))
         {
-            try
-            {
-                await NtfyNotifier.SendAsync(
-                    _cfg.Ntfy,
-                    ctx.Title,
-                    textMessage,
-                    ctx.NtfyTags,
-                    ctx.NtfyPriority)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "NTFY send failed", ex);
-            }
+            await NtfyNotifier.SendAsync(
+                _cfg.Ntfy,
+                ctx.Title,
+                textMessage,
+                ctx.NtfyTags,
+                ctx.NtfyPriority)
+                .ConfigureAwait(false);
         }
 
         // ---------------- DISCORD ----------------
         if (_discord.IsConfigured(out _) &&
             (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Discord))
         {
-            try
-            {
-                await _discord.SendAsync(
-                    ctx.Title,
-                    $"{ctx.DiscordEmoji} **{ctx.Type.ToString().ToUpper()}**\n\n{textMessage}",
-                    ctx.DiscordColor)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "Discord send failed", ex);
-            }
+            await _discord.SendAsync(
+                ctx.Title,
+                $"{ctx.DiscordEmoji} **{ctx.Type.ToString().ToUpper()}**\n\n{textMessage}",
+                ctx.DiscordColor)
+                .ConfigureAwait(false);
         }
 
         // ---------------- TELEGRAM ----------------
         if (_telegram.IsConfigured(out _) &&
             (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Telegram))
         {
-            try
-            {
-                await TelegramNotifier.SendAsync(
-                    _cfg.Telegram,
-                    $"{ctx.DiscordEmoji} *{ctx.Type.ToString().ToUpper()}*\n\n{textMessage}")
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "Telegram send failed", ex);
-            }
+            await TelegramNotifier.SendAsync(
+                _cfg.Telegram,
+                $"{ctx.DiscordEmoji} *{ctx.Type.ToString().ToUpper()}*\n\n{textMessage}")
+                .ConfigureAwait(false);
         }
 
-        FileLogStore.WriteLine(
-            "INFO",
-            $"Notification {ctx.Type} dispatched: {ctx.App.Name} [{ctx.TestOnlyChannel}]");
+        _log.LogInformation(
+            "Notification {Type} dispatched: {App} [{channel}]",
+            ctx.Type,
+            ctx.App.Name,
+            ctx.TestOnlyChannel);
+    }
+
+    private void ValidateOnce()
+    {
+        if (_validated)
+            return;
+
+        _validated = true;
+
+        ValidateNotifier(_mail);
+        ValidateNotifier(_ntfy);
+        ValidateNotifier(_discord);
+        ValidateNotifier(_telegram);
+    }
+
+    private void ValidateNotifier<T>(NotifierBase<T> notifier)
+    {
+        if (!notifier.IsConfigured(out var error))
+        {
+            _log.LogWarning(
+                "Notifier '{Name}' disabled: {Error}",
+                notifier.Name,
+                error);
+        }
+        else
+        {
+            _log.LogInformation(
+                "Notifier '{Name}' configured.",
+                notifier.Name);
+        }
     }
 
     private static string BuildDetailsHtml(NotificationContext ctx)

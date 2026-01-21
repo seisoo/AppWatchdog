@@ -10,7 +10,9 @@ public sealed class LocalizationService
     private readonly PipeFacade _pipe;
     private readonly BackendStateService _backend;
 
+    private WatchdogConfig? _config;
 
+    // Default fallback language (MUST exist)
     private const string DefaultCulture = "en-GB";
 
     public string CurrentCultureName { get; private set; } = DefaultCulture;
@@ -25,29 +27,40 @@ public sealed class LocalizationService
         Initialize();
     }
 
+    // =====================================================
+    // INITIALIZATION (STARTUP-SAFE)
+    // =====================================================
     private void Initialize()
     {
         try
         {
-            var cfg = _pipe.GetConfig();
+            _config = _pipe.GetConfig();
 
-            if (cfg != null && !string.IsNullOrWhiteSpace(cfg.CultureName))
+            if (_config != null &&
+                !string.IsNullOrWhiteSpace(_config.CultureName))
             {
-                ApplyCulture(cfg.CultureName);
+                ApplyCulture(_config.CultureName, save: false);
                 _backend.SetReady(AppStrings.service_connected);
                 return;
             }
 
-            ApplyCulture(CultureInfo.CurrentUICulture.Name);
+            // Pipe reachable but no culture stored
+            ApplyCulture(CultureInfo.CurrentUICulture.Name, save: false);
             _backend.SetReady(AppStrings.service_connected);
         }
         catch
         {
-            ApplyCulture(DefaultCulture);
-            _backend.SetOffline(AppStrings.error_service_notavailable_text);
+            // Pipe unreachable → SAFE FALLBACK
+            ApplyCulture(DefaultCulture, save: false);
+
+            _backend.SetOffline(
+                AppStrings.error_service_notavailable_text);
         }
     }
 
+    // =====================================================
+    // PUBLIC API
+    // =====================================================
     public void SetLanguage(string cultureName)
     {
         if (string.IsNullOrWhiteSpace(cultureName))
@@ -56,26 +69,15 @@ public sealed class LocalizationService
         if (cultureName == CurrentCultureName)
             return;
 
-        ApplyCulture(cultureName);
-
-        try
-        {
-            var cfg = _pipe.GetConfig();   // 🔑 WICHTIG
-            if (cfg != null)
-            {
-                cfg.CultureName = cultureName;
-                _pipe.SaveConfig(cfg);
-            }
-        }
-        catch
-        {
-            // optional logging
-        }
+        ApplyCulture(cultureName, save: true);
     }
 
-
-    private void ApplyCulture(string cultureName)
+    // =====================================================
+    // CORE CULTURE LOGIC
+    // =====================================================
+    private void ApplyCulture(string cultureName, bool save)
     {
+        // Validate culture
         CultureInfo culture;
         try
         {
@@ -95,6 +97,13 @@ public sealed class LocalizationService
         Thread.CurrentThread.CurrentUICulture = culture;
 
         RefreshStrings();
+
+        // Persist only if backend config exists
+        if (save && _config != null)
+        {
+            _config.CultureName = cultureName;
+            _pipe.SaveConfig(_config);
+        }
     }
 
     // =====================================================
