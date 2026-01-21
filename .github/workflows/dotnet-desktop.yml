@@ -110,19 +110,32 @@ jobs:
               -Force
           }
 
-      - name: Generate changelog
-        shell: powershell
-        run: |
-          git fetch --tags
-      
-          $prevTag = git tag --sort=-creatordate | Select-Object -Skip 1 -First 1
-          if (-not $prevTag) {
-            $log = git log --pretty=format:"- %s"
-          } else {
-            $log = git log "$prevTag..HEAD" --pretty=format:"- %s"
-          }
-      
-          $log | Out-File changelog.txt -Encoding utf8
+           - name: Generate changelog
+              shell: powershell
+              run: |
+              git fetch --tags
+    
+              $currentTag = "${{ env.TAG }}"
+    
+              # Get previous tag (exclude current)
+              $prevTag = git tag --sort=-creatordate |
+                         Where-Object { $_ -ne $currentTag } |
+                         Select-Object -First 1
+    
+              if (-not $prevTag) {
+                Write-Host "No previous tag found – using full history"
+                $log = git log "$currentTag" --pretty=format:"- %s"
+              } else {
+                Write-Host "Generating changelog from $prevTag to $currentTag"
+                $log = git log "$prevTag..$currentTag" --pretty=format:"- %s"
+              }
+    
+              if (-not $log) {
+                $log = "- No code changes"
+              }
+    
+              $log | Out-File changelog.txt -Encoding utf8
+
 
 
       - name: Create GitHub Release
