@@ -25,12 +25,12 @@ jobs:
           $version = $props.Project.PropertyGroup.Version
 
           if (-not $version) {
-            Write-Error "Version not found in Directory.Build.props"
+            Write-Error 'Version not found in Directory.Build.props'
             exit 1
           }
 
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "TAG=v$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          'VERSION=' + $version | Out-File $env:GITHUB_ENV -Append
+          'TAG=v' + $version | Out-File $env:GITHUB_ENV -Append
 
       # 3️⃣ Ensure tag does NOT already exist
       - name: Delete tag if it exists (local + remote)
@@ -38,20 +38,18 @@ jobs:
         run: |
           git fetch --tags
 
-          if (git tag -l "${{ env.TAG }}") {
-            Write-Host "Tag exists – deleting ${{ env.TAG }}"
-            git tag -d "${{ env.TAG }}"
-            git push origin ":refs/tags/${{ env.TAG }}"
-          } else {
-            Write-Host "Tag does not exist – creating new"
+          if (git tag -l '${{ env.TAG }}') {
+            Write-Host 'Tag exists – deleting'
+            git tag -d '${{ env.TAG }}'
+            git push origin ':refs/tags/${{ env.TAG }}'
           }
 
       # 4️⃣ Create and push tag
       - name: Create and push tag
         shell: powershell
         run: |
-          git tag "${{ env.TAG }}"
-          git push origin "${{ env.TAG }}"
+          git tag '${{ env.TAG }}'
+          git push origin '${{ env.TAG }}'
 
       # 5️⃣ Restore
       - name: Restore
@@ -63,7 +61,7 @@ jobs:
       - name: Publish Service + UI (all RIDs)
         shell: powershell
         run: |
-          $targets = @("win-x64", "win-x86", "win-arm64")
+          $targets = 'win-x64','win-x86','win-arm64'
 
           foreach ($t in $targets) {
             dotnet publish AppWatchdog.Service/AppWatchdog.Service.csproj `
@@ -85,56 +83,39 @@ jobs:
       - name: Collect Outputs + ZIPs
         shell: powershell
         run: |
-          $targets = @("win-x64", "win-x86", "win-arm64")
+          $targets = 'win-x64','win-x86','win-arm64'
 
           foreach ($t in $targets) {
-            $outDir = "release\$t"
+            $outDir = 'release\' + $t
             New-Item -ItemType Directory -Force $outDir | Out-Null
 
-            Copy-Item `
-              "AppWatchdog.Service/bin/Release/net8.0-windows/$t/publish/AppWatchdog.Service.exe" `
-              $outDir -Force
+            Copy-Item "AppWatchdog.Service/bin/Release/net8.0-windows/$t/publish/AppWatchdog.Service.exe" $outDir -Force
+            Copy-Item "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$t/publish/AppWatchdog.UI.WPF.exe" $outDir -Force
 
-            Copy-Item `
-              "AppWatchdog.UI.WPF/bin/Release/net8.0-windows/$t/publish/AppWatchdog.UI.WPF.exe" `
-              $outDir -Force
-
-            Compress-Archive `
-              -Path "$outDir\*" `
-              -DestinationPath "AppWatchdog_${{ env.TAG }}_$t.zip" `
-              -Force
+            Compress-Archive "$outDir\*" "AppWatchdog_${{ env.TAG }}_$t.zip" -Force
           }
 
       # =========================
-      # 📝 CHANGELOG (TAG → TAG)
+      # 📝 CHANGELOG (PREV TAG → CURRENT TAG)
       # =========================
       - name: Generate changelog
         shell: powershell
         run: |
           git fetch --tags
 
-          $currentTag = "${{ env.TAG }}"
+          $currentTag = '${{ env.TAG }}'
+          $prevTag = git tag --sort=-creatordate | Where-Object { $_ -ne $currentTag } | Select-Object -First 1
 
-          $prevTag = git tag --sort=-creatordate |
-            Where-Object { $_ -ne $currentTag } |
-            Select-Object -First 1
-
-          if ($null -eq $prevTag) {
-            Write-Host "No previous tag found – first release"
-            $log = git log $currentTag --pretty=format:"- %s"
+          if (-not $prevTag) {
+            git log $currentTag --pretty=format:'- %s' > changelog.txt
           }
           else {
-            Write-Host "Changelog from $prevTag to $currentTag"
-            $log = git log "$prevTag..$currentTag" --pretty=format:"- %s"
+            git log "$prevTag..$currentTag" --pretty=format:'- %s' > changelog.txt
           }
 
-          if (-not $log) {
-            $log = @(
-              "- No code changes"
-            )
+          if ((Get-Content changelog.txt).Length -eq 0) {
+            'No code changes' | Out-File changelog.txt -Encoding utf8
           }
-
-          $log | Out-File changelog.txt -Encoding utf8
 
       # =========================
       # 🚀 GITHUB RELEASE
