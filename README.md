@@ -68,7 +68,7 @@ Configured entirely via the UI:
 
 - Executable & arguments
 - Enable/disable monitoring
-- Notifications (SMTP, ntfy)
+- Notifications (SMTP, ntfy, Discord webhooks, Telegram Bot)
 - Uptime Kuma heartbeat
 
 Logs are stored locally.
