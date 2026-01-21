@@ -6,7 +6,7 @@
 AppWatchdog is a lightweight **Windows watchdog** consisting of a **Windows Service** and a **WPF UI**.  
 It monitors applications, detects failures reliably, and performs automatic recovery.
 
----
+--- 
 
 ## ✨ Features
 - 🔍 Process monitoring with multi-step failure detection
