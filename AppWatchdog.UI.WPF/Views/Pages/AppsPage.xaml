@@ -9,6 +9,7 @@
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16">
 
+            <!--  HEADER  -->
             <ui:Card
                 Height="154"
                 Margin="0,0,0,16"
@@ -33,17 +34,16 @@
                             Foreground="White"
                             Text="AppWatchdog" />
 
-                        <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,12,0"
-                                Foreground="#E5E7EB"
-                                Text="天網恢恢、疎にして漏らさず" />
-                        </StackPanel>
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            Foreground="#E5E7EB"
+                            Text="天網恢恢、疎にして漏らさず" />
                     </StackPanel>
 
                 </Grid>
             </ui:Card>
 
+            <!--  SETTINGS  -->
             <ui:Card Margin="0,0,0,16">
                 <StackPanel>
 
@@ -82,6 +82,7 @@
                 </StackPanel>
             </ui:Card>
 
+            <!--  GENERAL  -->
             <ui:Card Margin="0,0,0,16">
                 <Grid Margin="12">
                     <Grid.ColumnDefinitions>
@@ -113,11 +114,11 @@
                     <ui:NumberBox
                         Grid.Row="2"
                         Grid.Column="1"
-                        Width="120"
+                        Width="140"
                         HorizontalAlignment="Right"
                         Maximum="1440"
                         Minimum="1"
-                        Value="{Binding CheckIntervalMinutes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        Value="{Binding CheckIntervalSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock
                         Grid.Row="3"
@@ -129,7 +130,7 @@
                     <ui:NumberBox
                         Grid.Row="3"
                         Grid.Column="1"
-                        Width="120"
+                        Width="140"
                         Margin="0,8,0,0"
                         HorizontalAlignment="Right"
                         Maximum="168"
@@ -138,6 +139,7 @@
                 </Grid>
             </ui:Card>
 
+            <!--  APPS  -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="280" />
@@ -145,6 +147,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <!--  LEFT  -->
                 <ui:Card Grid.Column="0">
                     <StackPanel>
 
@@ -168,12 +171,13 @@
                                 Content="{Binding Source={StaticResource Strings}, Path=[apps_add]}"
                                 Icon="{ui:SymbolIcon Symbol=Add24}" />
 
+                            <!--  ✅ FIX  -->
                             <ui:Button
                                 Appearance="Secondary"
                                 Command="{Binding RemoveCommand}"
                                 Content="{Binding Source={StaticResource Strings}, Path=[apps_remove]}"
                                 Icon="{ui:SymbolIcon Symbol=Delete24}"
-                                IsEnabled="{Binding SelectedApp}" />
+                                IsEnabled="{Binding HasSelectedApp}" />
                         </WrapPanel>
 
                         <Separator Margin="0,5" />
@@ -196,7 +200,8 @@
                     </StackPanel>
                 </ui:Card>
 
-                <ui:Card Grid.Column="2">
+                <!--  RIGHT  -->
+                <ui:Card Grid.Column="2" IsEnabled="{Binding HasSelectedApp}">
                     <ScrollViewer>
                         <StackPanel DataContext="{Binding SelectedApp}">
 
