@@ -95,9 +95,6 @@ jobs:
             Compress-Archive "$outDir\*" "AppWatchdog_${{ env.TAG }}_$t.zip" -Force
           }
 
-      # =========================
-      # 📦 Generate changelog
-      # =========================
       - name: Generate changelog
         shell: powershell
         env:
@@ -105,19 +102,18 @@ jobs:
         run: |
           git fetch --tags
 
-          $repo = "${{ github.repository }}"
-          $currentTag = "${{ env.TAG }}"
+          $repo = '${{ github.repository }}'
+          $currentTag = '${{ env.TAG }}'
 
           $prevTag = git tag --sort=-creatordate |
             Where-Object { $_ -ne $currentTag } |
             Select-Object -First 1
 
-          if (-not $prevTag) {
-            Write-Host "No previous tag – first release"
-            $compareUrl = "https://github.com/$repo/releases/tag/$currentTag"
+          if ($prevTag) {
+            $compareUrl = "https://github.com/$repo/compare/$prevTag...$currentTag"
           }
           else {
-            $compareUrl = "https://github.com/$repo/compare/$prevTag...$currentTag"
+            $compareUrl = "https://github.com/$repo/releases/tag/$currentTag"
           }
 
           $headers = @{
@@ -125,48 +121,48 @@ jobs:
             Accept        = "application/vnd.github+json"
           }
 
-          $prs = @()
+          # ✅ URL SAFE IN VARIABLE (NO & PARSER ISSUE)
+          $prUrl = "https://api.github.com/repos/$repo/pulls?state=closed&base=main&per_page=100"
 
-          if ($prevTag) {
-            $prs = Invoke-RestMethod `
-              -Headers $headers `
-              -Uri "https://api.github.com/repos/$repo/pulls?state=closed&base=main&per_page=100"
-          }
+          $prs = Invoke-RestMethod `
+            -Uri $prUrl `
+            -Headers $headers `
+            -Method Get
 
           $changes = @()
 
           foreach ($pr in $prs) {
-            if ($pr.merged_at) {
-              if ($prevTag) {
-                $mergeSha = $pr.merge_commit_sha
-                $isInRange = git merge-base --is-ancestor $prevTag $mergeSha 2>$null
-                if ($LASTEXITCODE -ne 0) { continue }
-              }
+            if (-not $pr.merged_at) { continue }
 
-              $entry = "* **$($pr.title)**"
-
-              if ($pr.body) {
-                $cleanBody = $pr.body.Trim() -replace "`r?`n", " "
-                $entry += " – $cleanBody"
-              }
-
-              $entry += " by @$($pr.user.login) in $($pr.html_url)"
-              $changes += $entry
+            if ($prevTag) {
+              git merge-base --is-ancestor $prevTag $pr.merge_commit_sha 2>$null
+              if ($LASTEXITCODE -ne 0) { continue }
             }
+
+            $entry = "* **$($pr.title)**"
+
+            if ($pr.body) {
+              $body = ($pr.body -replace "`r?`n", " ").Trim()
+              $entry += " – $body"
+            }
+
+            $entry += " by @$($pr.user.login) in $($pr.html_url)"
+            $changes += $entry
           }
 
           if ($changes.Count -eq 0) {
-            $changes = @("* No user-visible changes")
+            $changes = @('* No user-visible changes')
           }
 
-          $output = @()
-          $output += "## What's Changed"
-          $output += ""
-          $output += $changes
-          $output += ""
-          $output += "**Full Changelog**: $compareUrl"
+          $out = @()
+          $out += "## What's Changed"
+          $out += ""
+          $out += $changes
+          $out += ""
+          $out += "**Full Changelog**: $compareUrl"
 
-          $output | Out-File changelog.txt -Encoding utf8
+          $out | Out-File changelog.txt -Encoding utf8
+
 
 
 
