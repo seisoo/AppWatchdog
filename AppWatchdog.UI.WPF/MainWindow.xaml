@@ -17,6 +17,7 @@
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterScreen">
 
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -50,19 +51,31 @@
             IsPaneOpen="True"
             IsPaneToggleVisible="True"
             IsTopSeparatorVisible="False"
-            OpenPaneLength="70"
+            OpenPaneLength="80"
             PaneDisplayMode="LeftFluent">
 
             <ui:NavigationView.PaneFooter>
                 <StackPanel Margin="3,0,0,8">
+
                     <ComboBox
                         IsEnabled="{Binding BackendState.IsReady}"
-                        SelectedValue="{Binding LanguageSelector.SelectedLanguage, Mode=TwoWay}"
-                        SelectedValuePath="Tag">
+                        ItemsSource="{Binding LanguageSelector.Languages}"
+                        SelectedItem="{Binding LanguageSelector.SelectedLanguage, Mode=TwoWay}">
 
-                        <ComboBoxItem Content="🇬🇧" Tag="en-US" />
-                        <ComboBoxItem Content="🇩🇪" Tag="de-DE" />
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Image
+                                    Width="24"
+                                    Height="16"
+                                    Source="{Binding Flag}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
                     </ComboBox>
+
+
+
+
+
                 </StackPanel>
             </ui:NavigationView.PaneFooter>
 

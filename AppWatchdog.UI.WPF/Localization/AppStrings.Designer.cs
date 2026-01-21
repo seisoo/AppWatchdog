@@ -493,6 +493,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string cancel {
+            get {
+                return ResourceManager.GetString("cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        public static string close {
+            get {
+                return ResourceManager.GetString("close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Config loaded..
         /// </summary>
         public static string config_loaded {
@@ -556,6 +574,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The service action could not be completed..
+        /// </summary>
+        public static string error_service_action_failed_text {
+            get {
+                return ResourceManager.GetString("error_service_action_failed_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action failed.
+        /// </summary>
+        public static string error_service_action_failed_title {
+            get {
+                return ResourceManager.GetString("error_service_action_failed_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show details.
         /// </summary>
         public static string error_service_dialog_showdetails {
@@ -570,6 +606,42 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string error_service_invalid_state {
             get {
                 return ResourceManager.GetString("error_service_invalid_state", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Watchdog service is not installed.\nDo you want to install it now?.
+        /// </summary>
+        public static string error_service_not_installed_text {
+            get {
+                return ResourceManager.GetString("error_service_not_installed_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service not installed.
+        /// </summary>
+        public static string error_service_not_installed_title {
+            get {
+                return ResourceManager.GetString("error_service_not_installed_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Watchdog service is installed but not running. Do you want to start it now?.
+        /// </summary>
+        public static string error_service_not_running_text {
+            get {
+                return ResourceManager.GetString("error_service_not_running_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service is stopped.
+        /// </summary>
+        public static string error_service_not_running_title {
+            get {
+                return ResourceManager.GetString("error_service_not_running_title", resourceCulture);
             }
         }
         
@@ -615,6 +687,60 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string error_service_unexpected_error {
             get {
                 return ResourceManager.GetString("error_service_unexpected_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service update required.
+        /// </summary>
+        public static string error_service_update_required {
+            get {
+                return ResourceManager.GetString("error_service_update_required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your service is outdated and needs an update,\ndo you want to proceed with the update?.
+        /// </summary>
+        public static string error_service_update_required_text {
+            get {
+                return ResourceManager.GetString("error_service_update_required_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The action was cancelled or the UAC prompt was not confirmed..
+        /// </summary>
+        public static string error_uac_cancelled_text {
+            get {
+                return ResourceManager.GetString("error_uac_cancelled_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Administrator privileges required.
+        /// </summary>
+        public static string error_uac_cancelled_title {
+            get {
+                return ResourceManager.GetString("error_uac_cancelled_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install.
+        /// </summary>
+        public static string install {
+            get {
+                return ResourceManager.GetString("install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Language.
+        /// </summary>
+        public static string language {
+            get {
+                return ResourceManager.GetString("language", resourceCulture);
             }
         }
         
@@ -952,6 +1078,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ok.
+        /// </summary>
+        public static string ok {
+            get {
+                return ResourceManager.GetString("ok", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pipe is not available ({0}).
         /// </summary>
         public static string pipe_not_available_ex {
@@ -961,11 +1096,47 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reinstall.
+        /// </summary>
+        public static string reinstall {
+            get {
+                return ResourceManager.GetString("reinstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string save {
             get {
                 return ResourceManager.GetString("save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Performing action ....
+        /// </summary>
+        public static string service_action_in_progress {
+            get {
+                return ResourceManager.GetString("service_action_in_progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The action was completed successfully..
+        /// </summary>
+        public static string service_action_success_text {
+            get {
+                return ResourceManager.GetString("service_action_success_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        public static string service_action_success_title {
+            get {
+                return ResourceManager.GetString("service_action_success_title", resourceCulture);
             }
         }
         
@@ -1200,6 +1371,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string service_username {
             get {
                 return ResourceManager.GetString("service_username", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start.
+        /// </summary>
+        public static string start {
+            get {
+                return ResourceManager.GetString("start", resourceCulture);
             }
         }
         

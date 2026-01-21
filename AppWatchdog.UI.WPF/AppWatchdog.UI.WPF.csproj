@@ -10,17 +10,21 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <CopyServiceExe>false</CopyServiceExe>
 		<ApplicationIcon>Images\ico.ico</ApplicationIcon>
-  <GenerateResourceDesignerPublicClass>true</GenerateResourceDesignerPublicClass>
+		<GenerateResourceDesignerPublicClass>true</GenerateResourceDesignerPublicClass>
   </PropertyGroup>
 
   <ItemGroup>
 	  <None Remove="Images\banner5.png" />
+	  <None Remove="Images\Flags\de.png" />
+	  <None Remove="Images\Flags\gb.png" />
 	  <None Remove="Images\ico.png" />
 	  <None Remove="Images\uac.png" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Resource Include="Images\banner5.png" />
+	  <Resource Include="Images\Flags\de.png" />
+	  <Resource Include="Images\Flags\gb.png" />
 	  <Resource Include="Images\ico.png" />
 	  <Resource Include="Images\uac.png" />
 	</ItemGroup>

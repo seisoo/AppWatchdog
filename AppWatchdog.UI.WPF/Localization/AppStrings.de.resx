@@ -504,4 +504,64 @@
   <data name="error_service_dialog_showdetails" xml:space="preserve">
     <value>Details anzeigen</value>
   </data>
+  <data name="language" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="error_service_update_required" xml:space="preserve">
+    <value>Dienst Update nötig</value>
+  </data>
+  <data name="error_service_update_required_text" xml:space="preserve">
+    <value>Der Windows Dienst benötigt ein Update,\nmöchtest du mit dem Vorgang fortfahren?</value>
+  </data>
+  <data name="ok" xml:space="preserve">
+    <value>Ok</value>
+  </data>
+  <data name="close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="error_service_not_installed_title" xml:space="preserve">
+    <value>Dienst nicht installiert</value>
+  </data>
+  <data name="error_service_not_installed_text" xml:space="preserve">
+    <value>Der Watchdog-Dienst ist nicht installiert.\nSoll er jetzt installiert werden?</value>
+  </data>
+  <data name="error_service_not_running_title" xml:space="preserve">
+    <value>Dienst ist gestoppt</value>
+  </data>
+  <data name="error_service_not_running_text" xml:space="preserve">
+    <value>Der Watchdog-Dienst ist installiert, aber nicht gestartet. Soll er jetzt gestartet werden?</value>
+  </data>
+  <data name="install" xml:space="preserve">
+    <value>Installieren</value>
+  </data>
+  <data name="reinstall" xml:space="preserve">
+    <value>Neu installieren</value>
+  </data>
+  <data name="start" xml:space="preserve">
+    <value>Starten</value>
+  </data>
+  <data name="service_action_in_progress" xml:space="preserve">
+    <value>Aktion wird durchgeführt ...</value>
+  </data>
+  <data name="service_action_success_title" xml:space="preserve">
+    <value>Erfolgreich</value>
+  </data>
+  <data name="service_action_success_text" xml:space="preserve">
+    <value>Die Aktion wurde erfolgreich ausgeführt.</value>
+  </data>
+  <data name="error_service_action_failed_title" xml:space="preserve">
+    <value>Aktion fehlgeschlagen</value>
+  </data>
+  <data name="error_uac_cancelled_title" xml:space="preserve">
+    <value>Administratorrechte erforderlich</value>
+  </data>
+  <data name="error_uac_cancelled_text" xml:space="preserve">
+    <value>Die Aktion wurde abgebrochen oder der UAC-Dialog wurde nicht bestätigt.</value>
+  </data>
+  <data name="error_service_action_failed_text" xml:space="preserve">
+    <value>Die Service-Aktion konnte nicht ausgeführt werden.</value>
+  </data>
+  <data name="cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
 </root>

@@ -115,6 +115,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock
@@ -220,6 +221,18 @@
                             Grid.Column="1"
                             Margin="12,0,0,8"
                             Text="{Binding ServiceProtocolVersion}" />
+
+                        <TextBlock
+                            Grid.Row="10"
+                            Margin="0,0,0,8"
+                            Opacity="0.8"
+                            Text="{Binding Source={StaticResource Strings}, Path=[language]}" />
+
+                        <TextBlock
+                            Grid.Row="10"
+                            Grid.Column="1"
+                            Margin="12,0,0,8"
+                            Text="{Binding LanguageSelector.SelectedLanguage.DisplayName}" />
                     </Grid>
                 </ui:Card>
 
