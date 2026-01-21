@@ -97,8 +97,6 @@ jobs:
 
       - name: Generate changelog
         shell: powershell
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --tags
 
@@ -110,55 +108,30 @@ jobs:
             Select-Object -First 1
 
           if ($prevTag) {
+            $range = "$prevTag..$currentTag"
             $compareUrl = 'https://github.com/' + $repo + '/compare/' + $prevTag + '...' + $currentTag
           }
           else {
+            $range = $currentTag
             $compareUrl = 'https://github.com/' + $repo + '/releases/tag/' + $currentTag
           }
 
-          $headers = @{
-            Authorization = 'Bearer ' + $env:GITHUB_TOKEN
-            Accept        = 'application/vnd.github+json'
-          }
+          # Collect commit messages (like GitHub does)
+          $commits = git log $range --pretty=format:'* %s'
 
-          $prUrl = 'https://api.github.com/repos/' + $repo + '/pulls?state=closed&base=main&per_page=100'
-
-          $prs = Invoke-RestMethod -Uri $prUrl -Headers $headers -Method Get
-
-          $changes = @()
-
-          foreach ($pr in $prs) {
-
-            if (-not $pr.merged_at) { continue }
-
-            if ($prevTag) {
-              git merge-base --is-ancestor $prevTag $pr.merge_commit_sha 2>$null
-              if ($LASTEXITCODE -ne 0) { continue }
-            }
-
-            $entry = '* **' + $pr.title + '**'
-
-            if ($pr.body) {
-              $body = ($pr.body -replace "`r|`n", ' ').Trim()
-              $entry = $entry + ' - ' + $body
-            }
-
-            $entry = $entry + ' by @' + $pr.user.login + ' in ' + $pr.html_url
-            $changes += $entry
-          }
-
-          if ($changes.Count -eq 0) {
-            $changes = @('* No user-visible changes')
+          if (-not $commits) {
+            $commits = '* No user-visible changes'
           }
 
           $out = @()
           $out += "## What's Changed"
           $out += ''
-          $out += $changes
+          $out += $commits
           $out += ''
           $out += '**Full Changelog**: ' + $compareUrl
 
           $out | Out-File changelog.txt -Encoding utf8
+
 
 
 
