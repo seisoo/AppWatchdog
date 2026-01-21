@@ -95,29 +95,80 @@ jobs:
             Compress-Archive "$outDir\*" "AppWatchdog_${{ env.TAG }}_$t.zip" -Force
           }
 
+      # =========================
+      # 📦 Generate changelog
+      # =========================
       - name: Generate changelog
         shell: powershell
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --tags
 
-          $currentTag = '${{ env.TAG }}'
+          $repo = "${{ github.repository }}"
+          $currentTag = "${{ env.TAG }}"
+
           $prevTag = git tag --sort=-creatordate |
             Where-Object { $_ -ne $currentTag } |
             Select-Object -First 1
 
           if (-not $prevTag) {
-            $log = git log $currentTag --pretty=format:'- %s'
+            Write-Host "No previous tag – first release"
+            $compareUrl = "https://github.com/$repo/releases/tag/$currentTag"
           }
           else {
-            $log = git log "$prevTag..$currentTag" --pretty=format:'- %s'
+            $compareUrl = "https://github.com/$repo/compare/$prevTag...$currentTag"
           }
 
-          if (-not $log) {
-            $log = '- No code changes'
+          $headers = @{
+            Authorization = "Bearer $env:GITHUB_TOKEN"
+            Accept        = "application/vnd.github+json"
           }
 
-          # ✅ FORCE UTF-8 (NO BOM) — THIS FIXES THE GARBLED TEXT
-          $log | Out-File changelog.txt -Encoding utf8
+          $prs = @()
+
+          if ($prevTag) {
+            $prs = Invoke-RestMethod `
+              -Headers $headers `
+              -Uri "https://api.github.com/repos/$repo/pulls?state=closed&base=main&per_page=100"
+          }
+
+          $changes = @()
+
+          foreach ($pr in $prs) {
+            if ($pr.merged_at) {
+              if ($prevTag) {
+                $mergeSha = $pr.merge_commit_sha
+                $isInRange = git merge-base --is-ancestor $prevTag $mergeSha 2>$null
+                if ($LASTEXITCODE -ne 0) { continue }
+              }
+
+              $entry = "* **$($pr.title)**"
+
+              if ($pr.body) {
+                $cleanBody = $pr.body.Trim() -replace "`r?`n", " "
+                $entry += " – $cleanBody"
+              }
+
+              $entry += " by @$($pr.user.login) in $($pr.html_url)"
+              $changes += $entry
+            }
+          }
+
+          if ($changes.Count -eq 0) {
+            $changes = @("* No user-visible changes")
+          }
+
+          $output = @()
+          $output += "## What's Changed"
+          $output += ""
+          $output += $changes
+          $output += ""
+          $output += "**Full Changelog**: $compareUrl"
+
+          $output | Out-File changelog.txt -Encoding utf8
+
+
 
       # =========================
       # 🚀 GITHUB RELEASE
