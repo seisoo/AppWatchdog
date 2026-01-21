@@ -110,28 +110,25 @@ jobs:
             Select-Object -First 1
 
           if ($prevTag) {
-            $compareUrl = "https://github.com/$repo/compare/$prevTag...$currentTag"
+            $compareUrl = 'https://github.com/' + $repo + '/compare/' + $prevTag + '...' + $currentTag
           }
           else {
-            $compareUrl = "https://github.com/$repo/releases/tag/$currentTag"
+            $compareUrl = 'https://github.com/' + $repo + '/releases/tag/' + $currentTag
           }
 
           $headers = @{
-            Authorization = "Bearer $env:GITHUB_TOKEN"
-            Accept        = "application/vnd.github+json"
+            Authorization = 'Bearer ' + $env:GITHUB_TOKEN
+            Accept        = 'application/vnd.github+json'
           }
 
-          # ✅ URL SAFE IN VARIABLE (NO & PARSER ISSUE)
-          $prUrl = "https://api.github.com/repos/$repo/pulls?state=closed&base=main&per_page=100"
+          $prUrl = 'https://api.github.com/repos/' + $repo + '/pulls?state=closed&base=main&per_page=100'
 
-          $prs = Invoke-RestMethod `
-            -Uri $prUrl `
-            -Headers $headers `
-            -Method Get
+          $prs = Invoke-RestMethod -Uri $prUrl -Headers $headers -Method Get
 
           $changes = @()
 
           foreach ($pr in $prs) {
+
             if (-not $pr.merged_at) { continue }
 
             if ($prevTag) {
@@ -139,14 +136,14 @@ jobs:
               if ($LASTEXITCODE -ne 0) { continue }
             }
 
-            $entry = "* **$($pr.title)**"
+            $entry = '* **' + $pr.title + '**'
 
             if ($pr.body) {
-              $body = ($pr.body -replace "`r?`n", " ").Trim()
-              $entry += " – $body"
+              $body = ($pr.body -replace "`r|`n", ' ').Trim()
+              $entry = $entry + ' - ' + $body
             }
 
-            $entry += " by @$($pr.user.login) in $($pr.html_url)"
+            $entry = $entry + ' by @' + $pr.user.login + ' in ' + $pr.html_url
             $changes += $entry
           }
 
@@ -156,10 +153,10 @@ jobs:
 
           $out = @()
           $out += "## What's Changed"
-          $out += ""
+          $out += ''
           $out += $changes
-          $out += ""
-          $out += "**Full Changelog**: $compareUrl"
+          $out += ''
+          $out += '**Full Changelog**: ' + $compareUrl
 
           $out | Out-File changelog.txt -Encoding utf8
 
