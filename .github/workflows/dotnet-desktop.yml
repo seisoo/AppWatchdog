@@ -95,27 +95,29 @@ jobs:
             Compress-Archive "$outDir\*" "AppWatchdog_${{ env.TAG }}_$t.zip" -Force
           }
 
-      # =========================
-      # 📝 CHANGELOG (PREV TAG → CURRENT TAG)
-      # =========================
       - name: Generate changelog
         shell: powershell
         run: |
           git fetch --tags
 
           $currentTag = '${{ env.TAG }}'
-          $prevTag = git tag --sort=-creatordate | Where-Object { $_ -ne $currentTag } | Select-Object -First 1
+          $prevTag = git tag --sort=-creatordate |
+            Where-Object { $_ -ne $currentTag } |
+            Select-Object -First 1
 
           if (-not $prevTag) {
-            git log $currentTag --pretty=format:'- %s' > changelog.txt
+            $log = git log $currentTag --pretty=format:'- %s'
           }
           else {
-            git log "$prevTag..$currentTag" --pretty=format:'- %s' > changelog.txt
+            $log = git log "$prevTag..$currentTag" --pretty=format:'- %s'
           }
 
-          if ((Get-Content changelog.txt).Length -eq 0) {
-            'No code changes' | Out-File changelog.txt -Encoding utf8
+          if (-not $log) {
+            $log = '- No code changes'
           }
+
+          # ✅ FORCE UTF-8 (NO BOM) — THIS FIXES THE GARBLED TEXT
+          $log | Out-File changelog.txt -Encoding utf8
 
       # =========================
       # 🚀 GITHUB RELEASE
