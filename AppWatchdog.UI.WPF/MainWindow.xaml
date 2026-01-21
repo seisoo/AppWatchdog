@@ -88,11 +88,6 @@
                     TargetPageType="{x:Type pages:ServicePage}" />
 
                 <ui:NavigationViewItem
-                    Content="Jobs"
-                    Icon="{ui:SymbolIcon PersonWalking24}"
-                    TargetPageType="{x:Type pages:JobsPage}" />
-
-                <ui:NavigationViewItem
                     Content="Apps"
                     Icon="{ui:SymbolIcon AppFolder24}"
                     TargetPageType="{x:Type pages:AppsPage}" />

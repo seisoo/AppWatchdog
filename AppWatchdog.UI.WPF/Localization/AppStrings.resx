@@ -182,7 +182,7 @@
     <value>Arguments (e.g. --version)</value>
   </data>
   <data name="apps_check_interval" xml:space="preserve">
-    <value>Check interval (seconds)</value>
+    <value>Check interval (minutes)</value>
   </data>
   <data name="apps_edit_job_description" xml:space="preserve">
     <value>Please enter a new name for the watch job of this application.</value>
@@ -597,23 +597,5 @@
   </data>
   <data name="notific_enabled" xml:space="preserve">
     <value>Enabled</value>
-  </data>
-  <data name="jobs_live_title" xml:space="preserve">
-    <value>Jobs running</value>
-  </data>
-  <data name="jobs_live_description" xml:space="preserve">
-    <value>Here you can see all currently running jobs in the service.</value>
-  </data>
-  <data name="UP" xml:space="preserve">
-    <value>ON</value>
-  </data>
-  <data name="DOWN" xml:space="preserve">
-    <value>DOWN</value>
-  </data>
-  <data name="UNKNOWN" xml:space="preserve">
-    <value>unknown</value>
-  </data>
-  <data name="RECOVERY_FAILED" xml:space="preserve">
-    <value>Restart failed</value>
   </data>
 </root>
