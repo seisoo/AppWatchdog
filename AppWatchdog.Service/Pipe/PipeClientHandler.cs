@@ -1,5 +1,5 @@
-﻿using AppWatchdog.Shared;
-using Microsoft.Extensions.Logging;
+﻿using AppWatchdog.Service.Helpers;
+using AppWatchdog.Shared;
 using System.IO.Pipes;
 using System.Text;
 
@@ -9,8 +9,7 @@ public static class PipeClientHandler
 {
     public static async Task HandleAsync(
         NamedPipeServerStream pipe,
-        Func<PipeProtocol.Request, PipeProtocol.Response> handler,
-        ILogger log)
+        Func<PipeProtocol.Request, PipeProtocol.Response> handler)
     {
         try
         {
@@ -40,7 +39,9 @@ public static class PipeClientHandler
         }
         catch (Exception ex)
         {
-            log.LogError(ex, "PIPE: client handling failed");
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"PIPE: client handling failed: {ex}");
         }
         finally
         {

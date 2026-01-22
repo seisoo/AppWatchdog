@@ -4,6 +4,7 @@ using AppWatchdog.Service.Jobs;
 using AppWatchdog.Service.Pipe;
 using AppWatchdog.Service.Recovery;
 using AppWatchdog.Shared;
+using AppWatchdog.Shared.Monitoring;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -25,9 +26,6 @@ public sealed class Worker : BackgroundService
 
     private volatile ServiceSnapshot? _lastSnapshot;
 
-    // Tracke Job-IDs, die im Scheduler aktuell registriert sind,
-    // damit wir beim Rebuild sauber "obsolete" Jobs entfernen können,
-    // ohne den Scheduler ersetzen zu müssen.
     private HashSet<string> _knownJobIds = new(StringComparer.OrdinalIgnoreCase);
 
     public Worker(ILogger<Worker> log)
@@ -55,11 +53,7 @@ public sealed class Worker : BackgroundService
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            _scheduler?.Dispose();
-        }
-        catch { }
+        try { _scheduler?.Dispose(); } catch { }
 
         FileLogStore.WriteLine("INFO", "AppWatchdog Service gestoppt");
         return base.StopAsync(cancellationToken);
@@ -68,7 +62,7 @@ public sealed class Worker : BackgroundService
     private void LoadConfig()
     {
         _cfg = ConfigStore.LoadOrCreateDefault(_configPath);
-        _dispatcher = new NotificationDispatcher(_cfg, _log);
+        _dispatcher = new NotificationDispatcher(_cfg);
     }
 
     private void SaveConfig(WatchdogConfig cfg)
@@ -78,8 +72,7 @@ public sealed class Worker : BackgroundService
 
         FileLogStore.WriteLine("INFO", "Config gespeichert – Jobs werden neu aufgebaut");
 
-        // Dispatcher hängt an Config (SMTP/Ntfy/Discord/Telegram) -> neu erstellen
-        _dispatcher = new NotificationDispatcher(_cfg, _log);
+        _dispatcher = new NotificationDispatcher(_cfg);
 
         BuildJobs();
     }
@@ -87,6 +80,8 @@ public sealed class Worker : BackgroundService
     private void BuildJobs()
     {
         var desiredIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Snapshot
         {
             var snapJob = new SnapshotJob(
                 getConfig: () => _cfg,
@@ -98,18 +93,35 @@ public sealed class Worker : BackgroundService
 
         foreach (var app in _cfg.Apps)
         {
-            if (!app.Enabled || string.IsNullOrWhiteSpace(app.ExePath))
+            if (!app.Enabled)
                 continue;
 
-            // Health + Recovery
-            var health = new ProcessHealthCheck(app.ExePath);
+            if (!IsValidTarget(app, out var reason))
+            {
+                FileLogStore.WriteLine("WARNING", $"App '{app.Name}' skipped: {reason}");
+                continue;
+            }
+
+            IHealthCheck health;
+            try
+            {
+                health = HealthCheckFactory.Create(app);
+            }
+            catch (Exception ex)
+            {
+                FileLogStore.WriteLine(
+                    "ERROR",
+                    $"HealthCheck creation failed for '{app.Name}': {ex.Message}");
+
+                continue; 
+            }
 
             var healthJob = CreateHealthJob(app, health);
             _scheduler.AddOrUpdate(healthJob);
             desiredIds.Add(healthJob.Id);
 
-            // Kuma pro App
-            if (app.UptimeKuma?.Enabled == true)
+            // Kuma (macht nur Sinn bei Executable, weil es deinen IsRunning-Check nutzt)
+            if (app.Type == WatchTargetType.Executable && app.UptimeKuma?.Enabled == true)
             {
                 var kumaJob = new KumaPingJob(app);
                 _scheduler.AddOrUpdate(kumaJob);
@@ -126,30 +138,85 @@ public sealed class Worker : BackgroundService
         _knownJobIds = desiredIds;
     }
 
-    private HealthMonitorJob CreateHealthJob(WatchedApp app, IHealthCheck health)
+    private HealthMonitorJob CreateHealthJob(
+    WatchedApp app,
+    IHealthCheck health)
     {
-        var state = new MonitorState();
+        IRecoveryStrategy recovery = app.Type switch
+        {
+            WatchTargetType.Executable =>
+                new ProcessRestartStrategy(),
 
-        var recovery = new ProcessRestartStrategy(
-            _log,
-            stateAccessor: () => state,
-            getMailIntervalHours: () => _cfg.MailIntervalHours);
+            WatchTargetType.WindowsService =>
+                new ServiceRestartStrategy(),
+
+            _ =>
+                new NoRecoveryStrategy() // HTTP / TCP: nur melden
+        };
 
         return new HealthMonitorJob(
-            log: _log,
-            getConfig: () => _cfg,
             app: app,
-            check: health,
+            healthCheck: health,
             recovery: recovery,
-            state: state,
-            dispatcher: _dispatcher
+            dispatcher: _dispatcher,
+            interval: TimeSpan.FromSeconds(_cfg.CheckIntervalSeconds),
+            mailIntervalHours: _cfg.MailIntervalHours
         );
+    }
+
+
+    private static bool IsValidTarget(WatchedApp app, out string reason)
+    {
+        reason = "";
+
+        switch (app.Type)
+        {
+            case WatchTargetType.Executable:
+                if (string.IsNullOrWhiteSpace(app.ExePath))
+                {
+                    reason = "ExePath is empty.";
+                    return false;
+                }
+                return true;
+
+            case WatchTargetType.WindowsService:
+                if (string.IsNullOrWhiteSpace(app.ServiceName))
+                {
+                    reason = "ServiceName is empty.";
+                    return false;
+                }
+                return true;
+
+            case WatchTargetType.HttpEndpoint:
+                if (string.IsNullOrWhiteSpace(app.Url))
+                {
+                    reason = "Url is empty.";
+                    return false;
+                }
+                return true;
+
+            case WatchTargetType.TcpPort:
+                if (string.IsNullOrWhiteSpace(app.Host))
+                {
+                    reason = "Host is empty.";
+                    return false;
+                }
+                if (!app.Port.HasValue || app.Port.Value <= 0 || app.Port.Value > 65535)
+                {
+                    reason = "Port is missing/invalid.";
+                    return false;
+                }
+                return true;
+
+            default:
+                reason = $"Unknown type {app.Type}";
+                return false;
+        }
     }
 
     private void InitPipe()
     {
         _pipeHandler = new PipeCommandHandler(
-            _log,
             _configPath,
             getConfig: () => _cfg,
             getSnapshot: () => _lastSnapshot,
@@ -159,7 +226,7 @@ public sealed class Worker : BackgroundService
             scheduler: _scheduler
         );
 
-        _pipe = new PipeServer(_log, _pipeHandler.Handle);
+        _pipe = new PipeServer(_pipeHandler.Handle);
     }
 
     private async Task TriggerCheckAsync()

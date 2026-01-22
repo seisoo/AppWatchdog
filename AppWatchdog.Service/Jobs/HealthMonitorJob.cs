@@ -1,262 +1,184 @@
 ﻿using AppWatchdog.Service.HealthChecks;
+using AppWatchdog.Service.Helpers;
 using AppWatchdog.Service.Recovery;
 using AppWatchdog.Shared;
 using AppWatchdog.Shared.Jobs;
-using static AppWatchdog.Service.Jobs.JobScheduler;
+using AppWatchdog.Shared.Monitoring;
 
 namespace AppWatchdog.Service.Jobs;
 
 public sealed class HealthMonitorJob : IJob
 {
-    private const int DownConfirmChecks = 2;
-
-    private readonly ILogger _log;
-    private readonly Func<WatchdogConfig> _getConfig;
-
     private readonly WatchedApp _app;
-    private readonly IHealthCheck _check;
+    private readonly IHealthCheck _healthCheck;
     private readonly IRecoveryStrategy _recovery;
-
-    private readonly MonitorState _state = new();
     private readonly NotificationDispatcher _dispatcher;
 
+    private readonly TimeSpan _interval;
+    private readonly int _mailIntervalHours;
+
+    private AppStatus? _lastStatus;
+    private DateTimeOffset _lastDownNotificationUtc = DateTimeOffset.MinValue;
+
     public HealthMonitorJob(
-        ILogger log,
-        Func<WatchdogConfig> getConfig,
         WatchedApp app,
-        IHealthCheck check,
+        IHealthCheck healthCheck,
         IRecoveryStrategy recovery,
-        MonitorState state,
-        NotificationDispatcher dispatcher)
+        NotificationDispatcher dispatcher,
+        TimeSpan interval,
+        int mailIntervalHours)
     {
-        _log = log;
-        _getConfig = getConfig;
         _app = app;
-        _check = check;
+        _healthCheck = healthCheck;
         _recovery = recovery;
         _dispatcher = dispatcher;
-        _state = state;
+        _interval = interval;
+        _mailIntervalHours = mailIntervalHours;
     }
 
-    public string Id => $"app:{_app.ExePath}";
-    public TimeSpan Interval =>
-    TimeSpan.FromSeconds(_getConfig().CheckIntervalSeconds);
+    public string Id => $"health:{_app.Type}:{_app.Name}";
+    public TimeSpan Interval => _interval;
 
     public async Task ExecuteAsync(CancellationToken ct)
     {
-        _state.LastCheckUtc = DateTimeOffset.UtcNow;
-
-        if (!_app.Enabled || string.IsNullOrWhiteSpace(_app.ExePath))
+        if (!_app.Enabled)
             return;
 
-        var cfg = _getConfig();
-
-        // aktueller Zustand
-        var hc = await _check.CheckAsync(ct);
-        bool isRunning = hc.IsHealthy;
-
-        if (isRunning)
+        HealthCheckResult hc;
+        try
         {
-            _state.ConsecutiveDown = 0;
-            _state.ConsecutiveStartFailures = 0;
-            _state.NextStartAttemptUtc = DateTimeOffset.MinValue;
-
-            if (!_state.WasRunning)
-            {
-                SendUp();
-                _state.RestartNotified = false;
-            }
-
-            _state.WasRunning = true;
-            _state.RecoveryFailedNotified = false;
+            hc = await _healthCheck.CheckAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"HealthCheck threw for '{_app.Name}': {ex.Message}");
             return;
         }
 
-        // DOWN
-        _state.ConsecutiveDown++;
-
-        if (_state.ConsecutiveDown < DownConfirmChecks)
-            return;
-
-        bool justWentDown = !_state.WasRunning && _state.ConsecutiveDown == DownConfirmChecks;
-        var recovery = await _recovery.TryRecoverAsync(_app, ct);
-        bool nowRunning = Worker.IsRunning(_app.ExePath);
-
-        if (!nowRunning)
-        {
-            _state.RestartNotified = false;
-
-            // 🔔 NEU: Recovery-Fehler explizit melden (1× oder rate-limited)
-            if (recovery.Attempted && !recovery.Succeeded && !_state.RecoveryFailedNotified)
-            {
-                SendRecoveryFailed(recovery.Error);
-                _state.RecoveryFailedNotified = true;
-            }
-
-            var now = DateTimeOffset.Now;
-            var downMailInterval = TimeSpan.FromHours(Math.Max(1, cfg.MailIntervalHours));
-
-            bool firstConfirmedDown = _state.LastDownNotify == DateTimeOffset.MinValue;
-            bool mayNotifyDown =
-                firstConfirmedDown ||
-                justWentDown ||
-                (now - _state.LastDownNotify) >= downMailInterval;
-
-            if (mayNotifyDown)
-            {
-                SendDown(
-                    startAttempted: recovery.Attempted,
-                    lastError: recovery.Error);
-
-                _state.LastDownNotify = now;
-            }
-
-            _state.WasRunning = false;
-            return;
-        }
-
-
-        // wieder UP nach erfolgreicher Recovery
-        if (_state.WasRunning && !_state.RestartNotified)
-        {
-            SendRestart();
-            _state.RestartNotified = true;
-        }
-
-        if (!_state.WasRunning)
-            SendUp();
-
-        _state.WasRunning = true;
-    }
-
-    private void SendDown(bool startAttempted, string? lastError)
-    {
-        var st = new AppStatus
+        var currentStatus = new AppStatus
         {
             Name = _app.Name,
-            ExePath = _app.ExePath,
             Enabled = _app.Enabled,
-            IsRunning = false,
-            LastStartError = lastError
+            IsRunning = hc.IsHealthy,
+            LastStartError = hc.Error,
+            PingMs = hc.DurationMs
         };
 
-        _dispatcher.Dispatch(new NotificationContext
+        // First run → baseline only
+        if (_lastStatus == null)
         {
-            Type = AppNotificationType.Down,
-            App = _app,
-            Status = st,
-            StartAttempted = startAttempted,
+            _lastStatus = currentStatus;
+            return;
+        }
 
-            Title = $"AppWatchdog – {_app.Name} DOWN",
-            SummaryStatus = "NICHT AKTIV",
-            SummaryColorHex = "#b91c1c",
+        // UP -> DOWN
+        if (_lastStatus.IsRunning && !currentStatus.IsRunning)
+        {
+            await HandleDownAsync(currentStatus, ct);
+        }
+        // DOWN -> UP
+        else if (!_lastStatus.IsRunning && currentStatus.IsRunning)
+        {
+            Dispatch(AppNotificationType.Up, currentStatus, false);
+        }
 
-            NtfyTags = "warning,server",
-            NtfyPriority = 4,
-
-            DiscordEmoji = "🛑",
-            DiscordColor = 0xB91C1C
-        });
+        _lastStatus = currentStatus;
     }
 
-    private void SendRecoveryFailed(string? error)
+    private async Task HandleDownAsync(AppStatus current, CancellationToken ct)
     {
+        bool startAttempted = false;
 
-        _dispatcher.Dispatch(new NotificationContext
+        if (_recovery is not NoRecoveryStrategy)
         {
-            Type = AppNotificationType.Down, // oder eigener Typ
-            App = _app,
+            try
+            {
+                var rec = await _recovery.TryRecoverAsync(_app, ct);
+                startAttempted = rec.Attempted;
 
-            Title = $"AppWatchdog – {_app.Name} START FEHLGESCHLAGEN",
-            SummaryStatus = "START FEHLGESCHLAGEN",
-            SummaryColorHex = "#7c2d12",
+                if (startAttempted)
+                {
+                    var hc = await _healthCheck.CheckAsync(ct);
+                    if (hc.IsHealthy)
+                    {
+                        Dispatch(
+                            AppNotificationType.Restart,
+                            new AppStatus
+                            {
+                                Name = _app.Name,
+                                ExePath = _app.ExePath,
+                                Enabled = _app.Enabled,
+                                IsRunning = true
+                            },
+                            true);
 
-            NtfyTags = "error,server",
-            NtfyPriority = 5,
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                FileLogStore.WriteLine(
+                    "ERROR",
+                    $"Recovery failed for '{_app.Name}': {ex.Message}");
+            }
+        }
 
-            DiscordEmoji = "❌",
-            DiscordColor = 0x7C2D12
-        });
+        Dispatch(AppNotificationType.Down, current, startAttempted);
     }
 
-
-    private void SendRestart()
+    public JobSnapshot CreateSnapshot(JobScheduler.JobEntry entry)
     {
-        _dispatcher.Dispatch(new NotificationContext
-        {
-            Type = AppNotificationType.Restart,
-            App = _app,
-
-            Title = $"AppWatchdog – {_app.Name} RESTART",
-            SummaryStatus = "NEU GESTARTET",
-            SummaryColorHex = "#2563eb",
-
-            NtfyTags = "restart,server",
-            NtfyPriority = 3,
-
-            DiscordEmoji = "🔄",
-            DiscordColor = 0x2563EB
-        });
-    }
-
-    private void SendUp()
-    {
-        _dispatcher.Dispatch(new NotificationContext
-        {
-            Type = AppNotificationType.Up,
-            App = _app,
-
-            Title = $"AppWatchdog – {_app.Name} UP",
-            SummaryStatus = "WIEDER AKTIV",
-            SummaryColorHex = "#15803d",
-
-            NtfyTags = "white_check_mark,server",
-            NtfyPriority = 2,
-
-            DiscordEmoji = "✅",
-            DiscordColor = 0x15803D
-        });
-    }
-
-    public JobSnapshot CreateSnapshot(JobEntry entry)
-    {
-        var st = _state;
-
-        string effectiveState =
-            st.RecoveryFailedNotified ? "RECOVERY_FAILED" :
-            st.WasRunning ? "UP" :
-            st.ConsecutiveDown >= DownConfirmChecks ? "DOWN" :
-            "UNKNOWN";
+        var status = _lastStatus;
 
         return new JobSnapshot
         {
             JobId = Id,
             Kind = JobKind.HealthMonitor,
-            JobType = nameof(HealthMonitorJob),
+            JobType = _app.Type.ToString(),
+            Interval = _interval,
 
-            AppName = _app.Name,
-            ExePath = _app.ExePath ?? "",
-            Enabled = _app.Enabled,
-
-            IsRunning = st.WasRunning,
-            ConsecutiveDown = st.ConsecutiveDown,
-            ConsecutiveStartFailures = st.ConsecutiveStartFailures,
-
-            LastCheckUtc = st.LastCheckUtc,
-            LastStartAttemptUtc = st.LastStartAttemptUtc,
-            NextStartAttemptUtc = st.NextStartAttemptUtc,
-
-            DownNotified = st.LastDownNotify != DateTimeOffset.MinValue,
-            RestartNotified = st.RestartNotified,
-            RecoveryFailedNotified = st.RecoveryFailedNotified,
-
-            Interval = entry.Job.Interval,
+            LastCheckUtc = entry.LastRunUtc,
             NextRunUtc = entry.NextRunUtc,
 
-            EffectiveState = effectiveState
+            AppName = _app.Name,
+
+            EffectiveState = status == null
+                ? "UNKNOWN"
+                : status.IsRunning ? "UP" : "DOWN",
+
+            ConsecutiveDown = status != null && !status.IsRunning ? 1 : 0,
+            ConsecutiveStartFailures = 0, 
+
+            PingMs = status?.PingMs
         };
     }
 
+
+    private void Dispatch(
+        AppNotificationType type,
+        AppStatus status,
+        bool startAttempted)
+    {
+        if (type == AppNotificationType.Down && _mailIntervalHours > 0)
+        {
+            var now = DateTimeOffset.UtcNow;
+            if (now - _lastDownNotificationUtc < TimeSpan.FromHours(_mailIntervalHours))
+                return;
+
+            _lastDownNotificationUtc = now;
+        }
+
+        _dispatcher.Dispatch(new NotificationContext
+        {
+            Type = type,
+            App = _app,
+            Status = status,
+            StartAttempted = startAttempted
+        });
+    }
 
     public void Dispose() { }
 }

@@ -25,6 +25,13 @@
 
             <loc:AppStringsProxy x:Key="Strings" />
 
+            <conv:BooleanToBrushConverter
+                x:Key="BooleanToBrushConverter"
+                FalseBrush="Red"
+                TrueBrush="Transparent" />
+
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

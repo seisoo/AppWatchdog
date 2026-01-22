@@ -15,16 +15,6 @@ public sealed class WatchdogConfig
     public string CultureName { get; set; } = "en-US";
 }
 
-public sealed class WatchedApp
-{
-    public string Name { get; set; } = "App";
-    public string ExePath { get; set; } = "";
-    public string Arguments { get; set; } = "";
-    public bool Enabled { get; set; } = true;
-
-    public UptimeKumaSettings? UptimeKuma { get; set; }
-}
-
 public sealed class SmtpSettings
 {
     public string Server { get; set; } = "";
@@ -78,6 +68,7 @@ public sealed class AppStatus
     public bool Enabled { get; set; }
     public bool IsRunning { get; set; }
     public string? LastStartError { get; set; }
+    public long? PingMs { get; set; }
 }
 
 public sealed class ServiceSnapshot
@@ -167,6 +158,8 @@ public sealed class JobSnapshot
     // Scheduler
     public TimeSpan Interval { get; set; }
     public DateTimeOffset? NextRunUtc { get; set; }
+
+    public long? PingMs { get; init; }
 
     // Derived state (für UI!)
     public string EffectiveState { get; set; } = ""; // UP / DOWN / RECOVERY_FAILED

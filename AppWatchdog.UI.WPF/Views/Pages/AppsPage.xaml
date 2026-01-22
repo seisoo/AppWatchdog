@@ -3,8 +3,30 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
+    xmlns:conv="clr-namespace:AppWatchdog.UI.WPF.Converters"
     xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
+    xmlns:sharedMon="clr-namespace:AppWatchdog.Shared.Monitoring;assembly=AppWatchdog.Shared"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <Page.Resources>
+
+        <!--  Enum values for WatchTargetType  -->
+        <x:Array x:Key="WatchTargetTypeValues" Type="{x:Type sharedMon:WatchTargetType}">
+            <sharedMon:WatchTargetType>Executable</sharedMon:WatchTargetType>
+            <sharedMon:WatchTargetType>WindowsService</sharedMon:WatchTargetType>
+            <sharedMon:WatchTargetType>HttpEndpoint</sharedMon:WatchTargetType>
+            <sharedMon:WatchTargetType>TcpPort</sharedMon:WatchTargetType>
+        </x:Array>
+
+        <!--  Simple style to show/hide blocks based on SelectedApp.Type without converters  -->
+        <Style x:Key="TargetBlockStyle" TargetType="{x:Type FrameworkElement}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <!--  default: Collapsed  -->
+            </Style.Triggers>
+        </Style>
+
+    </Page.Resources>
 
     <Grid IsEnabled="{Binding IsContentEnabled}">
         <StackPanel Margin="16">
@@ -33,7 +55,6 @@
                             FontWeight="SemiBold"
                             Foreground="White"
                             Text="AppWatchdog" />
-
                         <TextBlock
                             Margin="0,10,0,0"
                             Foreground="#E5E7EB"
@@ -84,8 +105,10 @@
 
             <!--  GENERAL  -->
             <ui:Card Margin="0,0,0,16">
-                <Grid Margin="12">
+                <Grid Margin="0">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="260" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="260" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
@@ -94,12 +117,11 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBlock
                         Grid.Row="1"
-                        Grid.Column="0"
+                        Grid.ColumnSpan="4"
                         Margin="0,0,0,8"
                         FontSize="16"
                         FontWeight="SemiBold"
@@ -108,31 +130,34 @@
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="0"
+                        Margin="8,8,8,0"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Text="{Binding Source={StaticResource Strings}, Path=[apps_check_interval]}" />
 
                     <ui:NumberBox
                         Grid.Row="2"
                         Grid.Column="1"
-                        Width="140"
-                        HorizontalAlignment="Right"
+                        Width="auto"
+                        HorizontalAlignment="left"
                         Maximum="1440"
                         Minimum="1"
                         Value="{Binding CheckIntervalSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <TextBlock
-                        Grid.Row="3"
-                        Grid.Column="0"
-                        Margin="0,8,0,0"
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Margin="8,8,8,0"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Text="{Binding Source={StaticResource Strings}, Path=[apps_mail_interval]}" />
 
                     <ui:NumberBox
-                        Grid.Row="3"
-                        Grid.Column="1"
-                        Width="140"
+                        Grid.Row="2"
+                        Grid.Column="3"
+                        Width="auto"
                         Margin="0,8,0,0"
-                        HorizontalAlignment="Right"
+                        HorizontalAlignment="Left"
                         Maximum="168"
                         Minimum="0"
                         Value="{Binding MailIntervalHours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -148,7 +173,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!--  LEFT  -->
-                <ui:Card Grid.Column="0">
+                <ui:Card Grid.Column="0" VerticalAlignment="Top">
                     <StackPanel>
 
                         <TextBlock
@@ -171,7 +196,6 @@
                                 Content="{Binding Source={StaticResource Strings}, Path=[apps_add]}"
                                 Icon="{ui:SymbolIcon Symbol=Add24}" />
 
-                            <!--  ✅ FIX  -->
                             <ui:Button
                                 Appearance="Secondary"
                                 Command="{Binding RemoveCommand}"
@@ -191,7 +215,13 @@
 
                             <ui:ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Padding="10,10" Text="{Binding Name}" />
+                                    <StackPanel Margin="10,8">
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                        <TextBlock
+                                            FontSize="11"
+                                            Opacity="0.7"
+                                            Text="{Binding Type}" />
+                                    </StackPanel>
                                 </DataTemplate>
                             </ui:ListView.ItemTemplate>
 
@@ -201,7 +231,10 @@
                 </ui:Card>
 
                 <!--  RIGHT  -->
-                <ui:Card Grid.Column="2" IsEnabled="{Binding HasSelectedApp}">
+                <ui:Card
+                    Grid.Column="2"
+                    VerticalAlignment="Top"
+                    IsEnabled="{Binding HasSelectedApp}">
                     <ScrollViewer>
                         <StackPanel DataContext="{Binding SelectedApp}">
 
@@ -211,9 +244,31 @@
                                 FontWeight="SemiBold"
                                 Text="{Binding Source={StaticResource Strings}, Path=[apps_monitoring_title]}" />
 
+                            <!--  Enable  -->
                             <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[apps_monitoring_enable]}" IsChecked="{Binding Enabled}" />
 
+                            <!--  Target Type  -->
                             <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <TextBlock Text="Target Type" />
+                                <ComboBox
+                                    Margin="0,4,0,0"
+                                    ItemsSource="{StaticResource WatchTargetTypeValues}"
+                                    SelectedItem="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <!--  =========================  -->
+                            <!--  EXECUTABLE  -->
+                            <!--  =========================  -->
+                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <StackPanel.Style>
+                                    <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.Executable}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_exe_path]}" />
 
@@ -235,30 +290,114 @@
 
                                 <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_arguments]}" />
                                 <ui:TextBox Margin="0,4,0,0" Text="{Binding Arguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
                             </StackPanel>
 
-                            <ui:ToggleSwitch
-                                Margin="0,12,0,0"
-                                Content="{Binding Source={StaticResource Strings}, Path=[apps_kuma_enable]}"
-                                IsChecked="{Binding KumaEnabled}"
-                                IsEnabled="{Binding Enabled}" />
+                            <!--  =========================  -->
+                            <!--  WINDOWS SERVICE  -->
+                            <!--  =========================  -->
+                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <StackPanel.Style>
+                                    <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.WindowsService}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
 
-                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding KumaEnabled}">
+                                <TextBlock Text="Service name" />
+                                <ui:TextBox Margin="0,4,0,0" Text="{Binding ServiceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
 
-                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_base_url]}" />
-                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <!--  =========================  -->
+                            <!--  HTTP ENDPOINT  -->
+                            <!--  =========================  -->
+                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <StackPanel.Style>
+                                    <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.HttpEndpoint}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
 
-                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_token]}" />
-                                <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaPushToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="URL" />
+                                <ui:TextBox
+                                    BorderBrush="{Binding IsUrlValid, Converter={StaticResource BooleanToBrushConverter}}"
+                                    Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    ToolTip="Must be a valid absolute URL (http/https)" />
 
-                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_interval]}" />
+
+                                <TextBlock Text="Expected HTTP status code" />
                                 <ui:NumberBox
                                     Margin="0,4,0,0"
-                                    Maximum="3600"
-                                    Minimum="10"
-                                    Value="{Binding KumaIntervalSeconds}" />
+                                    Maximum="599"
+                                    Minimum="100"
+                                    Value="{Binding ExpectedStatusCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
 
+                            <!--  =========================  -->
+                            <!--  TCP PORT  -->
+                            <!--  =========================  -->
+                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <StackPanel.Style>
+                                    <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.TcpPort}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+
+                                <TextBlock Text="Host" />
+                                <ui:TextBox Margin="0,4,0,8" Text="{Binding Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock Text="Port" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    Maximum="65535"
+                                    Minimum="1"
+                                    Value="{Binding Port, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <!--  =========================  -->
+                            <!--  KUMA (Executable only)  -->
+                            <!--  =========================  -->
+                            <StackPanel Margin="0,12,0,0">
+                                <StackPanel.Style>
+                                    <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.Executable}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+
+                                <ui:ToggleSwitch
+                                    Content="{Binding Source={StaticResource Strings}, Path=[apps_kuma_enable]}"
+                                    IsChecked="{Binding KumaEnabled}"
+                                    IsEnabled="{Binding Enabled}" />
+
+                                <StackPanel Margin="0,12,0,0" IsEnabled="{Binding KumaEnabled}">
+
+                                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_base_url]}" />
+                                    <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaBaseUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_token]}" />
+                                    <ui:TextBox Margin="0,4,0,8" Text="{Binding KumaPushToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_kuma_interval]}" />
+                                    <ui:NumberBox
+                                        Margin="0,4,0,0"
+                                        Maximum="3600"
+                                        Minimum="10"
+                                        Value="{Binding KumaIntervalSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
                             </StackPanel>
 
                         </StackPanel>

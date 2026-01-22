@@ -1,6 +1,5 @@
 ﻿using AppWatchdog.Service.Helpers;
 using AppWatchdog.Shared;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace AppWatchdog.Service.Recovery;
@@ -13,24 +12,11 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
     private static readonly TimeSpan StartGuardWindow = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan EventLogWindow = TimeSpan.FromSeconds(10);
 
-    private readonly ILogger _log;
-    private readonly Func<MonitorState> _state;
-    private readonly Func<int> _getMailIntervalHours;
-
-    public ProcessRestartStrategy(
-        ILogger log,
-        Func<MonitorState> stateAccessor,
-        Func<int> getMailIntervalHours)
-    {
-        _log = log;
-        _state = stateAccessor;
-        _getMailIntervalHours = getMailIntervalHours;
-    }
+    private int _consecutiveFailures;
+    private DateTimeOffset _nextStartAttemptUtc = DateTimeOffset.MinValue;
 
     public Task<RecoveryResult> TryRecoverAsync(WatchedApp app, CancellationToken ct)
     {
-        var st = _state();
-
         var sessionState = UserSessionLauncher.GetSessionState();
         bool interactive = sessionState == UserSessionState.InteractiveUserPresent;
 
@@ -44,28 +30,36 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
             });
         }
 
-        if (st.NextStartAttemptUtc > DateTimeOffset.UtcNow)
+        if (_nextStartAttemptUtc > DateTimeOffset.UtcNow)
         {
             return Task.FromResult(new RecoveryResult
             {
                 Attempted = false,
                 Succeeded = false,
-                Error = $"Restart-Backoff aktiv bis {st.NextStartAttemptUtc:HH:mm:ss}"
+                Error = $"Restart-Backoff aktiv bis {_nextStartAttemptUtc:HH:mm:ss}"
             });
         }
 
         try
         {
-            st.LastStartAttemptUtc = DateTimeOffset.UtcNow;
+            FileLogStore.WriteLine(
+                "INFO",
+                $"Versuche Neustart von '{app.Name}' ({app.ExePath})");
 
-            UserSessionLauncher.StartInActiveUserSession(app.ExePath, app.Arguments);
+            UserSessionLauncher.StartInActiveUserSession(
+                app.ExePath,
+                app.Arguments);
 
-            bool ok = WaitForRunning(app.ExePath, StartGuardWindow);
+            bool running = WaitForRunning(app.ExePath, StartGuardWindow);
 
-            if (ok)
+            if (running)
             {
-                st.ConsecutiveStartFailures = 0;
-                st.NextStartAttemptUtc = DateTimeOffset.MinValue;
+                _consecutiveFailures = 0;
+                _nextStartAttemptUtc = DateTimeOffset.MinValue;
+
+                FileLogStore.WriteLine(
+                    "INFO",
+                    $"Neustart erfolgreich für '{app.Name}'");
 
                 return Task.FromResult(new RecoveryResult
                 {
@@ -74,29 +68,39 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
                 });
             }
 
-            // early exit -> EventLog check
-            var ev = FindAppErrorInEventLog(app.ExePath, st.LastStartAttemptUtc, EventLogWindow);
+            var ev = FindAppErrorInEventLog(
+                app.ExePath,
+                DateTimeOffset.UtcNow,
+                EventLogWindow);
 
-            st.ConsecutiveStartFailures++;
-            st.NextStartAttemptUtc = DateTimeOffset.UtcNow + ComputeBackoffDelay(st.ConsecutiveStartFailures);
+            _consecutiveFailures++;
+            _nextStartAttemptUtc =
+                DateTimeOffset.UtcNow + ComputeBackoffDelay(_consecutiveFailures);
+
+            string err = ev != null
+                ? $"EventLog: {ev}"
+                : "Anwendung beendet sich direkt nach dem Start (Early-Exit).";
+
+            FileLogStore.WriteLine(
+                "WARN",
+                $"Neustart fehlgeschlagen für '{app.Name}': {err}");
 
             return Task.FromResult(new RecoveryResult
             {
                 Attempted = true,
                 Succeeded = false,
-                Error = ev != null
-                    ? $"EventLog: {ev}"
-                    : "Anwendung beendet sich direkt nach dem Start (Early-Exit)."
+                Error = err
             });
         }
         catch (Exception ex)
         {
-            st.ConsecutiveStartFailures++;
-            st.NextStartAttemptUtc = DateTimeOffset.UtcNow + ComputeBackoffDelay(st.ConsecutiveStartFailures);
+            _consecutiveFailures++;
+            _nextStartAttemptUtc =
+                DateTimeOffset.UtcNow + ComputeBackoffDelay(_consecutiveFailures);
 
-            FileLogStore.WriteLine("ERROR",
-                    $"Start fehlgeschlagen für '{app.Name}': {ex.Message}");
-
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"Start fehlgeschlagen für '{app.Name}': {ex.Message}");
 
             return Task.FromResult(new RecoveryResult
             {
@@ -107,9 +111,12 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
         }
     }
 
-    private static TimeSpan ComputeBackoffDelay(int consecutiveStartFailures)
+    private static TimeSpan ComputeBackoffDelay(int failures)
     {
-        double seconds = StartBackoffMin.TotalSeconds * Math.Pow(2, Math.Max(0, consecutiveStartFailures - 1));
+        double seconds =
+            StartBackoffMin.TotalSeconds *
+            Math.Pow(2, Math.Max(0, failures - 1));
+
         seconds = Math.Min(StartBackoffMax.TotalSeconds, seconds);
         return TimeSpan.FromSeconds(seconds);
     }
@@ -128,16 +135,17 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
         return Worker.IsRunning(exePath);
     }
 
-    private static string? FindAppErrorInEventLog(string exePath, DateTimeOffset startAttemptUtc, TimeSpan window)
+    private static string? FindAppErrorInEventLog(
+        string exePath,
+        DateTimeOffset startUtc,
+        TimeSpan window)
     {
         try
         {
-            var fromUtc = startAttemptUtc.UtcDateTime;
-            var toUtc = startAttemptUtc.UtcDateTime.Add(window);
+            var fromUtc = startUtc.UtcDateTime;
+            var toUtc = fromUtc.Add(window);
 
-            var exeName = Path.GetFileName(exePath) ?? "";
-            if (string.IsNullOrWhiteSpace(exeName))
-                exeName = exePath;
+            var exeName = Path.GetFileName(exePath) ?? exePath;
 
             using var log = new EventLog("Application");
 
@@ -162,14 +170,16 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
                     return $"{src} (EventId {e.InstanceId})";
                 }
 
-                var msg = e.Message ?? "";
-                if (msg.Contains(exeName, StringComparison.OrdinalIgnoreCase))
+                if ((e.Message ?? "")
+                    .Contains(exeName, StringComparison.OrdinalIgnoreCase))
+                {
                     return $"{src} (EventId {e.InstanceId})";
+                }
             }
         }
         catch
         {
-            // ignore
+            // ignore EventLog access issues
         }
 
         return null;

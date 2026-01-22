@@ -11,12 +11,12 @@ public sealed class ProcessHealthCheck : IHealthCheck
 
     public Task<HealthCheckResult> CheckAsync(CancellationToken ct)
     {
-        bool running = AppWatchdog.Service.Worker.IsRunning(_exePath);
+        if (string.IsNullOrWhiteSpace(_exePath))
+            return Task.FromResult(HealthCheckResult.Down("ExePath is empty."));
 
-        return Task.FromResult(new HealthCheckResult
-        {
-            IsHealthy = running,
-            Error = running ? null : "Prozess läuft nicht"
-        });
+        bool running = Worker.IsRunning(_exePath);
+        return Task.FromResult(running
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Down("Process not running."));
     }
 }

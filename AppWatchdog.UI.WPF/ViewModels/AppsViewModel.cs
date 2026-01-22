@@ -1,4 +1,5 @@
 ﻿using AppWatchdog.Shared;
+using AppWatchdog.Shared.Monitoring;
 using AppWatchdog.UI.WPF.Common;
 using AppWatchdog.UI.WPF.Dialogs;
 using AppWatchdog.UI.WPF.Localization;
@@ -38,18 +39,6 @@ public partial class AppsViewModel : DirtyViewModelBase
     [ObservableProperty]
     private int _mailIntervalHours = 12;
 
-    [ObservableProperty]
-    private bool _kumaEnabled;
-
-    [ObservableProperty]
-    private string _kumaBaseUrl = "";
-
-    [ObservableProperty]
-    private string _kumaPushToken = "";
-
-    [ObservableProperty]
-    private int _kumaIntervalSeconds = 60;
-
     public string HintText => AppStrings.apps_hint_text;
 
     public AppsViewModel(
@@ -64,7 +53,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         Apps.CollectionChanged += (_, __) => MarkDirty();
         _backend.PropertyChanged += OnBackendStateChanged;
     }
-
     public async Task ActivateAsync()
     {
         if (!_backend.IsReady)
@@ -89,10 +77,8 @@ public partial class AppsViewModel : DirtyViewModelBase
 
     private void OnBackendStateChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(BackendStateService.State))
-            return;
-
-        IsContentEnabled = _backend.IsReady;
+        if (e.PropertyName == nameof(BackendStateService.State))
+            IsContentEnabled = _backend.IsReady;
     }
 
     private async Task LoadAsync()
@@ -111,7 +97,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         ClearDirty();
     }
 
-
     [RelayCommand]
     private async Task ReloadAsync()
     {
@@ -120,18 +105,16 @@ public partial class AppsViewModel : DirtyViewModelBase
 
     private void SyncApps(System.Collections.Generic.IEnumerable<WatchedApp> models)
     {
-        // 1️⃣ Entfernen, was es nicht mehr gibt
         for (int i = Apps.Count - 1; i >= 0; i--)
         {
             var vm = Apps[i];
-            if (!models.Any(m => m.ExePath == vm.ExePath))
+            if (!models.Any(m => IsSameIdentity(m, vm)))
                 Apps.RemoveAt(i);
         }
 
-        // 2️⃣ Updaten / Hinzufügen
         foreach (var model in models)
         {
-            var vm = Apps.FirstOrDefault(a => a.ExePath == model.ExePath);
+            var vm = Apps.FirstOrDefault(a => IsSameIdentity(model, a));
 
             if (vm == null)
             {
@@ -139,26 +122,13 @@ public partial class AppsViewModel : DirtyViewModelBase
             }
             else
             {
-                // 🔁 bestehendes VM aktualisieren
-                vm.Name = model.Name;
-                vm.Enabled = model.Enabled;
-                vm.Arguments = model.Arguments;
-                vm.ExePath = model.ExePath;
-
-                if (model.UptimeKuma != null)
-                {
-                    vm.KumaEnabled = model.UptimeKuma.Enabled;
-                    vm.KumaBaseUrl = model.UptimeKuma.BaseUrl;
-                    vm.KumaPushToken = model.UptimeKuma.PushToken;
-                    vm.KumaIntervalSeconds = model.UptimeKuma.IntervalSeconds;
-                }
-                else
-                {
-                    vm.KumaEnabled = false;
-                }
+                vm.UpdateFromModel(model);
             }
         }
     }
+
+    private static bool IsSameIdentity(WatchedApp model, WatchedAppItemViewModel vm)
+        => model.Name == vm.Name && model.Type == vm.Type;
 
 
     [RelayCommand]
@@ -167,6 +137,7 @@ public partial class AppsViewModel : DirtyViewModelBase
         var vm = new WatchedAppItemViewModel(MarkDirty)
         {
             Name = AppStrings.apps_new_application,
+            Type = WatchTargetType.Executable,
             Enabled = true
         };
 
@@ -214,6 +185,7 @@ public partial class AppsViewModel : DirtyViewModelBase
                 cfg.Apps.Add(vm.ToModel());
 
             await Task.Run(() => _pipe.SaveConfig(cfg));
+
             ClearDirty();
         }
         catch (Exception ex)

@@ -103,7 +103,21 @@
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Opacity="0.6" Text="Stats" />
                                         <TextBlock Text="{Binding Stats}" />
+
+                                        <!--  Ping  -->
+                                        <TextBlock
+                                            Margin="0,6,0,0"
+                                            Opacity="0.6"
+                                            Text="Ping"
+                                            Visibility="{Binding HasPing, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Foreground="{Binding PingBrush}"
+                                            Text="{Binding PingText}"
+                                            Visibility="{Binding HasPing, Converter={StaticResource BoolToVisibilityConverter}}" />
                                     </StackPanel>
+
                                 </Grid>
                             </Grid>
                         </ui:Card>

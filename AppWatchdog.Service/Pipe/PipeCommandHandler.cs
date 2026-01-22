@@ -1,13 +1,11 @@
 ﻿using AppWatchdog.Service.Helpers;
 using AppWatchdog.Service.Jobs;
 using AppWatchdog.Shared;
-using Microsoft.Extensions.Logging;
 
 namespace AppWatchdog.Service.Pipe;
 
 public sealed class PipeCommandHandler
 {
-    private readonly ILogger _log;
     private readonly string _configPath;
 
     private readonly Func<WatchdogConfig> _getConfig;
@@ -19,16 +17,14 @@ public sealed class PipeCommandHandler
     private readonly JobScheduler _scheduler;
 
     public PipeCommandHandler(
-     ILogger log,
-     string configPath,
-     Func<WatchdogConfig> getConfig,
-     Func<ServiceSnapshot?> getSnapshot,
-     Action triggerCheck,
-     Action<WatchdogConfig> onConfigSaved,
-     NotificationDispatcher dispatcher,
-     JobScheduler scheduler)
+        string configPath,
+        Func<WatchdogConfig> getConfig,
+        Func<ServiceSnapshot?> getSnapshot,
+        Action triggerCheck,
+        Action<WatchdogConfig> onConfigSaved,
+        NotificationDispatcher dispatcher,
+        JobScheduler scheduler)
     {
-        _log = log;
         _configPath = configPath;
         _getConfig = getConfig;
         _getSnapshot = getSnapshot;
@@ -38,22 +34,14 @@ public sealed class PipeCommandHandler
         _scheduler = scheduler;
     }
 
-
-    // =========================================================
-    // ENTRY
-    // =========================================================
     public PipeProtocol.Response Handle(PipeProtocol.Request req)
     {
         try
         {
             if (req.Version != PipeProtocol.ProtocolVersion)
             {
-                return new PipeProtocol.Response
-                {
-                    Ok = false,
-                    Error =
-                        $"Protocol mismatch. Service={PipeProtocol.ProtocolVersion}, Client={req.Version}"
-                };
+                return Error(
+                    $"Protocol mismatch. Service={PipeProtocol.ProtocolVersion}, Client={req.Version}");
             }
 
             switch (req.Command)
@@ -84,52 +72,16 @@ public sealed class PipeCommandHandler
                     return GetLogDay(req);
 
                 case PipeProtocol.CmdTestSmtp:
-                    return RunNotificationTest(
-                        AppNotificationType.Up,
-                        "AppWatchdog – SMTP Test",
-                        "SMTP TEST",
-                        "#2563eb",
-                        "test,smtp",
-                        3,
-                        "📧",
-                        0x2563EB,
-                        NotificationChannel.Mail);
+                    return RunNotificationTest(NotificationChannel.Mail);
 
                 case PipeProtocol.CmdTestNtfy:
-                    return RunNotificationTest(
-                        AppNotificationType.Up,
-                        "AppWatchdog – NTFY Test",
-                        "NTFY TEST",
-                        "#22c55e",
-                        "test,ntfy",
-                        3,
-                        "📢",
-                        0x22C55E,
-                        NotificationChannel.Ntfy);
+                    return RunNotificationTest(NotificationChannel.Ntfy);
 
                 case PipeProtocol.CmdTestDiscord:
-                    return RunNotificationTest(
-                        AppNotificationType.Up,
-                        "AppWatchdog – Discord Test",
-                        "DISCORD TEST",
-                        "#5865F2",
-                        "test,discord",
-                        3,
-                        "💬",
-                        0x5865F2,
-                        NotificationChannel.Discord);
+                    return RunNotificationTest(NotificationChannel.Discord);
 
                 case PipeProtocol.CmdTestTelegram:
-                    return RunNotificationTest(
-                        AppNotificationType.Up,
-                        "AppWatchdog – Telegram Test",
-                        "TELEGRAM TEST",
-                        "#0ea5e9",
-                        "test,telegram",
-                        3,
-                        "📨",
-                        0x0EA5E9,
-                        NotificationChannel.Telegram);
+                    return RunNotificationTest(NotificationChannel.Telegram);
 
                 case PipeProtocol.CmdGetLogPath:
                     return Ok(new LogPathResponse
@@ -138,39 +90,20 @@ public sealed class PipeCommandHandler
                     });
 
                 case PipeProtocol.CmdGetJobs:
-                    {
-                        var jobs = _scheduler.GetSnapshots();
-
-                        return new PipeProtocol.Response
-                        {
-                            Ok = true,
-                            PayloadJson = PipeProtocol.Serialize(jobs)
-                        };
-                    }
-
+                    return Ok(_scheduler.GetSnapshots());
 
                 default:
-                    return new PipeProtocol.Response
-                    {
-                        Ok = false,
-                        Error = "Unknown command"
-                    };
+                    return Error("Unknown command");
             }
         }
         catch (Exception ex)
         {
-            FileLogStore.WriteLine("ERROR", string.Format("Pipe request FAILED: {0}", req.Command));
-            return new PipeProtocol.Response
-            {
-                Ok = false,
-                Error = ex.ToString()
-            };
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"Pipe request FAILED: {req.Command} – {ex}");
+            return Error(ex.Message);
         }
     }
-
-    // =========================================================
-    // HELPERS
-    // =========================================================
 
     private PipeProtocol.Response SaveConfig(PipeProtocol.Request req)
     {
@@ -182,8 +115,9 @@ public sealed class PipeCommandHandler
             return Error("Invalid payload");
 
         ConfigStore.Save(_configPath, cfg);
-        _onConfigSaved(cfg);   
-        FileLogStore.WriteLine("INFO","Config gespeichert (per Pipe).");
+        _onConfigSaved(cfg);
+
+        FileLogStore.WriteLine("INFO", "Config gespeichert (per Pipe).");
         return Ok();
     }
 
@@ -214,51 +148,39 @@ public sealed class PipeCommandHandler
         if (r == null)
             return Error("Invalid payload");
 
-        var content = FileLogStore.ReadDay(r.Day);
-
         return Ok(new LogDayResponse
         {
             Day = r.Day,
-            Content = content
+            Content = FileLogStore.ReadDay(r.Day)
         });
     }
 
-    private PipeProtocol.Response RunNotificationTest(
-        AppNotificationType type,
-        string title,
-        string summaryStatus,
-        string summaryColor,
-        string ntfyTags,
-        int ntfyPriority,
-        string emoji,
-        int discordColor,
-        NotificationChannel channel)
+    private PipeProtocol.Response RunNotificationTest(NotificationChannel channel)
     {
         try
         {
-            FileLogStore.WriteLine("INFO",string.Format("{0} Test gestartet (per Pipe) [{1}]", type, channel));
+            FileLogStore.WriteLine(
+                "INFO",
+                $"Notification Test gestartet (per Pipe) [{channel}]");
 
             var dummyApp = new WatchedApp
             {
                 Name = "AppWatchdog Test",
-                ExePath = "manual-test"
+                ExePath = "manual-test",
+                Enabled = true
             };
 
             var ctx = new NotificationContext
             {
-                Type = type,
+                Type = AppNotificationType.Up,
                 App = dummyApp,
-
-                Title = title,
-                SummaryStatus = summaryStatus,
-                SummaryColorHex = summaryColor,
-
-                NtfyTags = ntfyTags,
-                NtfyPriority = ntfyPriority,
-
-                DiscordEmoji = emoji,
-                DiscordColor = discordColor,
-
+                Status = new AppStatus
+                {
+                    Name = dummyApp.Name,
+                    Enabled = true,
+                    IsRunning = true
+                },
+                StartAttempted = false,
                 TestOnlyChannel = channel
             };
 
@@ -268,7 +190,9 @@ public sealed class PipeCommandHandler
         }
         catch (Exception ex)
         {
-            FileLogStore.WriteLine("ERROR", string.Format("{0} Test fehlgeschlagen: {1}", type, ex));
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"Notification Test fehlgeschlagen [{channel}]: {ex}");
             return Error(ex.Message);
         }
     }
