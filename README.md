@@ -38,20 +38,46 @@ It monitors applications, detects failures, and restarts them when needed.
 ```
 ## 🖥️ Screenshots
 
-**Service**  
-![Service](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
+<table width="100%" border="0">
+  <tr>
+    <td align="center" width="50%">
+      <b>Service</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service.png" width="100%">
+    </td>
+    <td align="center" width="50%">
+      <b>Applications</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <b>Jobs</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_jobs.png" width="100%">
+    </td>
+    <td align="center" width="50%">
+      <b>Notifications</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <b>Logs</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png" width="100%">
+    </td>
+    <td align="right" valign="bottom">
+      <img
+        src="https://external-preview.redd.it/OwJoR0j5OOJSRTGMbLnfC0_p2Qp8pfxIfw72vTJh0YQ.png?auto=webp&s=5a6773c58d5217824b968baefea338d51a24d6b8"
+        width="150"
+      />
+    </td>
+  </tr>
+</table>
 
-**Applications**  
-![Apps](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png)
 
-**Jobs**  
-![Jobs](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_jobs.png)
 
-**Notifications**  
-![Notifications](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png)
+  </tr>
+</table>
 
-**Logs**  
-![Logs](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_logs.png)
 
 ---
 
