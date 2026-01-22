@@ -25,7 +25,7 @@ It continuously monitors applications, detects failures reliably, and performs *
 ## 🧩 Architecture
 ```
 ┌────────────────────────┐
-│ AppWatchdog.UI.WPF │ ← Configuration, Live Status, Logs
+│ AppWatchdog.UI.WPF     │ ← Configuration, Live Status, Logs
 └───────────▲────────────┘
 │ Named Pipes (IPC, versioned)
 ┌───────────┴────────────┐
