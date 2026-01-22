@@ -119,7 +119,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
-            Load();
+            await Load();
         }
 
         IsContentEnabled = true;   
@@ -141,7 +141,7 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     }
 
 
-    private async void Load()
+    private async Task Load()
     {
         using var _ = SuppressDirty();
 

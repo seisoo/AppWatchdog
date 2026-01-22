@@ -1,4 +1,5 @@
 ﻿using AppWatchdog.Shared;
+using AppWatchdog.Shared.Monitoring;
 using AppWatchdog.UI.WPF.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,6 +11,28 @@ using System.Xml.Linq;
 public partial class WatchedAppItemViewModel : ObservableObject
 {
     private readonly Action _markDirty;
+    [ObservableProperty]
+    private WatchTargetType _type = WatchTargetType.Executable;
+
+    // Windows Service
+    [ObservableProperty]
+    private string _serviceName = "";
+
+    // HTTP
+    [ObservableProperty]
+    private string _url = "";
+    [ObservableProperty]
+    private int _expectedStatusCode = 200;
+
+    public bool IsUrlValid =>
+    string.IsNullOrWhiteSpace(Url) ||
+    Uri.TryCreate(Url, UriKind.Absolute, out _);
+
+    // TCP
+    [ObservableProperty]
+    private string _host = "";
+    [ObservableProperty]
+    private int _port;
 
     public WatchedAppItemViewModel(Action markDirty)
     {
@@ -36,31 +59,18 @@ public partial class WatchedAppItemViewModel : ObservableObject
     partial void OnKumaPushTokenChanged(string value) => _markDirty();
     partial void OnKumaIntervalSecondsChanged(int value) => _markDirty();
 
-    public static WatchedAppItemViewModel FromModel(
-        WatchedApp model,
-        Action markDirty)
+    partial void OnTypeChanged(WatchTargetType value) => _markDirty();
+    partial void OnServiceNameChanged(string value) => _markDirty();
+    partial void OnUrlChanged(string value) => _markDirty();
+    partial void OnExpectedStatusCodeChanged(int value) => _markDirty();
+    partial void OnHostChanged(string value) => _markDirty();
+    partial void OnPortChanged(int value) => _markDirty();
+
+
+    public static WatchedAppItemViewModel FromModel(WatchedApp model, Action markDirty)
     {
-        var vm = new WatchedAppItemViewModel(markDirty)
-        {
-            Name = model.Name,
-            ExePath = model.ExePath,
-            Arguments = model.Arguments,
-            Enabled = model.Enabled
-        };
-
-        if (model.UptimeKuma != null)
-        {
-            vm.KumaEnabled = model.UptimeKuma.Enabled;
-            vm.KumaBaseUrl = model.UptimeKuma.BaseUrl;
-            vm.KumaPushToken = model.UptimeKuma.PushToken;
-            vm.KumaIntervalSeconds = model.UptimeKuma.IntervalSeconds;
-        }
-        else
-        {
-            vm.KumaEnabled = false;
-            vm.KumaIntervalSeconds = 60;
-        }
-
+        var vm = new WatchedAppItemViewModel(markDirty);
+        vm.UpdateFromModel(model);
         return vm;
     }
 
@@ -69,9 +79,18 @@ public partial class WatchedAppItemViewModel : ObservableObject
         return new WatchedApp
         {
             Name = Name,
+            Type = Type,
+            Enabled = Enabled,
+
             ExePath = ExePath,
             Arguments = Arguments,
-            Enabled = Enabled,
+
+            ServiceName = string.IsNullOrWhiteSpace(ServiceName) ? null : ServiceName,
+            Url = string.IsNullOrWhiteSpace(Url) ? null : Url,
+            ExpectedStatusCode = ExpectedStatusCode,
+            Host = string.IsNullOrWhiteSpace(Host) ? null : Host,
+            Port = Port <= 0 ? null : Port,
+
             UptimeKuma = KumaEnabled
                 ? new UptimeKumaSettings
                 {
@@ -83,6 +102,42 @@ public partial class WatchedAppItemViewModel : ObservableObject
                 : null
         };
     }
+
+
+    public void UpdateFromModel(WatchedApp model)
+    {
+        Name = model.Name;
+        Type = model.Type;
+
+        Enabled = model.Enabled;
+
+        ExePath = model.ExePath;
+        Arguments = model.Arguments;
+
+        ServiceName = model.ServiceName ?? "";
+
+        Url = model.Url ?? "";
+        ExpectedStatusCode = model.ExpectedStatusCode;
+
+        Host = model.Host ?? "";
+        Port = model.Port ?? 0;
+
+        if (model.UptimeKuma != null)
+        {
+            KumaEnabled = model.UptimeKuma.Enabled;
+            KumaBaseUrl = model.UptimeKuma.BaseUrl;
+            KumaPushToken = model.UptimeKuma.PushToken;
+            KumaIntervalSeconds = model.UptimeKuma.IntervalSeconds;
+        }
+        else
+        {
+            KumaEnabled = false;
+            KumaBaseUrl = "";
+            KumaPushToken = "";
+            KumaIntervalSeconds = 60;
+        }
+    }
+
 
     [RelayCommand]
     private void BrowseExe()

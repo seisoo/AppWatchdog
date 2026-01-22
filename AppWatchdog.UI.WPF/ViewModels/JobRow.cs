@@ -22,6 +22,22 @@ public sealed class JobRow
             _ => "Global"
         };
 
+    public bool HasPing => Snapshot.PingMs.HasValue;
+
+    public string PingText =>
+        Snapshot.PingMs.HasValue
+            ? $"{Snapshot.PingMs.Value} ms"
+            : "—";
+
+    public Brush PingBrush => Snapshot.PingMs switch
+    {
+        null => Brushes.Gray,
+        < 200 => Brushes.ForestGreen,
+        < 500 => Brushes.DarkOrange,
+        _ => Brushes.DarkRed
+    };
+
+
     public string JobType => Snapshot.JobType;
 
     public string State => Snapshot.EffectiveState switch

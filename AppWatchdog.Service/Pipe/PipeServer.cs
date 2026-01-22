@@ -1,6 +1,5 @@
 ﻿using AppWatchdog.Service.Helpers;
 using AppWatchdog.Shared;
-using Microsoft.Extensions.Logging;
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -9,18 +8,16 @@ namespace AppWatchdog.Service.Pipe;
 
 public sealed class PipeServer
 {
-    private readonly ILogger _log;
     private readonly Func<PipeProtocol.Request, PipeProtocol.Response> _handler;
 
-    public PipeServer(ILogger log, Func<PipeProtocol.Request, PipeProtocol.Response> handler)
+    public PipeServer(Func<PipeProtocol.Request, PipeProtocol.Response> handler)
     {
-        _log = log;
         _handler = handler;
     }
 
     public async Task RunAsync(CancellationToken token)
     {
-        FileLogStore.WriteLine("INFO","PipeServer AcceptLoop gestartet");
+        FileLogStore.WriteLine("INFO", "PipeServer AcceptLoop gestartet");
 
         while (!token.IsCancellationRequested)
         {
@@ -29,9 +26,10 @@ public sealed class PipeServer
             try
             {
                 await pipe.WaitForConnectionAsync(token);
-                //FileLogStore.WriteLine("INFO","Pipe client connected"); //spammt den log unendlich lange
 
-                _ = Task.Run(() => PipeClientHandler.HandleAsync(pipe, _handler, _log), token);
+                _ = Task.Run(
+                    () => PipeClientHandler.HandleAsync(pipe, _handler),
+                    token);
             }
             catch (OperationCanceledException)
             {
@@ -41,7 +39,9 @@ public sealed class PipeServer
             catch (Exception ex)
             {
                 pipe.Dispose();
-                FileLogStore.WriteLine("ERROR", string.Format("Pipe Accept Fehler: {0}", ex));
+                FileLogStore.WriteLine(
+                    "ERROR",
+                    $"Pipe Accept Fehler: {ex}");
                 await Task.Delay(500, token);
             }
         }

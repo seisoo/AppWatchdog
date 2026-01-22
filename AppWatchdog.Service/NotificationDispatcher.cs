@@ -1,268 +1,351 @@
 ﻿using AppWatchdog.Service.Helpers;
+using AppWatchdog.Service.Notifications;
 using AppWatchdog.Service.Notifiers;
 using AppWatchdog.Shared;
-using Microsoft.Extensions.Logging;
+using AppWatchdog.Shared.Monitoring;
+using System.Globalization;
 using System.Text;
 
 namespace AppWatchdog.Service;
 
-/// <summary>
-/// Central dispatcher for all application notifications.
-/// - Owns notifier lifecycle
-/// - Validates active notification channels once
-/// - Sends notifications
-/// - Triggers passive Uptime Kuma pushes per app
-/// </summary>
 public sealed class NotificationDispatcher
 {
     private readonly WatchdogConfig _cfg;
-    private readonly ILogger _log;
 
-    // Active notifiers (global)
     private readonly MailNotifier _mail;
     private readonly NtfyNotifier _ntfy;
     private readonly DiscordNotifier _discord;
     private readonly TelegramNotifier _telegram;
 
-    private bool _validated;
-
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
-
-    public NotificationDispatcher(WatchdogConfig cfg, ILogger log)
+    public NotificationDispatcher(WatchdogConfig cfg)
     {
         _cfg = cfg;
-        _log = log;
 
-        // Dispatcher owns all notifier instances
         _mail = new MailNotifier(cfg.Smtp);
         _ntfy = new NtfyNotifier(cfg.Ntfy);
         _discord = new DiscordNotifier(cfg.Discord);
         _telegram = new TelegramNotifier(cfg.Telegram);
     }
 
-    // ============================================================
-    // PUBLIC ENTRY
-    // ============================================================
-
+    // =====================================================
+    // ENTRY POINT
+    // =====================================================
     public void Dispatch(NotificationContext ctx)
     {
-        Task.Run(async () =>
-        {
-            try
-            {
-                await DispatchInternalAsync(ctx).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR",string.Format("Notification dispatch failed: {1} {2} : {0}",
-                    ex,
-                    ctx.Type,
-                    ctx.App.Name));
-            }
-        });
+        _ = Task.Run(() => DispatchInternalAsync(ctx));
     }
 
-    // ============================================================
+    // =====================================================
     // CORE
-    // ============================================================
-
+    // =====================================================
     private async Task DispatchInternalAsync(NotificationContext ctx)
     {
-        // ❌ ValidateOnce bewusst NICHT mehr verwenden
-        // Jeder Kanal validiert sich selbst
-
-        var sys = SystemInfoCollector.Collect();
-        var sysHtml = SystemInfoCollector.FormatForHtml(sys);
-
-        var summaryHtml = BuildStatusSummaryHtml(
-            ctx.SummaryStatus,
-            ctx.SummaryColorHex,
-            ctx.App.Name);
-
-        var detailsHtml = BuildDetailsHtml(ctx);
-        var textMessage = BuildPlainTextMessage(ctx, sys);
-
-        // ---------------- MAIL ----------------
-        if (_mail.IsConfigured(out _) &&
-            (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Mail))
+        try
         {
-            try
-            {
-                var mailHtml = MailNotifier.WrapHtmlTemplate(
-                    ctx.Title,
-                    summaryHtml,
-                    detailsHtml,
-                    sysHtml);
+            var strings = new NotificationStringProvider(_cfg.CultureName);
 
-                MailNotifier.SendHtml(_cfg.Smtp, ctx.Title, mailHtml);
-            }
-            catch (Exception ex)
+            string title = $"AppWatchdog – {ctx.App.Name}";
+
+            string summaryText = ctx.Type switch
             {
-                FileLogStore.WriteLine("ERROR", "SMTP send failed", ex);
-            }
+                AppNotificationType.Up => strings.SummaryUp,
+                AppNotificationType.Restart => strings.SummaryRestart,
+                _ => strings.SummaryDown
+            };
+
+            string summaryColor = ctx.Type switch
+            {
+                AppNotificationType.Up => "#15803d",
+                AppNotificationType.Restart => "#2563eb",
+                _ => "#b91c1c"
+            };
+
+            string detailsText = BuildDetailsText(ctx, strings);
+            string plainText = BuildPlainText(ctx, strings);
+            string html = BuildHtmlMail(
+                ctx.App.Name,
+                summaryText,
+                summaryColor,
+                detailsText,
+                strings);
+
+            DispatchMail(ctx, title, html);
+            await DispatchNtfyAsync(ctx, title, plainText);
+            await DispatchDiscordAsync(ctx, title, plainText);
+            await DispatchTelegramAsync(ctx, plainText);
         }
-
-        // ---------------- NTFY ----------------
-        if (_ntfy.IsConfigured(out _) &&
-            (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Ntfy))
+        catch (Exception ex)
         {
-            try
-            {
-                await NtfyNotifier.SendAsync(
-                    _cfg.Ntfy,
-                    ctx.Title,
-                    textMessage,
-                    ctx.NtfyTags,
-                    ctx.NtfyPriority)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "NTFY send failed", ex);
-            }
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"NotificationDispatcher failed for '{ctx.App.Name}': {ex}");
         }
-
-        // ---------------- DISCORD ----------------
-        if (_discord.IsConfigured(out _) &&
-            (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Discord))
-        {
-            try
-            {
-                await _discord.SendAsync(
-                    ctx.Title,
-                    $"{ctx.DiscordEmoji} **{ctx.Type.ToString().ToUpper()}**\n\n{textMessage}",
-                    ctx.DiscordColor)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "Discord send failed", ex);
-            }
-        }
-
-        // ---------------- TELEGRAM ----------------
-        if (_telegram.IsConfigured(out _) &&
-            (ctx.TestOnlyChannel == null || ctx.TestOnlyChannel == NotificationChannel.Telegram))
-        {
-            try
-            {
-                await TelegramNotifier.SendAsync(
-                    _cfg.Telegram,
-                    $"{ctx.DiscordEmoji} *{ctx.Type.ToString().ToUpper()}*\n\n{textMessage}")
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                FileLogStore.WriteLine("ERROR", "Telegram send failed", ex);
-            }
-        }
-
-        FileLogStore.WriteLine(
-            "INFO",
-            $"Notification {ctx.Type} dispatched: {ctx.App.Name} [{ctx.TestOnlyChannel}]");
     }
 
-    private static string BuildDetailsHtml(NotificationContext ctx)
+    // =====================================================
+    // CHANNELS
+    // =====================================================
+    private void DispatchMail(NotificationContext ctx, string title, string html)
     {
-        var sb = new StringBuilder();
+        if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Mail)
+            return;
 
-        sb.Append("<ul style=\"margin:0; padding-left:18px;\">");
-        sb.Append($"<li><b>Name:</b> {Html(ctx.App.Name)}</li>");
-        sb.Append($"<li><b>Exe:</b> {Html(ctx.App.ExePath)}</li>");
+        if (!_mail.IsConfigured(out _))
+            return;
 
-        if (ctx.Type == AppNotificationType.Down && ctx.Status != null)
+        try
         {
-            sb.Append($"<li><b>Startversuch:</b> {(ctx.StartAttempted ? "ja" : "nein")}</li>");
-
-            if (!string.IsNullOrWhiteSpace(ctx.Status.LastStartError))
-            {
-                sb.Append(
-                    $"<li><b>Fehler:</b> <span style=\"color:#b91c1c;\">{Html(ctx.Status.LastStartError)}</span></li>");
-            }
+            MailNotifier.SendHtml(_cfg.Smtp, title, html);
         }
-
-        sb.Append("</ul>");
-        return sb.ToString();
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine("ERROR", $"Mail notification failed: {ex.Message}");
+        }
     }
 
-    private static string BuildPlainTextMessage(
+    private async Task DispatchNtfyAsync(NotificationContext ctx, string title, string text)
+    {
+        if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Ntfy)
+            return;
+
+        if (!_ntfy.IsConfigured(out _))
+            return;
+
+        try
+        {
+            await NtfyNotifier.SendAsync(
+                _cfg.Ntfy,
+                title,
+                text,
+                ctx.Type == AppNotificationType.Down ? "warning,server" : "ok,server",
+                ctx.Type == AppNotificationType.Down ? 4 : 2);
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine("ERROR", $"Ntfy notification failed: {ex.Message}");
+        }
+    }
+
+    private async Task DispatchDiscordAsync(NotificationContext ctx, string title, string text)
+    {
+        if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Discord)
+            return;
+
+        if (!_discord.IsConfigured(out _))
+            return;
+
+        try
+        {
+            await _discord.SendAsync(
+                title,
+                text,
+                ctx.Type == AppNotificationType.Down ? 0xB91C1C : 0x7C3AED);
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine("ERROR", $"Discord notification failed: {ex.Message}");
+        }
+    }
+
+    private async Task DispatchTelegramAsync(NotificationContext ctx, string text)
+    {
+        if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Telegram)
+            return;
+
+        if (!_telegram.IsConfigured(out _))
+            return;
+
+        try
+        {
+            await TelegramNotifier.SendAsync(_cfg.Telegram, text);
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine("ERROR", $"Telegram notification failed: {ex.Message}");
+        }
+    }
+
+    // =====================================================
+    // MESSAGE BUILDERS
+    // =====================================================
+    private static string BuildTargetLabel(
+        WatchedApp app,
+        NotificationStringProvider strings)
+    {
+        return app.Type switch
+        {
+            WatchTargetType.Executable =>
+                strings.TargetExecutable(app.ExePath),
+
+            WatchTargetType.WindowsService =>
+                strings.TargetService(app.ServiceName),
+
+            WatchTargetType.HttpEndpoint =>
+                strings.TargetHttp(app.Url),
+
+            WatchTargetType.TcpPort =>
+                strings.TargetTcp(app.Host, app.Port ?? 0),
+
+            _ => app.Name
+        };
+    }
+
+    private static string BuildDetailsText(
         NotificationContext ctx,
-        SystemInfoSnapshot sys)
+        NotificationStringProvider strings)
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine($"Status: {ctx.Type.ToString().ToUpper()}");
-        sb.AppendLine($"App: {ctx.App.Name}");
+        sb.AppendLine(BuildTargetLabel(ctx.App, strings));
+        sb.AppendLine();
 
-        if (ctx.Type == AppNotificationType.Down && ctx.Status != null)
+        if (ctx.Status != null)
         {
-            sb.AppendLine($"Exe: {ctx.Status.ExePath}");
-            sb.AppendLine($"Startversuch: {(ctx.StartAttempted ? "ja" : "nein")}");
+            sb.AppendLine(
+                ctx.Status.IsRunning
+                    ? strings.StatusReachable
+                    : strings.StatusUnreachable);
+
+            if (ctx.StartAttempted &&
+                (ctx.App.Type == WatchTargetType.Executable ||
+                 ctx.App.Type == WatchTargetType.WindowsService))
+            {
+                sb.AppendLine(strings.RestartAttempted);
+            }
 
             if (!string.IsNullOrWhiteSpace(ctx.Status.LastStartError))
-                sb.AppendLine($"Fehler: {ctx.Status.LastStartError}");
+            {
+                sb.AppendLine();
+                sb.AppendLine(strings.ErrorLabel);
+                sb.AppendLine(ctx.Status.LastStartError);
+            }
+
+            if (ctx.Status.PingMs.HasValue)
+            {
+                sb.AppendLine(
+                    ctx.Status.IsRunning
+                        ? $"Ping: {ctx.Status.PingMs.Value} ms"
+                        : $"Ping: timeout");
+            }
+
         }
 
-        sb.AppendLine($"Host: {sys.MachineName}");
-        sb.AppendLine($"Uptime: {sys.Uptime}");
+        sb.AppendLine();
+        sb.AppendLine(strings.Footer(
+            Environment.MachineName,
+            DateTimeOffset.Now.ToString(CultureInfo.InvariantCulture)));
 
         return sb.ToString();
     }
 
-    private static string BuildStatusSummaryHtml(
-        string status,
-        string color,
-        string appName)
+    private static string BuildPlainText(
+        NotificationContext ctx,
+        NotificationStringProvider strings)
     {
-        return
-            $"<div>Die Anwendung <b>{Html(appName)}</b> ist " +
-            $"<span style=\"color:{color};\"><b>{status}</b></span>.</div>" +
-            $"<div style=\"margin-top:6px; color:#6b7280;\">" +
-            $"Zeit: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}</div>";
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"AppWatchdog – {ctx.App.Name}");
+        sb.AppendLine(BuildTargetLabel(ctx.App, strings));
+        sb.AppendLine();
+
+        if (ctx.Status != null)
+        {
+            sb.AppendLine(
+                ctx.Status.IsRunning
+                    ? strings.SummaryUp
+                    : strings.SummaryDown);
+
+            if (!string.IsNullOrWhiteSpace(ctx.Status.LastStartError))
+            {
+                sb.AppendLine();
+                sb.AppendLine(ctx.Status.LastStartError);
+            }
+        }
+
+        return sb.ToString();
     }
 
-    private static string Html(string s)
-        => (s ?? "")
-            .Replace("&", "&amp;")
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;")
-            .Replace("\"", "&quot;");
-}
+    // =====================================================
+    // HTML MAIL (PURPLE / WPF-UI STYLE)
+    // =====================================================
+    private static string BuildHtmlMail(
+        string appName,
+        string summaryText,
+        string summaryColorHex,
+        string detailsText,
+        NotificationStringProvider strings)
+    {
+        return $@"
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<style>
+body {{
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #0f172a;
+    color: #e5e7eb;
+    padding: 24px;
+}}
+.card {{
+    max-width: 720px;
+    margin: auto;
+    background-color: #020617;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    overflow: hidden;
+}}
+.header {{
+    background: linear-gradient(90deg, #7c3aed, #6366f1);
+    padding: 20px;
+    font-size: 22px;
+    font-weight: 600;
+}}
+.badge {{
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    background-color: {summaryColorHex};
+    margin-bottom: 12px;
+}}
+.content {{
+    padding: 24px;
+}}
+.mono {{
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    opacity: .9;
+    white-space: pre-line;
+}}
+.footer {{
+    padding: 16px;
+    font-size: 11px;
+    opacity: .6;
+    text-align: center;
+}}
+</style>
+</head>
 
+<body>
+<div class='card'>
+    <div class='header'>
+        AppWatchdog – {appName}
+    </div>
 
-public sealed class NotificationContext
-{
-    public required AppNotificationType Type;
-    public required WatchedApp App;
-    public AppStatus? Status;
-    public bool StartAttempted;
+    <div class='content'>
+        <div class='badge'>{summaryText}</div>
 
-    public required string Title;
-    public required string SummaryStatus;
-    public required string SummaryColorHex;
+        <div class='mono'>
+{detailsText}
+        </div>
+    </div>
 
-    public required string NtfyTags;
-    public required int NtfyPriority;
-
-    public required string DiscordEmoji;
-    public required int DiscordColor;
-
-    public NotificationChannel? TestOnlyChannel;
-}
-
-public enum AppNotificationType
-{
-    Down,
-    Restart,
-    Up
-}
-
-public enum NotificationChannel
-{
-    Mail,
-    Ntfy,
-    Discord,
-    Telegram
+    <div class='footer'>
+        {strings.Footer(Environment.MachineName, DateTimeOffset.Now.ToString())}
+    </div>
+</div>
+</body>
+</html>";
+    }
 }
