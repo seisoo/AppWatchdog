@@ -3,19 +3,22 @@
 # 🛡️ AppWatchdog
 **Windows Application & Service Watchdog**
 
-AppWatchdog is a lightweight **Windows watchdog** consisting of a **Windows Service** and a **WPF UI**.  
-It monitors applications, detects failures reliably, and performs automatic recovery.
+AppWatchdog is a modern, lightweight **Windows watchdog system** consisting of a **Windows Service** and a **WPF UI**.  
+It continuously monitors applications, detects failures reliably, and performs **automatic recovery** with detailed status tracking.
 
---- 
+---
 
-## ✨ Features
-- 🔍 Process monitoring with multi-step failure detection
-- 🔁 Automatic application restart with retry logic
-- 🛠 Windows Service + WPF UI (session-independent)
-- 🔔 Notifications: SMTP · ntfy · Discord · Telegram · Uptime Kuma (heartbeat)
-- 📜 Structured logging with UI log viewer
-- 🔐 Named Pipes IPC (versioned & validated)
-- 🧠 Self-healing service detection and repair
+## ✨ Key Features
+- 🔍 **Job-based monitoring engine** (snapshot, health, recovery, heartbeat)
+- 🔁 Automatic restart with exponential backoff & failure analysis
+- 🧠 Multi-stage failure detection (confirm checks, recovery states)
+- 🛠 Windows Service + WPF UI (session-independent, admin-controlled)
+- 🔔 Notifications: SMTP · ntfy · Discord · Telegram · **Uptime Kuma (per-app heartbeat)**
+- 📊 Live service snapshots & job status overview in UI
+- 📜 Structured file logging with built-in log viewer
+- 🔐 Secure Named Pipes IPC (versioned, validated)
+- 🔒 Encrypted secrets (SMTP, tokens, webhooks)
+- 🌍 Multi-language UI (auto-detect OS language, manually switchable)
 
 ---
 
@@ -30,7 +33,19 @@ It monitors applications, detects failures reliably, and performs automatic reco
 └──────────────────────┘
 ```
 
+**Core idea:**  
+Everything in the service runs as a **job**:
+- Snapshot jobs (system & app state)
+- Health monitor jobs (per application)
+- Recovery jobs (restart & backoff)
+- Kuma ping jobs (heartbeat per app)
+
+This keeps the service robust, extensible, and easy to reason about.
+
+---
+
 ## 🖥️ Screenshots
+
 **Service**
 ![Service](https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service.png)
 
@@ -49,46 +64,57 @@ It monitors applications, detects failures reliably, and performs automatic reco
 ---
 
 ## 🚀 Installation
+**Requirements**
 - Windows 10 / 11 (x64 · x86 · ARM64)
-- Administrator privileges required
+- Administrator privileges
 
 **Steps**
-1. Download release
+1. Download the latest release
 2. Extract:
    - `AppWatchdog.Service.exe`
    - `AppWatchdog.UI.WPF.exe`
-3. Start UI → install & start service → configure apps
+3. Start the UI
+4. Install & start the service
+5. Configure applications and notifications
 
-> Builds are **self-contained** (no .NET runtime required)
+> ✔️ Builds are **self-contained** – no .NET runtime required
 
 ---
 
 ## ⚙️ Configuration
-Configured entirely via the UI:
+All configuration is done via the **UI**:
 
-- Executable & arguments
-- Enable/disable monitoring
-- Notifications (SMTP, ntfy, Discord webhooks, Telegram Bot)
-- Uptime Kuma heartbeat
+- Application executable & arguments
+- Enable / disable monitoring per app
+- Check intervals & notification limits
+- Notifications:
+  - SMTP (mail)
+  - ntfy
+  - Discord
+  - Telegram
+  - Uptime Kuma (heartbeat per application)
+- UI language selection
 
-Logs are stored locally.
+🔒 **Sensitive data is encrypted at rest** and transparently decrypted in the UI.
 
 ---
 
 ## 🧭 Roadmap
+- ~~Job-based service architecture~~ ✔️
 - ~~Multi-language UI~~ ✔️
-- ~~Encryption~~ ✔️
+- ~~Encrypted configuration~~ ✔️
 - ~~Telegram & Discord notifications~~ ✔️
-- Service & website checks
-- more? idk
+- ~~Website / HTTP health checks~~ ✔️
+- Service dependency monitoring
+- More automation & recovery strategies
 
 ---
 
-## Support & Contact
+## 🤝 Support & Feedback
+Found a bug, have an idea, or want to contribute?  
+Please open an **issue** in this repository.
 
-If you find a bug, have a question, or would like to suggest an improvement, please create an **issue** in this repository.  
-Alternatively, you can contact me directly. Feedback and contributions are always welcome!
-
+Feedback, testing, and pull requests are very welcome ❤️
 
 ---
 
@@ -98,7 +124,6 @@ MIT License
 
 ---
 
-## 📌 Status
-Early-access, under active development.  
-Windows-only by design for deep OS integration.
-
+## 📌 Project Status
+Early-access, **actively developed**.  
+Windows-only by design for deep OS & session integration.
