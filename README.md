@@ -24,13 +24,17 @@ It continuously monitors applications, detects failures reliably, and performs *
 
 ## 🧩 Architecture
 ```
-┌──────────────────────┐
-│ AppWatchdog.UI.WPF │ ← Configuration & Monitoring (WPF)
-└──────────▲───────────┘
-│ Named Pipes (IPC)
-┌──────────┴───────────┐
-│ AppWatchdog.Service │ ← Windows Service (Watchdog Engine)
-└──────────────────────┘
+┌────────────────────────┐
+│ AppWatchdog.UI.WPF │ ← Configuration, Live Status, Logs
+└───────────▲────────────┘
+│ Named Pipes (IPC, versioned)
+┌───────────┴────────────┐
+│ AppWatchdog.Service    │
+│ - Job Scheduler        │
+│ - Health Monitoring    │
+│ - Recovery Engine      │
+│ - Notifications        │
+└────────────────────────┘
 ```
 
 **Core idea:**  
