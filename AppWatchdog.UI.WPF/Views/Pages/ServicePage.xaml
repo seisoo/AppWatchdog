@@ -83,8 +83,6 @@
                             Content="{Binding Source={StaticResource Strings}, Path=[service_button_uninstall]}"
                             Icon="{ui:ImageIcon /Images/uac.png}" />
                     </WrapPanel>
-
-                    <TextBlock Text="{Binding StatusLine}" />
                 </StackPanel>
             </ui:Card>
 

@@ -14,7 +14,6 @@ public partial class ServicePage : Page
     {
         InitializeComponent();
         _vm = vm;
-        vm.AttachDialogService(contentDialogService);
 
         DataContext = vm;
 

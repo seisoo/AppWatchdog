@@ -13,6 +13,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Wpf.Ui;
+using Wpf.Ui.Controls;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -21,6 +23,7 @@ public partial class AppsViewModel : DirtyViewModelBase
     private readonly AppDialogService _dialog;
     private readonly PipeFacade _pipe;
     private readonly BackendStateService _backend;
+    private readonly ISnackbarService _snackbar;
     private bool _activated;
 
     public ObservableCollection<WatchedAppItemViewModel> Apps { get; } = new();
@@ -34,9 +37,6 @@ public partial class AppsViewModel : DirtyViewModelBase
     public bool HasSelectedApp => SelectedApp != null;
 
     [ObservableProperty]
-    private int _checkIntervalSeconds = 5;
-
-    [ObservableProperty]
     private int _mailIntervalHours = 12;
 
     public string HintText => AppStrings.apps_hint_text;
@@ -44,11 +44,13 @@ public partial class AppsViewModel : DirtyViewModelBase
     public AppsViewModel(
         PipeFacade pipe,
         AppDialogService dialog,
-        BackendStateService backend)
+        BackendStateService backend, 
+        ISnackbarService snackbar)
     {
         _pipe = pipe;
         _dialog = dialog;
         _backend = backend;
+        _snackbar = snackbar;
 
         Apps.CollectionChanged += (_, __) => MarkDirty();
         _backend.PropertyChanged += OnBackendStateChanged;
@@ -86,9 +88,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         using var _ = SuppressDirty();
 
         var cfg = await Task.Run(() => _pipe.GetConfig());
-
-        CheckIntervalSeconds = cfg.CheckIntervalSeconds;
-        MailIntervalHours = cfg.MailIntervalHours;
 
         SyncApps(cfg.Apps);
 
@@ -145,7 +144,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         SelectedApp = vm;
 
         MarkDirty();
-        SaveStateText = AppStrings.config_not_saved;
     }
 
     [RelayCommand]
@@ -167,7 +165,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         SelectedApp = Apps.FirstOrDefault();
 
         MarkDirty();
-        SaveStateText = AppStrings.config_not_saved;
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -177,8 +174,6 @@ public partial class AppsViewModel : DirtyViewModelBase
         {
             var cfg = await Task.Run(() => _pipe.GetConfig());
 
-            cfg.CheckIntervalSeconds = CheckIntervalSeconds;
-            cfg.MailIntervalHours = MailIntervalHours;
 
             cfg.Apps.Clear();
             foreach (var vm in Apps)
@@ -187,14 +182,28 @@ public partial class AppsViewModel : DirtyViewModelBase
             await Task.Run(() => _pipe.SaveConfig(cfg));
 
             ClearDirty();
+
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.config,
+                    AppStrings.config_saved,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                ex.Message,
-                AppStrings.config_saving_failed,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.config_saving_failed,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
 
@@ -213,6 +222,5 @@ public partial class AppsViewModel : DirtyViewModelBase
         OnPropertyChanged(nameof(HasSelectedApp));
     }
 
-    partial void OnCheckIntervalSecondsChanged(int value) => MarkDirty();
     partial void OnMailIntervalHoursChanged(int value) => MarkDirty();
 }

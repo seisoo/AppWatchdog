@@ -23,6 +23,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
     private string _url = "";
     [ObservableProperty]
     private int _expectedStatusCode = 200;
+    [ObservableProperty]
+    private int _checkIntervalSeconds = 60;
 
     public bool IsUrlValid =>
     string.IsNullOrWhiteSpace(Url) ||
@@ -37,6 +39,10 @@ public partial class WatchedAppItemViewModel : ObservableObject
     public WatchedAppItemViewModel(Action markDirty)
     {
         _markDirty = markDirty;
+        LocalizationService.LanguageChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(Type));
+        };
     }
 
     [ObservableProperty] private string _name = "";
@@ -66,6 +72,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
     partial void OnHostChanged(string value) => _markDirty();
     partial void OnPortChanged(int value) => _markDirty();
 
+    partial void OnCheckIntervalSecondsChanged(int value) => _markDirty();
+
 
     public static WatchedAppItemViewModel FromModel(WatchedApp model, Action markDirty)
     {
@@ -81,6 +89,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
             Name = Name,
             Type = Type,
             Enabled = Enabled,
+
+            CheckIntervalSeconds = CheckIntervalSeconds,
 
             ExePath = ExePath,
             Arguments = Arguments,
@@ -104,6 +114,7 @@ public partial class WatchedAppItemViewModel : ObservableObject
     }
 
 
+
     public void UpdateFromModel(WatchedApp model)
     {
         Name = model.Name;
@@ -121,6 +132,12 @@ public partial class WatchedAppItemViewModel : ObservableObject
 
         Host = model.Host ?? "";
         Port = model.Port ?? 0;
+
+        CheckIntervalSeconds =
+        model.CheckIntervalSeconds > 0
+            ? model.CheckIntervalSeconds
+            : 60;
+
 
         if (model.UptimeKuma != null)
         {

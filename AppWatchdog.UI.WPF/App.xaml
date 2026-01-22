@@ -32,6 +32,8 @@
 
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+            <conv:CheckIntervalHintConverter x:Key="CheckIntervalHintConverter" />
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

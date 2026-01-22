@@ -9,6 +9,7 @@ using Wpf.Ui.Controls;
 using AppWatchdog.UI.WPF.Common;
 using System.Threading.Tasks;
 using AppWatchdog.UI.WPF.Localization;
+using System.Windows;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -93,17 +94,20 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     [ObservableProperty]
     private string _telegramChatId = "";
 
-
+    private readonly ISnackbarService _snackbar;
     public NotificationsViewModel(
     PipeFacade pipe,
     IContentDialogService dialogService,
-    BackendStateService backend)
+    BackendStateService backend, 
+    ISnackbarService snackbar)
     {
         _pipe = pipe;
         _dialogService = dialogService;
         _backend = backend;
+        _snackbar = snackbar;
 
         _backend.PropertyChanged += OnBackendStateChanged;
+
     }
 
 
@@ -168,9 +172,6 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         TelegramEnabled = cfg.Telegram.Enabled;
         TelegramBotToken = cfg.Telegram.BotToken;
         TelegramChatId = cfg.Telegram.ChatId;
-
-
-        SaveStateText = AppStrings.config_loaded;
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -203,6 +204,16 @@ public partial class NotificationsViewModel : DirtyViewModelBase
 
         await Task.Run(() => _pipe.SaveConfig(cfg));
         ClearDirty();
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            _snackbar.Show(
+                AppStrings.config_saved,
+                AppStrings.config_saved,
+                ControlAppearance.Info,
+                new SymbolIcon(SymbolRegular.Info24, 28, false),
+                TimeSpan.FromSeconds(3));
+        });
     }
 
     protected override void OnIsDirtyChanged(bool value)
@@ -218,20 +229,29 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     {
         try
         {
-            _pipe.TestSmtp();
-            SaveStateText = AppStrings.notific_smtp_test_success;
+            await Task.Run(() => _pipe.TestSmtp());
 
-            await UiDialogHelper.ShowInfoAsync(
-                _dialogService,
-                AppStrings.notific_smtp_test,
-                AppStrings.notific_smtp_test_success_finish,
-                SymbolRegular.CheckmarkCircle24
-            );
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_smtp_test,
+                    AppStrings.notific_smtp_test_success_finish,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                    TimeSpan.FromSeconds(4));
+            });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            SaveStateText = AppStrings.notific_smtp_test_failed;
-            throw;
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_smtp_test,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
 
@@ -241,22 +261,32 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     {
         try
         {
-            _pipe.TestNtfy();
-            SaveStateText = AppStrings.notific_ntfy_successful;
+            await Task.Run(() => _pipe.TestNtfy());
 
-            await UiDialogHelper.ShowInfoAsync(
-                _dialogService,
-                AppStrings.notific_ntfy_test,
-                AppStrings.notific_ntfy_test_success_finish,
-                SymbolRegular.CheckmarkCircle24
-            );
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_ntfy_test,
+                    AppStrings.notific_ntfy_test_success_finish,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                    TimeSpan.FromSeconds(4));
+            });
         }
-        catch
+        catch (Exception ex)
         {
-            SaveStateText = AppStrings.notific_ntfy_test_failed;
-            throw;
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_ntfy_test,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
+
 
 
     [RelayCommand]
@@ -264,47 +294,65 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     {
         try
         {
-            _pipe.TestTelegram();
-            SaveStateText = AppStrings.notific_telegram_test;
+            await Task.Run(() => _pipe.TestTelegram());
 
-            await UiDialogHelper.ShowInfoAsync(
-                _dialogService,
-                AppStrings.notific_telegram_test,
-                AppStrings.notific_telegram_test_success,
-                SymbolRegular.CheckmarkCircle24
-            );
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_telegram_test,
+                    AppStrings.notific_telegram_test_success,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                    TimeSpan.FromSeconds(4));
+            });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // todo
-            SaveStateText = AppStrings.notific_smtp_test_failed;
-            throw;
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_telegram_test,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
+
 
 
     [RelayCommand]
-    private async Task TestDiscordAsync() 
+    private async Task TestDiscordAsync()
     {
         try
         {
-            _pipe.TestDiscord();
-            SaveStateText = AppStrings.notific_discord_test_success;
+            await Task.Run(() => _pipe.TestDiscord());
 
-            await UiDialogHelper.ShowInfoAsync(
-                _dialogService,
-                AppStrings.notific_discord_test,
-                AppStrings.notific_discord_test_success,
-                SymbolRegular.CheckmarkCircle24
-            );
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_discord_test,
+                    AppStrings.notific_discord_test_success,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                    TimeSpan.FromSeconds(4));
+            });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // todo
-            SaveStateText = AppStrings.notific_smtp_test_failed;
-            throw;
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    AppStrings.notific_discord_test,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false), 
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
+
 
 
     #region Dirty-Events

@@ -616,4 +616,22 @@
   <data name="RECOVERY_FAILED" xml:space="preserve">
     <value>Restart failed</value>
   </data>
+  <data name="config" xml:space="preserve">
+    <value>Config</value>
+  </data>
+  <data name="language_changed" xml:space="preserve">
+    <value>Changed successfully</value>
+  </data>
+  <data name="apps_interval_hint_http" xml:space="preserve">
+    <value>HTTP: recommended ≥ 30 seconds (min. 15s)</value>
+  </data>
+  <data name="apps_interval_hint_tcp" xml:space="preserve">
+    <value>TCP: recommended ≥ 15 seconds (min. 15s)</value>
+  </data>
+  <data name="apps_interval_hint_executable" xml:space="preserve">
+    <value>Application: typically 5–10 seconds</value>
+  </data>
+  <data name="apps_interval_hint_service" xml:space="preserve">
+    <value>Service: typically 5–10 seconds</value>
+  </data>
 </root>

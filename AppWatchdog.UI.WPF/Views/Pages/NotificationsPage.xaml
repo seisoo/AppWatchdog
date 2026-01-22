@@ -88,12 +88,6 @@
                                 Icon="{ui:SymbolIcon Symbol=Save24}"
                                 IsEnabled="{Binding IsDirty}" />
                         </WrapPanel>
-
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            FontFamily="Consolas"
-                            Foreground="NavajoWhite"
-                            Text="{Binding SaveStateText}" />
                     </StackPanel>
                 </ui:Card>
 

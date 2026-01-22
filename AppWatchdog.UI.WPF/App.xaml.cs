@@ -89,6 +89,7 @@ public partial class App : Application
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
                 services.AddSingleton<GlobalErrorDialogService>();
                 services.AddSingleton<AppDialogService>();
+                services.AddSingleton<ISnackbarService, SnackbarService>();
                 services.AddSingleton<PipeFacade>();
                 services.AddSingleton(_ => new ServiceControlFacade("AppWatchdog"));
                 services.AddSingleton<MainWindowViewModel>();
