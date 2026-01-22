@@ -322,6 +322,42 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Application: typically 5–10 seconds.
+        /// </summary>
+        public static string apps_interval_hint_executable {
+            get {
+                return ResourceManager.GetString("apps_interval_hint_executable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP: recommended ≥ 30 seconds (min. 15s).
+        /// </summary>
+        public static string apps_interval_hint_http {
+            get {
+                return ResourceManager.GetString("apps_interval_hint_http", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service: typically 5–10 seconds.
+        /// </summary>
+        public static string apps_interval_hint_service {
+            get {
+                return ResourceManager.GetString("apps_interval_hint_service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TCP: recommended ≥ 15 seconds (min. 15s).
+        /// </summary>
+        public static string apps_interval_hint_tcp {
+            get {
+                return ResourceManager.GetString("apps_interval_hint_tcp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Base URL (e.g. https://url.com).
         /// </summary>
         public static string apps_kuma_base_url {
@@ -507,6 +543,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string close {
             get {
                 return ResourceManager.GetString("close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Config.
+        /// </summary>
+        public static string config {
+            get {
+                return ResourceManager.GetString("config", resourceCulture);
             }
         }
         
@@ -768,6 +813,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string language {
             get {
                 return ResourceManager.GetString("language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changed successfully.
+        /// </summary>
+        public static string language_changed {
+            get {
+                return ResourceManager.GetString("language_changed", resourceCulture);
             }
         }
         

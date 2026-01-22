@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using AppWatchdog.Shared.Monitoring;
+using System.Text.Json;
 
 namespace AppWatchdog.Shared;
 
@@ -61,9 +62,10 @@ public static class ConfigStore
             {
                 new WatchedApp
                 {
-                    Name = "Beispiel",
-                    ExePath = @"C:\Pfad\zu\deiner\app.exe",
-                    Arguments = "",
+                    Name = "Beispiel HTTP",
+                    Type = WatchTargetType.HttpEndpoint,
+                    Url = "https://example.com/health",
+                    CheckIntervalSeconds = 60,
                     Enabled = false
                 }
             },

@@ -9,8 +9,6 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <Page.Resources>
-
-        <!--  Enum values for WatchTargetType  -->
         <x:Array x:Key="WatchTargetTypeValues" Type="{x:Type sharedMon:WatchTargetType}">
             <sharedMon:WatchTargetType>Executable</sharedMon:WatchTargetType>
             <sharedMon:WatchTargetType>WindowsService</sharedMon:WatchTargetType>
@@ -18,12 +16,9 @@
             <sharedMon:WatchTargetType>TcpPort</sharedMon:WatchTargetType>
         </x:Array>
 
-        <!--  Simple style to show/hide blocks based on SelectedApp.Type without converters  -->
         <Style x:Key="TargetBlockStyle" TargetType="{x:Type FrameworkElement}">
             <Setter Property="Visibility" Value="Collapsed" />
-            <Style.Triggers>
-                <!--  default: Collapsed  -->
-            </Style.Triggers>
+            <Style.Triggers />
         </Style>
 
     </Page.Resources>
@@ -93,76 +88,10 @@
                             IsEnabled="{Binding IsDirty}" />
                     </WrapPanel>
 
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Right"
-                        FontFamily="Consolas"
-                        Foreground="NavajoWhite"
-                        Text="{Binding SaveStateText}" />
-
                 </StackPanel>
             </ui:Card>
 
             <!--  GENERAL  -->
-            <ui:Card Margin="0,0,0,16">
-                <Grid Margin="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="260" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="260" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <TextBlock
-                        Grid.Row="1"
-                        Grid.ColumnSpan="4"
-                        Margin="0,0,0,8"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Text="{Binding Source={StaticResource Strings}, Path=[apps_general_monitoring]}" />
-
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        Margin="8,8,8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Text="{Binding Source={StaticResource Strings}, Path=[apps_check_interval]}" />
-
-                    <ui:NumberBox
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Width="auto"
-                        HorizontalAlignment="left"
-                        Maximum="1440"
-                        Minimum="1"
-                        Value="{Binding CheckIntervalSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <TextBlock
-                        Grid.Row="2"
-                        Grid.Column="2"
-                        Margin="8,8,8,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Text="{Binding Source={StaticResource Strings}, Path=[apps_mail_interval]}" />
-
-                    <ui:NumberBox
-                        Grid.Row="2"
-                        Grid.Column="3"
-                        Width="auto"
-                        Margin="0,8,0,0"
-                        HorizontalAlignment="Left"
-                        Maximum="168"
-                        Minimum="0"
-                        Value="{Binding MailIntervalHours, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </Grid>
-            </ui:Card>
 
             <!--  APPS  -->
             <Grid>
@@ -247,6 +176,24 @@
                             <!--  Enable  -->
                             <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[apps_monitoring_enable]}" IsChecked="{Binding Enabled}" />
 
+                            <!--  CHECK INTERVAL  -->
+                            <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                <TextBlock Text="Check interval (seconds)" />
+
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    Maximum="3600"
+                                    Minimum="5"
+                                    Value="{Binding CheckIntervalSeconds, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="11"
+                                    Opacity="0.65"
+                                    Text="{Binding Type, Converter={StaticResource CheckIntervalHintConverter}}" />
+                            </StackPanel>
+
+
                             <!--  Target Type  -->
                             <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
                                 <TextBlock Text="Target Type" />
@@ -255,6 +202,7 @@
                                     ItemsSource="{StaticResource WatchTargetTypeValues}"
                                     SelectedItem="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
+
 
                             <!--  =========================  -->
                             <!--  EXECUTABLE  -->

@@ -1,6 +1,7 @@
 ﻿using AppWatchdog.Shared;
 using AppWatchdog.UI.WPF.Localization;
 using AppWatchdog.UI.WPF.Services;
+using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
@@ -9,7 +10,7 @@ public sealed class LocalizationService
 {
     private readonly PipeFacade _pipe;
     private readonly BackendStateService _backend;
-
+    public static event EventHandler? LanguageChanged;
 
     private const string DefaultCulture = "en-GB";
 
@@ -106,5 +107,7 @@ public sealed class LocalizationService
         {
             strings.Refresh();
         }
+
+        LanguageChanged?.Invoke(null, EventArgs.Empty);
     }
 }

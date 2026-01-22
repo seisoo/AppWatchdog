@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Diagnostics;
+using System.Windows;
 
 namespace AppWatchdog.UI.WPF.ViewModels.Base;
 
@@ -20,13 +21,6 @@ public abstract partial class DirtyViewModelBase : ObservableObject
         }
     }
 
-    private string _saveStateText = AppStrings.config_not_saved;
-    public string SaveStateText
-    {
-        get => _saveStateText;
-        protected set => SetProperty(ref _saveStateText, value);
-    }
-
     private int _suppressDirty;
 
     protected IDisposable SuppressDirty()
@@ -41,13 +35,11 @@ public abstract partial class DirtyViewModelBase : ObservableObject
             return;
 
         IsDirty = true;
-        SaveStateText = AppStrings.config_not_saved;
     }
 
     public void ClearDirty()
     {
         IsDirty = false;
-        SaveStateText = AppStrings.config_saved;
     }
 
     /// <summary>
@@ -66,23 +58,16 @@ public abstract partial class DirtyViewModelBase : ObservableObject
         public void Dispose() => _a();
     }
 
-    [RelayCommand]
-    private void OpenSteam()
+    public static void RunOnUiThread(Action action)
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "https://steamcommunity.com/id/call_me_seiso/",
-            UseShellExecute = true
-        });
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null)
+            return;
+
+        if (dispatcher.CheckAccess())
+            action();
+        else
+            dispatcher.Invoke(action);
     }
 
-    [RelayCommand]
-    private void OpenMail()
-    {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "mailto:kreolen-mission9v@icloud.com",
-            UseShellExecute = true
-        });
-    }
 }

@@ -28,13 +28,11 @@ public partial class ServiceViewModel : DirtyViewModelBase
     private readonly PipeFacade _pipe;
     private readonly ServiceControlFacade _svc;
     private readonly DispatcherTimer _snapshotTimer;
-    private IContentDialogService? _dialogService;
     private bool _isRefreshing;
     private readonly BackendStateService _backend;
     public LanguageSelectorViewModel LanguageSelector { get; }
 
-    public void AttachDialogService(IContentDialogService dialogService)
-        => _dialogService = dialogService;
+    private readonly ISnackbarService _snackbar;
 
     public bool HasNoEnabledApps => !HasEnabledApps;
     [ObservableProperty] private string _statusLine = "";
@@ -60,11 +58,14 @@ public partial class ServiceViewModel : DirtyViewModelBase
         PipeFacade pipe, 
         ServiceControlFacade svc,
         BackendStateService backend,
-        LanguageSelectorViewModel _languageSelector)
+        LanguageSelectorViewModel _languageSelector, 
+        ISnackbarService snackbar)
     {
         _pipe = pipe;
         _svc = svc;
         _backend = backend;
+        _snackbar = snackbar;
+
         LanguageSelector = _languageSelector;
 
         IsAdminText = IsAdmin() ? AppStrings.yes : AppStrings.no;
@@ -241,75 +242,33 @@ public partial class ServiceViewModel : DirtyViewModelBase
             action();
             await ForceBackendRecheckAsync();
 
-            if (successText != null && _dialogService != null)
+            if (!string.IsNullOrWhiteSpace(successText))
             {
-                string serviceExePath =
-                    Path.Combine(@"C:\AppWatchdog\Service", "AppWatchdog.Service.exe");
-
-                var panel = new StackPanel
+                RunOnUiThread(() =>
                 {
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-
-                panel.Children.Add(new SymbolIcon
-                {
-                    Symbol = SymbolRegular.CheckmarkCircle24,
-                    FontSize = 64,
-                    Margin = new Thickness(0, 0, 0, 16)
+                    _snackbar.Show(
+                        AppStrings.service_title,
+                        successText,
+                        ControlAppearance.Success,
+                        new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                        TimeSpan.FromSeconds(4));
                 });
-
-                panel.Children.Add(new Wpf.Ui.Controls.TextBlock
-                {
-                    Text = successText,
-                    FontSize = 18,
-                    FontWeight = FontWeights.SemiBold,
-                    TextAlignment = TextAlignment.Center,
-                    Margin = new Thickness(0, 0, 0, 12)
-                });
-
-                panel.Children.Add(new Wpf.Ui.Controls.TextBlock
-                {
-                    Text = "Service-Executable",
-                    Opacity = 0.7,
-                    TextAlignment = TextAlignment.Center,
-                    Margin = new Thickness(0, 0, 0, 4)
-                });
-
-                panel.Children.Add(new Wpf.Ui.Controls.TextBlock
-                {
-                    Text = serviceExePath,
-                    TextAlignment = TextAlignment.Center,
-                    FontFamily = new System.Windows.Media.FontFamily("Consolas"),
-                    Opacity = 0.85
-                });
-
-                await _dialogService.ShowSimpleDialogAsync(
-                    new SimpleContentDialogCreateOptions
-                    {
-                        Title = "Service",
-                        Content = panel,
-                        CloseButtonText = "OK"
-                    },
-                    CancellationToken.None
-                );
             }
         }
         catch (Exception ex)
         {
-            if (_dialogService != null)
+            RunOnUiThread(() =>
             {
-                await _dialogService.ShowSimpleDialogAsync(
-                    new SimpleContentDialogCreateOptions
-                    {
-                        Title = AppStrings.service_error,
-                        Content = ex.Message,
-                        CloseButtonText = "OK"
-                    },
-                    CancellationToken.None
-                );
-            }
+                _snackbar.Show(
+                    AppStrings.service_error,
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
         }
     }
+
 
 
     private bool IsServiceRunning()

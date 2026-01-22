@@ -43,6 +43,15 @@
             Grid.RowSpan="2"
             Panel.ZIndex="999" />
 
+        <!--  Snackbar Layer  -->
+        <ui:SnackbarPresenter
+            x:Name="SnackbarPresenter"
+            Grid.RowSpan="2"
+            Margin="0,0,0,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Panel.ZIndex="999" />
+
         <ui:NavigationView
             x:Name="RootNavigationView"
             Grid.Row="1"
@@ -71,17 +80,11 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-
-
-
-
-
                 </StackPanel>
             </ui:NavigationView.PaneFooter>
 
 
             <ui:NavigationView.MenuItems>
-
                 <ui:NavigationViewItem
                     Content="Service"
                     Icon="{ui:SymbolIcon Shield24}"

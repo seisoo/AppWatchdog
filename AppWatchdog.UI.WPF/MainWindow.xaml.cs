@@ -35,9 +35,11 @@ public partial class MainWindow : FluentWindow
          BackendStateService backendStateService,
          INavigationViewPageProvider pageProvider,
          IContentDialogService contentDialogService,
-         IContentDialogService dialogService)
+         IContentDialogService dialogService,
+         ISnackbarService snackbarService)
     {
         InitializeComponent();
+        snackbarService.SetSnackbarPresenter(SnackbarPresenter);
         DataContext = this;
         ViewModel = viewModel;
         _navigationService = navigationService;

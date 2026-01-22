@@ -159,7 +159,7 @@ public sealed class Worker : BackgroundService
             healthCheck: health,
             recovery: recovery,
             dispatcher: _dispatcher,
-            interval: TimeSpan.FromSeconds(_cfg.CheckIntervalSeconds),
+            interval: TimeSpan.FromSeconds(app.CheckIntervalSeconds),
             mailIntervalHours: _cfg.MailIntervalHours
         );
     }
@@ -193,6 +193,17 @@ public sealed class Worker : BackgroundService
                     reason = "Url is empty.";
                     return false;
                 }
+                if (app.CheckIntervalSeconds < 3)
+                {
+                    reason = "CheckIntervalSeconds must be >= 3 seconds.";
+                    return false;
+                }
+                if (app.Type is WatchTargetType.HttpEndpoint or WatchTargetType.TcpPort &&
+                    app.CheckIntervalSeconds < 15)
+                {
+                    reason = "HTTP/TCP interval too low (min 15s).";
+                    return false;
+                }
                 return true;
 
             case WatchTargetType.TcpPort:
@@ -204,6 +215,17 @@ public sealed class Worker : BackgroundService
                 if (!app.Port.HasValue || app.Port.Value <= 0 || app.Port.Value > 65535)
                 {
                     reason = "Port is missing/invalid.";
+                    return false;
+                }
+                if(app.CheckIntervalSeconds < 3) 
+                { 
+                    reason = "CheckIntervalSeconds must be >= 3 seconds.";
+                    return false;
+                }
+                if (app.Type is WatchTargetType.HttpEndpoint or WatchTargetType.TcpPort &&
+                    app.CheckIntervalSeconds < 15)
+                {
+                    reason = "HTTP/TCP interval too low (min 15s).";
                     return false;
                 }
                 return true;

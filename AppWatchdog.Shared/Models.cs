@@ -6,7 +6,6 @@ namespace AppWatchdog.Shared;
 public sealed class WatchdogConfig
 {
     public List<WatchedApp> Apps { get; set; } = new();
-    public int CheckIntervalSeconds { get; set; } = 5;
     public int MailIntervalHours { get; set; } = 12;
     public SmtpSettings Smtp { get; set; } = new();
     public NtfySettings Ntfy { get; set; } = new();
