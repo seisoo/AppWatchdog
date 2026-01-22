@@ -135,3 +135,6 @@ MIT License
 ## 📌 Status
 Early access, under development.  
 Windows-only.
+
+Thank you for using **AppWatchdog**. Feedback and contributions are welcome.<br>
+<img src="https://i.imgur.com/WXDHQi0.gif" />
