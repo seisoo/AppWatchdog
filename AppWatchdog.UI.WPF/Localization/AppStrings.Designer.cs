@@ -1348,6 +1348,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Healthcheck Jobs.
+        /// </summary>
+        public static string service_apps_summary {
+            get {
+                return ResourceManager.GetString("service_apps_summary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install.
         /// </summary>
         public static string service_button_install {
@@ -1470,6 +1479,42 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string service_pipe_service {
             get {
                 return ResourceManager.GetString("service_pipe_service", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service session.
+        /// </summary>
+        public static string service_session {
+            get {
+                return ResourceManager.GetString("service_session", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Snapshot time.
+        /// </summary>
+        public static string service_snapshot_time {
+            get {
+                return ResourceManager.GetString("service_snapshot_time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string service_state {
+            get {
+                return ResourceManager.GetString("service_state", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Service status.
+        /// </summary>
+        public static string service_status_title {
+            get {
+                return ResourceManager.GetString("service_status_title", resourceCulture);
             }
         }
         

@@ -8,18 +8,12 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
-using Wpf.Ui.Extensions;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -28,18 +22,30 @@ public partial class ServiceViewModel : DirtyViewModelBase
     private readonly PipeFacade _pipe;
     private readonly ServiceControlFacade _svc;
     private readonly DispatcherTimer _snapshotTimer;
-    private bool _isRefreshing;
     private readonly BackendStateService _backend;
-    public LanguageSelectorViewModel LanguageSelector { get; }
-
     private readonly ISnackbarService _snackbar;
 
-    public bool HasNoEnabledApps => !HasEnabledApps;
+    private bool _isRefreshing;
+    private bool _activated;
+
+    public LanguageSelectorViewModel LanguageSelector { get; }
+
+    // -------------------------------------------------
+    // STATUS / SNAPSHOT SUMMARY
+    // -------------------------------------------------
+    [ObservableProperty] private string _serviceStateText = "";
+    [ObservableProperty] private string _snapshotTimestamp = "";
+    [ObservableProperty] private string _sessionStateText = "";
+    [ObservableProperty] private string _appsSummaryText = "";
+
+    // -------------------------------------------------
+    // STATUS LINE
+    // -------------------------------------------------
     [ObservableProperty] private string _statusLine = "";
 
-    public ObservableCollection<AppStatus> EnabledApps { get; } = new();
-    [ObservableProperty] private bool _hasEnabledApps;
-
+    // -------------------------------------------------
+    // SYSTEM INFO
+    // -------------------------------------------------
     [ObservableProperty] private string _username = "";
     [ObservableProperty] private int _corecount = -1;
     [ObservableProperty] private string _machineName = "";
@@ -49,24 +55,30 @@ public partial class ServiceViewModel : DirtyViewModelBase
     [ObservableProperty] private string _memoryInfo = "";
     [ObservableProperty] private string _clientProtocolVersion = "";
     [ObservableProperty] private string _serviceProtocolVersion = "";
-
     [ObservableProperty] private string _isAdminText = "";
 
-    
+    // -------------------------------------------------
+    // APPS
+    // -------------------------------------------------
+    public ObservableCollection<AppStatus> EnabledApps { get; } = new();
+    [ObservableProperty] private bool _hasEnabledApps;
+    public bool HasNoEnabledApps => !HasEnabledApps;
 
+    // -------------------------------------------------
+    // CTOR
+    // -------------------------------------------------
     public ServiceViewModel(
-        PipeFacade pipe, 
+        PipeFacade pipe,
         ServiceControlFacade svc,
         BackendStateService backend,
-        LanguageSelectorViewModel _languageSelector, 
+        LanguageSelectorViewModel languageSelector,
         ISnackbarService snackbar)
     {
         _pipe = pipe;
         _svc = svc;
         _backend = backend;
         _snackbar = snackbar;
-
-        LanguageSelector = _languageSelector;
+        LanguageSelector = languageSelector;
 
         IsAdminText = IsAdmin() ? AppStrings.yes : AppStrings.no;
 
@@ -77,9 +89,9 @@ public partial class ServiceViewModel : DirtyViewModelBase
         _snapshotTimer.Tick += (_, _) => RefreshSnapshot();
     }
 
-
-    private bool _activated;
-
+    // -------------------------------------------------
+    // LIFECYCLE
+    // -------------------------------------------------
     public async Task ActivateAsync()
     {
         if (!_activated)
@@ -88,7 +100,7 @@ public partial class ServiceViewModel : DirtyViewModelBase
             StartAutoRefresh();
         }
 
-        await ForceBackendRecheckAsync(); 
+        await ForceBackendRecheckAsync();
     }
 
     public void StartAutoRefresh()
@@ -103,16 +115,9 @@ public partial class ServiceViewModel : DirtyViewModelBase
             _snapshotTimer.Stop();
     }
 
-    private static bool IsAdmin()
-    {
-        try
-        {
-            var wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-            return wp.IsInRole(WindowsBuiltInRole.Administrator);
-        }
-        catch { return false; }
-    }
-
+    // -------------------------------------------------
+    // SNAPSHOT
+    // -------------------------------------------------
     private async void RefreshSnapshot()
     {
         if (_isRefreshing)
@@ -126,31 +131,45 @@ public partial class ServiceViewModel : DirtyViewModelBase
             {
                 _backend.SetOffline(AppStrings.service_stopped);
                 StatusLine = AppStrings.service_stopped;
-                return;   
+
+                ServiceStateText = AppStrings.service_stopped;
+                SnapshotTimestamp = "-";
+                SessionStateText = "-";
+                AppsSummaryText = "-";
+                return;
             }
 
-                ServiceSnapshot snap;
+            ServiceSnapshot snap;
             try
             {
                 snap = await Task.Run(() => _pipe.GetStatus());
-
-                if(snap == null)
-                {
-                    throw new Exception();
-                }
             }
             catch (Exception ex)
             {
                 _backend.SetOffline(string.Format(AppStrings.pipe_not_available_ex, ex.Message));
                 StatusLine = string.Format(AppStrings.pipe_not_available_ex, ex.Message);
+
+                ServiceStateText = AppStrings.pipe_not_available_ex;
+                SnapshotTimestamp = "-";
+                SessionStateText = "-";
+                AppsSummaryText = "-";
                 return;
             }
 
-
             _backend.SetReady(AppStrings.service_connected);
 
-            StatusLine =
-                $"Snapshot: {snap.Timestamp:HH:mm:ss} | Session: {snap.SessionState}";
+            StatusLine = $"Snapshot: {snap.Timestamp:HH:mm:ss} | Session: {snap.SessionState}";
+
+            // Summary
+            ServiceStateText = "service_running";
+            SnapshotTimestamp = snap.Timestamp.ToString("HH:mm:ss");
+            SessionStateText = snap.SessionState.ToString();
+
+            var total = snap.Apps.Count;
+            var enabled = snap.Apps.Count(a => a.Enabled);
+            var down = snap.Apps.Count(a => a.Enabled && !a.IsRunning);
+
+            AppsSummaryText = $"{enabled}/{total} enabled, {down} down";
 
             UpdateSystemInfo(snap.SystemInfo);
             UpdateEnabledApps(snap.Apps);
@@ -161,14 +180,20 @@ public partial class ServiceViewModel : DirtyViewModelBase
         }
     }
 
-
+    // -------------------------------------------------
+    // UPDATE HELPERS
+    // -------------------------------------------------
     private void UpdateSystemInfo(SystemInfo sys)
     {
         MachineName = sys.MachineName;
         OsVersion = sys.OsVersion;
         DotNetVersion = sys.DotNetVersion;
         Uptime = sys.Uptime.ToString(@"dd\.hh\:mm\:ss");
-        MemoryInfo = string.Format(AppStrings.service_system_info_memory, sys.AvailableMemoryMb, sys.TotalMemoryMb);
+        MemoryInfo = string.Format(
+            AppStrings.service_system_info_memory,
+            sys.AvailableMemoryMb,
+            sys.TotalMemoryMb);
+
         ClientProtocolVersion = $"V. {PipeProtocol.ProtocolVersion}";
         ServiceProtocolVersion = $"V. {sys.PipeProtocol}";
         Username = sys.UserName;
@@ -204,9 +229,12 @@ public partial class ServiceViewModel : DirtyViewModelBase
         OnPropertyChanged(nameof(HasNoEnabledApps));
     }
 
+    // -------------------------------------------------
+    // COMMANDS
+    // -------------------------------------------------
     [RelayCommand]
     private async Task StartService()
-       => await RunServiceActionAsync(
+        => await RunServiceActionAsync(
             () => _svc.StartService(),
             AppStrings.service_succesfully_started);
 
@@ -228,12 +256,14 @@ public partial class ServiceViewModel : DirtyViewModelBase
             () => _svc.UninstallService(),
             AppStrings.service_succesfully_uninstalled);
 
+    // -------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------
     private async Task ForceBackendRecheckAsync()
     {
         await Task.Delay(1500);
         RefreshSnapshot();
     }
-
 
     private async Task RunServiceActionAsync(Action action, string? successText)
     {
@@ -244,45 +274,38 @@ public partial class ServiceViewModel : DirtyViewModelBase
 
             if (!string.IsNullOrWhiteSpace(successText))
             {
-                RunOnUiThread(() =>
-                {
-                    _snackbar.Show(
-                        AppStrings.service_title,
-                        successText,
-                        ControlAppearance.Success,
-                        new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
-                        TimeSpan.FromSeconds(4));
-                });
+                _snackbar.Show(
+                    AppStrings.service_title,
+                    successText,
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28),
+                    TimeSpan.FromSeconds(4));
             }
         }
         catch (Exception ex)
         {
-            RunOnUiThread(() =>
-            {
-                _snackbar.Show(
-                    AppStrings.service_error,
-                    ex.Message,
-                    ControlAppearance.Danger,
-                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
-                    TimeSpan.FromSeconds(6));
-            });
+            _snackbar.Show(
+                AppStrings.service_error,
+                ex.Message,
+                ControlAppearance.Danger,
+                new SymbolIcon(SymbolRegular.ErrorCircle24, 28),
+                TimeSpan.FromSeconds(6));
         }
     }
-
-
 
     private bool IsServiceRunning()
     {
-        try
-        {
-            return _svc.IsServiceRunning();
-        }
-        catch
-        {
-            return false;
-        }
+        try { return _svc.IsServiceRunning(); }
+        catch { return false; }
     }
 
-
-
+    private static bool IsAdmin()
+    {
+        try
+        {
+            var wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+            return wp.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+        catch { return false; }
+    }
 }

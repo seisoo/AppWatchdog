@@ -634,4 +634,19 @@
   <data name="apps_interval_hint_service" xml:space="preserve">
     <value>Service: typically 5–10 seconds</value>
   </data>
+  <data name="service_status_title" xml:space="preserve">
+    <value>Service status</value>
+  </data>
+  <data name="service_state" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="service_snapshot_time" xml:space="preserve">
+    <value>Snapshot time</value>
+  </data>
+  <data name="service_session" xml:space="preserve">
+    <value>Service session</value>
+  </data>
+  <data name="service_apps_summary" xml:space="preserve">
+    <value>Healthcheck Jobs</value>
+  </data>
 </root>
