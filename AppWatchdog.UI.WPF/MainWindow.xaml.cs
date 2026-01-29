@@ -2,11 +2,14 @@
 using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels;
 using AppWatchdog.UI.WPF.Views.Pages;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
@@ -53,6 +56,7 @@ public partial class MainWindow : FluentWindow
 
         _navigationService.SetNavigationControl(RootNavigationView);
         RootNavigationView.SetPageProviderService(_pageProvider);
+        RootNavigationView.AddHandler(UIElement.PreviewMouseWheelEvent, new MouseWheelEventHandler(RootNavigationView_PreviewMouseWheel), true);
 
         LanguageSelector = languageSelector;
         LanguageSelector.Initialize(
@@ -61,6 +65,44 @@ public partial class MainWindow : FluentWindow
 
 
         Loaded += (_, __) => _navigationService.Navigate(typeof(ServicePage));
+    }
+
+    private void RootNavigationView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        var source = e.OriginalSource as DependencyObject ?? Mouse.DirectlyOver as DependencyObject;
+        var scrollViewer = FindScrollableScrollViewer(source);
+        if (scrollViewer == null || scrollViewer.ScrollableHeight <= 0)
+            return;
+
+        int steps = Math.Max(1, Math.Abs(e.Delta) / 120);
+        for (int i = 0; i < steps; i++)
+        {
+            if (e.Delta > 0)
+                scrollViewer.LineUp();
+            else
+                scrollViewer.LineDown();
+        }
+
+        e.Handled = true;
+    }
+
+    private static ScrollViewer? FindScrollableScrollViewer(DependencyObject? current)
+    {
+        ScrollViewer? fallback = null;
+
+        while (current != null)
+        {
+            if (current is ScrollViewer scrollViewer)
+            {
+                fallback ??= scrollViewer;
+                if (scrollViewer.ScrollableHeight > 0)
+                    return scrollViewer;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return fallback;
     }
 
     protected override async void OnClosing(CancelEventArgs e)

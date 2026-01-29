@@ -8,6 +8,9 @@ using System.Text;
 
 namespace AppWatchdog.Service;
 
+/// <summary>
+/// Dispatches notifications across configured channels.
+/// </summary>
 public sealed class NotificationDispatcher
 {
     private readonly WatchdogConfig _cfg;
@@ -17,6 +20,10 @@ public sealed class NotificationDispatcher
     private readonly DiscordNotifier _discord;
     private readonly TelegramNotifier _telegram;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NotificationDispatcher"/> class.
+    /// </summary>
+    /// <param name="cfg">Current configuration.</param>
     public NotificationDispatcher(WatchdogConfig cfg)
     {
         _cfg = cfg;
@@ -30,6 +37,10 @@ public sealed class NotificationDispatcher
     // =====================================================
     // ENTRY POINT
     // =====================================================
+    /// <summary>
+    /// Queues a notification dispatch task.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
     public void Dispatch(NotificationContext ctx)
     {
         _ = Task.Run(() => DispatchInternalAsync(ctx));
@@ -38,6 +49,11 @@ public sealed class NotificationDispatcher
     // =====================================================
     // CORE
     // =====================================================
+    /// <summary>
+    /// Builds and sends notifications across channels.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <returns>A task representing the dispatch work.</returns>
     private async Task DispatchInternalAsync(NotificationContext ctx)
     {
         try
@@ -85,6 +101,12 @@ public sealed class NotificationDispatcher
     // =====================================================
     // CHANNELS
     // =====================================================
+    /// <summary>
+    /// Sends an email notification when configured.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="title">Email subject.</param>
+    /// <param name="html">Email HTML body.</param>
     private void DispatchMail(NotificationContext ctx, string title, string html)
     {
         if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Mail)
@@ -103,6 +125,13 @@ public sealed class NotificationDispatcher
         }
     }
 
+    /// <summary>
+    /// Sends a notification via Ntfy when configured.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="title">Message title.</param>
+    /// <param name="text">Message body.</param>
+    /// <returns>A task representing the send.</returns>
     private async Task DispatchNtfyAsync(NotificationContext ctx, string title, string text)
     {
         if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Ntfy)
@@ -126,6 +155,13 @@ public sealed class NotificationDispatcher
         }
     }
 
+    /// <summary>
+    /// Sends a notification via Discord when configured.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="title">Message title.</param>
+    /// <param name="text">Message body.</param>
+    /// <returns>A task representing the send.</returns>
     private async Task DispatchDiscordAsync(NotificationContext ctx, string title, string text)
     {
         if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Discord)
@@ -147,6 +183,12 @@ public sealed class NotificationDispatcher
         }
     }
 
+    /// <summary>
+    /// Sends a notification via Telegram when configured.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="text">Message body.</param>
+    /// <returns>A task representing the send.</returns>
     private async Task DispatchTelegramAsync(NotificationContext ctx, string text)
     {
         if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Telegram)
@@ -168,6 +210,12 @@ public sealed class NotificationDispatcher
     // =====================================================
     // MESSAGE BUILDERS
     // =====================================================
+    /// <summary>
+    /// Builds the target label for notification output.
+    /// </summary>
+    /// <param name="app">Watched app.</param>
+    /// <param name="strings">Localized strings.</param>
+    /// <returns>The target label.</returns>
     private static string BuildTargetLabel(
         WatchedApp app,
         NotificationStringProvider strings)
@@ -190,6 +238,12 @@ public sealed class NotificationDispatcher
         };
     }
 
+    /// <summary>
+    /// Builds the detailed text body for notifications.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="strings">Localized strings.</param>
+    /// <returns>The detailed text.</returns>
     private static string BuildDetailsText(
         NotificationContext ctx,
         NotificationStringProvider strings)
@@ -238,6 +292,12 @@ public sealed class NotificationDispatcher
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Builds the plain text body for notifications.
+    /// </summary>
+    /// <param name="ctx">Notification context.</param>
+    /// <param name="strings">Localized strings.</param>
+    /// <returns>The plain text body.</returns>
     private static string BuildPlainText(
         NotificationContext ctx,
         NotificationStringProvider strings)
@@ -268,6 +328,15 @@ public sealed class NotificationDispatcher
     // =====================================================
     // HTML MAIL (PURPLE / WPF-UI STYLE)
     // =====================================================
+    /// <summary>
+    /// Builds the HTML email body for notifications.
+    /// </summary>
+    /// <param name="appName">App name.</param>
+    /// <param name="summaryText">Summary text.</param>
+    /// <param name="summaryColorHex">Summary color hex code.</param>
+    /// <param name="detailsText">Details body.</param>
+    /// <param name="strings">Localized strings.</param>
+    /// <returns>The HTML string.</returns>
     private static string BuildHtmlMail(
         string appName,
         string summaryText,

@@ -16,7 +16,11 @@
 
 	<ItemGroup>
 		
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+		
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
+		
+		<PackageReference Include="SSH.NET" Version="2025.1.0" />
 		<PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.0" />
 		<PackageReference Include="System.Management" Version="10.0.2" />
 	</ItemGroup>

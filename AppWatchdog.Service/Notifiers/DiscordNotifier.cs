@@ -5,6 +5,9 @@ using AppWatchdog.Shared;
 
 namespace AppWatchdog.Service.Notifiers;
 
+/// <summary>
+/// Sends notifications to a Discord webhook.
+/// </summary>
 public sealed class DiscordNotifier : NotifierBase<DiscordSettings>
 {
     private static readonly HttpClient _http = new()
@@ -12,13 +15,25 @@ public sealed class DiscordNotifier : NotifierBase<DiscordSettings>
         Timeout = TimeSpan.FromSeconds(6)
     };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiscordNotifier"/> class.
+    /// </summary>
+    /// <param name="settings">Discord settings.</param>
     public DiscordNotifier(DiscordSettings settings)
         : base(settings)
     {
     }
 
+    /// <summary>
+    /// Gets the notifier name.
+    /// </summary>
     public override string Name => "discord";
 
+    /// <summary>
+    /// Validates that Discord settings are configured.
+    /// </summary>
+    /// <param name="error">Error message if invalid.</param>
+    /// <returns><c>true</c> when configured.</returns>
     public override bool IsConfigured(out string? error)
     {
         if (!Settings.Enabled)
@@ -55,6 +70,13 @@ public sealed class DiscordNotifier : NotifierBase<DiscordSettings>
         return true;
     }
 
+    /// <summary>
+    /// Sends a message to the configured Discord webhook.
+    /// </summary>
+    /// <param name="title">Embed title.</param>
+    /// <param name="message">Embed message body.</param>
+    /// <param name="color">Optional embed color.</param>
+    /// <returns>A task representing the send operation.</returns>
     public async Task SendAsync(
         string title,
         string message,

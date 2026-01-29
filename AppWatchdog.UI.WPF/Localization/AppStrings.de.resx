@@ -423,6 +423,9 @@
   <data name="service_button_uninstall" xml:space="preserve">
     <value>Deinstallieren</value>
   </data>
+  <data name="service_button_reinstall" xml:space="preserve">
+    <value>Neu installieren</value>
+  </data>
   <data name="service_connected" xml:space="preserve">
     <value>Service verbunden</value>
   </data>
@@ -631,7 +634,7 @@
     <value>Anwendung: 5–10 Sekunden üblich</value>
   </data>
   <data name="apps_interval_hint_service" xml:space="preserve">
-    <value>Application: typically 5–10 seconds</value>
+    <value>Service: 5–10 Sekunden üblich</value>
   </data>
   <data name="service_status_title" xml:space="preserve">
     <value>Serviceinformationen</value>
@@ -648,4 +651,206 @@
   <data name="service_apps_summary" xml:space="preserve">
     <value>Job Anwendungen</value>
   </data>
+  <data name="backup_plans_title" xml:space="preserve">
+    <value>Sicherungspläne</value>
+  </data>
+  <data name="backup_description" xml:space="preserve">
+    <value>Erstellen und verwalten Sie Sicherungspläne für Ihre Daten</value>
+  </data>
+  <data name="backup_plans_select" xml:space="preserve">
+    <value>Wählen Sie einen Plan zum Bearbeiten</value>
+  </data>
+  <data name="backup_add" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="backup_remove" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="backup_reload" xml:space="preserve">
+    <value>Neu laden</value>
+  </data>
+  <data name="backup_save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="backup_run_now" xml:space="preserve">
+    <value>Jetzt ausführen</value>
+  </data>
+  <data name="backup_general" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="backup_general_desc" xml:space="preserve">
+    <value>Grundlegender Plan-Name und Sicherungsmodus</value>
+  </data>
+  <data name="backup_enabled" xml:space="preserve">
+    <value>Aktiviert</value>
+  </data>
+  <data name="backup_name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="backup_mode" xml:space="preserve">
+    <value>Modus</value>
+  </data>
+  <data name="backup_schedule" xml:space="preserve">
+    <value>Zeitplan</value>
+  </data>
+  <data name="backup_schedule_desc" xml:space="preserve">
+    <value>Legen Sie fest, wann und wie oft Sicherungen ausgeführt werden</value>
+  </data>
+  <data name="backup_daily_time" xml:space="preserve">
+    <value>Tägliche Ausführungszeit</value>
+  </data>
+  <data name="backup_daily_time_desc" xml:space="preserve">
+    <value>Legen Sie die Zeit fest, zu der Sicherungen täglich ausgeführt werden</value>
+  </data>
+  <data name="backup_hour" xml:space="preserve">
+    <value>Stunde (0-23)</value>
+  </data>
+  <data name="backup_minute" xml:space="preserve">
+    <value>Minute (0-59)</value>
+  </data>
+  <data name="backup_run_days" xml:space="preserve">
+    <value>An welchen Tagen ausführen</value>
+  </data>
+  <data name="backup_run_days_desc" xml:space="preserve">
+    <value>Wählen Sie aus, an welchen Wochentagen die Sicherung ausgeführt werden soll</value>
+  </data>
+  <data name="backup_source" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="backup_source_desc" xml:space="preserve">
+    <value>Was gesichert werden soll: Ordner, Datei oder SQL-Datenbank</value>
+  </data>
+  <data name="backup_source_type" xml:space="preserve">
+    <value>Quellentyp</value>
+  </data>
+  <data name="backup_folder" xml:space="preserve">
+    <value>Ordner</value>
+  </data>
+  <data name="backup_file" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="backup_sql_connection" xml:space="preserve">
+    <value>SQL-Verbindungszeichenfolge</value>
+  </data>
+  <data name="backup_database" xml:space="preserve">
+    <value>Datenbank</value>
+  </data>
+  <data name="backup_target" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="backup_target_desc" xml:space="preserve">
+    <value>Wo Sicherungen gespeichert werden: lokal oder SFTP</value>
+  </data>
+  <data name="backup_target_type" xml:space="preserve">
+    <value>Zieltyp</value>
+  </data>
+  <data name="backup_local_directory" xml:space="preserve">
+    <value>Lokales Verzeichnis</value>
+  </data>
+  <data name="backup_host" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="backup_port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="backup_user" xml:space="preserve">
+    <value>Benutzer</value>
+  </data>
+  <data name="backup_password" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="backup_remote_directory" xml:space="preserve">
+    <value>Remote-Verzeichnis</value>
+  </data>
+  <data name="backup_host_key" xml:space="preserve">
+    <value>SSH-Schlüssel-Fingerprint</value>
+  </data>
+  <data name="backup_compression" xml:space="preserve">
+    <value>Komprimierung</value>
+  </data>
+  <data name="backup_compression_desc" xml:space="preserve">
+    <value>Reduzieren Sie die Sicherungsgröße durch Komprimierung</value>
+  </data>
+  <data name="backup_compression_enable" xml:space="preserve">
+    <value>Komprimierung aktivieren</value>
+  </data>
+  <data name="backup_compression_level" xml:space="preserve">
+    <value>Stufe (1-9)</value>
+  </data>
+  <data name="backup_compression_hint" xml:space="preserve">
+    <value>Höhere Stufe = bessere Komprimierung, aber langsamer</value>
+  </data>
+  <data name="backup_encryption" xml:space="preserve">
+    <value>Verschlüsselung</value>
+  </data>
+  <data name="backup_encryption_desc" xml:space="preserve">
+    <value>Schützen Sie Sicherungen mit Passwortverschlüsselung</value>
+  </data>
+  <data name="backup_encryption_enable" xml:space="preserve">
+    <value>Verschlüsselung aktivieren</value>
+  </data>
+  <data name="backup_iterations" xml:space="preserve">
+    <value>Iterationen</value>
+  </data>
+  <data name="backup_iterations_hint" xml:space="preserve">
+    <value>Höhere Werte sind sicherer, aber langsamer (typisch: 100.000 - 500.000)</value>
+  </data>
+  <data name="backup_retention" xml:space="preserve">
+    <value>Aufbewahrung</value>
+  </data>
+  <data name="backup_retention_desc" xml:space="preserve">
+    <value>Automatisches Löschen alter Sicherungen</value>
+  </data>
+  <data name="backup_keep_last" xml:space="preserve">
+    <value>Behalte letzte Sicherungen</value>
+  </data>
+  <data name="backup_keep_last_hint" xml:space="preserve">
+    <value>Anzahl der letzten Sicherungen, die behalten werden (ältere werden automatisch gelöscht)</value>
+  </data>
+  <data name="apps_target_type" xml:space="preserve"><value>Zieltyp</value></data>
+  <data name="apps_service_name" xml:space="preserve"><value>Dienstname</value></data>
+  <data name="apps_url" xml:space="preserve"><value>URL</value></data>
+  <data name="apps_url_tooltip" xml:space="preserve"><value>Muss eine gültige absolute URL sein (http/https)</value></data>
+  <data name="apps_expected_http_status" xml:space="preserve"><value>Erwarteter HTTP-Statuscode</value></data>
+  <data name="apps_host" xml:space="preserve"><value>Host</value></data>
+  <data name="apps_port" xml:space="preserve"><value>Port</value></data>
+  <data name="jobs_rebuild" xml:space="preserve"><value>Jobs neu aufbauen</value></data>
+  <data name="jobs_status" xml:space="preserve"><value>Status</value></data>
+  <data name="jobs_stats" xml:space="preserve"><value>Statistiken</value></data>
+  <data name="jobs_details" xml:space="preserve"><value>Details</value></data>
+  <data name="jobs_source_label" xml:space="preserve"><value>Quelle:</value></data>
+  <data name="jobs_target_label" xml:space="preserve"><value>Ziel:</value></data>
+  <data name="jobs_plan_label" xml:space="preserve"><value>Plan:</value></data>
+  <data name="jobs_from_label" xml:space="preserve"><value>Von:</value></data>
+  <data name="logs_description" xml:space="preserve"><value>Service-Logs in Echtzeit ansehen und durchsuchen</value></data>
+  <data name="logs_refresh" xml:space="preserve"><value>Logs aktualisieren</value></data>
+  <data name="logs_available_title" xml:space="preserve"><value>Verfügbare Logs</value></data>
+  <data name="logs_available_hint" xml:space="preserve"><value>Zum Laden anklicken</value></data>
+  <data name="logs_search_title" xml:space="preserve"><value>Logs durchsuchen</value></data>
+  <data name="logs_search_hint" xml:space="preserve"><value>Text in Logs finden</value></data>
+  <data name="logs_content_title" xml:space="preserve"><value>Log-Inhalt</value></data>
+  <data name="restore_title" xml:space="preserve"><value>Backup wiederherstellen</value></data>
+  <data name="restore_description" xml:space="preserve"><value>Daten aus Backup-Artefakten wiederherstellen</value></data>
+  <data name="restore_reload_plans" xml:space="preserve"><value>Pläne neu laden</value></data>
+  <data name="restore_browse_folder" xml:space="preserve"><value>Ordner auswählen</value></data>
+  <data name="restore_start" xml:space="preserve"><value>Wiederherstellung starten</value></data>
+  <data name="restore_plans_hint" xml:space="preserve"><value>Plan zum Wiederherstellen auswählen</value></data>
+  <data name="restore_artifacts_title" xml:space="preserve"><value>Backup-Artefakte</value></data>
+  <data name="restore_artifacts_hint" xml:space="preserve"><value>Backup-Artefakt zum Wiederherstellen wählen</value></data>
+  <data name="restore_configuration_title" xml:space="preserve"><value>Konfiguration</value></data>
+  <data name="restore_blocked_title" xml:space="preserve"><value>Wiederherstellung blockiert</value></data>
+  <data name="restore_details_title" xml:space="preserve"><value>Wiederherstellungsdetails</value></data>
+  <data name="restore_location_title" xml:space="preserve"><value>Zielordner</value></data>
+  <data name="restore_overwrite_toggle" xml:space="preserve"><value>Vorhandene Dateien überschreiben</value></data>
+  <data name="restore_files_title" xml:space="preserve"><value>Dateien zur Wiederherstellung</value></data>
+  <data name="restore_files_hint" xml:space="preserve"><value>Dateien auswählen, die wiederhergestellt werden sollen</value></data>
+  <data name="restore_select_all" xml:space="preserve"><value>Alle auswählen</value></data>
+  <data name="restore_select_none" xml:space="preserve"><value>Keine auswählen</value></data>
+  <data name="backup_day_mon" xml:space="preserve"><value>Mo</value></data>
+  <data name="backup_day_tue" xml:space="preserve"><value>Di</value></data>
+  <data name="backup_day_wed" xml:space="preserve"><value>Mi</value></data>
+  <data name="backup_day_thu" xml:space="preserve"><value>Do</value></data>
+  <data name="backup_day_fri" xml:space="preserve"><value>Fr</value></data>
+  <data name="backup_day_sat" xml:space="preserve"><value>Sa</value></data>
+  <data name="backup_day_sun" xml:space="preserve"><value>So</value></data>
 </root>

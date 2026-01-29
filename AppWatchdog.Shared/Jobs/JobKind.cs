@@ -5,5 +5,7 @@ public enum JobKind
     HealthMonitor,
     KumaPing,
     Snapshot,
-    Unknown
+    Unknown,
+    Backup = 100,
+    Restore = 101
 }

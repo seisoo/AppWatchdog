@@ -2,6 +2,7 @@
 using AppWatchdog.UI.WPF.Common;
 using AppWatchdog.UI.WPF.Localization;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -59,6 +60,29 @@ public sealed class PipeFacade
 
     public void TestTelegram()
         => Execute(PipeClient.TestTelegram);
+
+    public List<JobSnapshot> GetJobs()
+    => Execute(() => PipeClient.GetJobs()?.Jobs ?? new());
+
+    public void RebuildJobs()
+        => Execute(PipeClient.RebuildJobs);
+
+    public BackupListResponse ListBackups()
+    => Execute(PipeClient.ListBackups);
+
+    public BackupArtifactListResponse ListBackupArtifacts(string backupPlanId)
+        => Execute(() => PipeClient.ListBackupArtifacts(backupPlanId));
+
+    public string GetBackupManifest(string backupPlanId, string artifactName)
+        => Execute(() => PipeClient.GetBackupManifest(backupPlanId, artifactName));
+
+    public void TriggerBackup(string backupPlanId)
+        => Execute(() => PipeClient.TriggerBackup(backupPlanId));
+
+    public void TriggerRestore(RestoreTriggerRequest request)
+        => Execute(() => PipeClient.TriggerRestore(request));
+
+
 
     // =========================
     // CORE EXECUTION LOGIC

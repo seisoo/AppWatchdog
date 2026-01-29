@@ -2,159 +2,230 @@
     x:Class="AppWatchdog.UI.WPF.Views.Pages.JobsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:AppWatchdog.UI.WPF.ViewModels"
-    Title="{Binding Source={StaticResource Strings}, Path=[jobs_title]}">
+    MinWidth="800">
 
     <Page.DataContext>
         <vm:JobsViewModel />
     </Page.DataContext>
 
-    <Grid>
-        <StackPanel Margin="16">
+    <ScrollViewer HorizontalScrollBarVisibility="Visible" CanContentScroll="False">
+        <Grid VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  HEADER CARD  -->
             <ui:Card
-                Height="154"
-                Margin="0,0,0,16"
-                Padding="0">
-                <Grid>
-                    <Image Source="pack://application:,,,/Images/banner5.png" Stretch="UniformToFill" />
+                Grid.Row="0"
+                Margin="16,16,16,0"
+                Padding="20">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <Rectangle>
-                        <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Offset="0.0" Color="#AA000000" />
-                                <GradientStop Offset="1.0" Color="#AA000000" />
-                            </LinearGradientBrush>
-                        </Rectangle.Fill>
-                    </Rectangle>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon
+                                Margin="0,0,12,0"
+                                FontSize="32"
+                                Symbol="Timer24" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock
+                                    FontSize="24"
+                                    FontWeight="Bold"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[jobs_live_title], Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="12"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[jobs_live_description], Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
 
-                    <StackPanel Margin="24,36,24,36" VerticalAlignment="Center">
-                        <TextBlock
-                            FontSize="26"
-                            FontWeight="SemiBold"
-                            Foreground="White"
-                            Text="AppWatchdog" />
-
-                        <TextBlock
-                            Margin="0,10,0,0"
-                            Foreground="#E5E7EB"
-                            Text="天網恢恢、疎にして漏らさず" />
-                    </StackPanel>
-                </Grid>
-            </ui:Card>
-            <!--  Header  -->
-            <ui:Card Margin="0,0,0,12" Padding="16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel>
-                        <TextBlock
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Text="{Binding Source={StaticResource Strings}, Path=[jobs_live_title]}" />
-
-                        <TextBlock Opacity="0.7" Text="{Binding Source={StaticResource Strings}, Path=[jobs_live_description]}" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <ui:ProgressRing
-                            Width="18"
-                            Height="18"
+                            Grid.Column="1"
+                            Width="24"
+                            Height="24"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
                             IsIndeterminate="True"
                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    </StackPanel>
-                </Grid>
+                    </Grid>
+
+                    <WrapPanel Margin="0,16,0,0">
+                        <ui:Button
+                            Appearance="Primary"
+                            Command="{Binding RebuildJobsCommand}"
+                            Content="{Binding Source={StaticResource Strings}, Path=[jobs_rebuild], Mode=OneWay}"
+                            Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}" />
+                    </WrapPanel>
+                </StackPanel>
             </ui:Card>
 
-            <!--  Job Cards  -->
-            <ItemsControl ItemsSource="{Binding Jobs}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+            <!--  JOBS LIST  -->
+            <ScrollViewer
+                Grid.Row="1"
+                Margin="16,16,16,16"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Jobs}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,0,0,16">
+                                <Expander
+                                    IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                    Margin="0">
+                                    <Expander.Header>
+                                        <Grid Margin="0,2,0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                        <ui:Card Margin="0,0,0,12" Padding="16">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                                            <StackPanel>
+                                                <TextBlock
+                                                    FontWeight="SemiBold"
+                                                    FontSize="14"
+                                                    Text="{Binding AppName}" />
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Opacity="0.6"
+                                                    Text="{Binding JobType}" />
+                                            </StackPanel>
 
-                                <!--  Top  -->
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="{Binding LastLabel}" />
+                                                <TextBlock FontSize="11" FontWeight="SemiBold" Text="{Binding LastRun}" />
+                                            </StackPanel>
 
-                                    <StackPanel>
-                                        <TextBlock
-                                            FontSize="16"
-                                            FontWeight="SemiBold"
-                                            Text="{Binding AppName}" />
-                                        <TextBlock Opacity="0.6" Text="{Binding JobType}" />
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="{Binding NextLabel}" />
+                                                <TextBlock FontSize="11" FontWeight="SemiBold" Text="{Binding NextPlanned}" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="3">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_status], Mode=OneWay}" />
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{Binding EventBrush, Mode=OneWay}"
+                                                    Text="{Binding EventStatus, Mode=OneWay}" />
+                                            </StackPanel>
+
+                                            <Border
+                                                Grid.Column="4"
+                                                Height="24"
+                                                Margin="12,0,32,0"
+                                                Padding="10,4"
+                                                Background="{Binding StateBrush, Mode=OneWay}"
+                                                CornerRadius="6"
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="White"
+                                                    Text="{Binding State, Mode=OneWay}" />
+                                            </Border>
+                                        </Grid>
+                                    </Expander.Header>
+
+                                    <StackPanel Margin="0,8,0,0">
+                                        <StackPanel Margin="0,4,0,0">
+                                            <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_stats], Mode=OneWay}" />
+                                            <TextBlock FontSize="11" Text="{Binding Stats, Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <!--  Backup Job Details  -->
+                                        <StackPanel
+                                            Margin="0,8,0,0"
+                                            Visibility="{Binding ShowBackupDetails, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_details], Mode=OneWay}" />
+                                            <TextBlock FontSize="11" Margin="0,2,0,0">
+                                                <Run Text="{Binding Source={StaticResource Strings}, Path=[jobs_source_label], Mode=OneWay}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding BackupSourcePath, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="11" Margin="0,2,0,0">
+                                                <Run Text="{Binding Source={StaticResource Strings}, Path=[jobs_target_label], Mode=OneWay}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding BackupTargetPath, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!--  Health Monitor Details  -->
+                                        <StackPanel
+                                            Margin="0,8,0,0"
+                                            Visibility="{Binding ShowHealthDetails, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_details], Mode=OneWay}" />
+                                            <TextBlock FontSize="11" Margin="0,2,0,0" Text="{Binding HealthCheckLabel, StringFormat='{}{0}:'}" />
+                                            <TextBlock FontSize="11" Margin="0,2,0,0" Text="{Binding HealthCheckTarget}" />
+                                        </StackPanel>
+
+                                        <!--  Restore Job Details  -->
+                                        <StackPanel
+                                            Margin="0,8,0,0"
+                                            Visibility="{Binding ShowRestoreDetails, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_details], Mode=OneWay}" />
+                                            <TextBlock FontSize="11" Margin="0,2,0,0">
+                                                <Run Text="{Binding Source={StaticResource Strings}, Path=[jobs_plan_label], Mode=OneWay}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding RestorePlanName, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <TextBlock FontSize="11" Margin="0,2,0,0">
+                                                <Run Text="{Binding Source={StaticResource Strings}, Path=[jobs_from_label], Mode=OneWay}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding BackupSourcePath, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!--  TIMELINE  -->
+                                        <ItemsControl
+                                            Margin="0,12,0,0"
+                                            ItemsSource="{Binding Snapshot.Events}"
+                                            Visibility="{Binding Snapshot.Events.Count, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="0,4,0,0" Orientation="Horizontal">
+                                                        <TextBlock
+                                                            Width="70"
+                                                            Opacity="0.5"
+                                                            FontSize="10"
+                                                            Text="{Binding Timestamp, StringFormat=HH:mm:ss}" />
+                                                        <TextBlock FontWeight="SemiBold" FontSize="11" Text="{Binding Type}" />
+                                                        <TextBlock
+                                                            Margin="8,0,0,0"
+                                                            Opacity="0.8"
+                                                            FontSize="11"
+                                                            Text="{Binding Status}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </StackPanel>
+                                </Expander>
 
-                                    <Border
-                                        Grid.Column="1"
-                                        Height="30"
-                                        Padding="8,4"
-                                        Background="{Binding StateBrush}"
-                                        CornerRadius="6">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Foreground="White"
-                                            Text="{Binding State}" />
-                                    </Border>
-                                </Grid>
-
-                                <!--  Details  -->
-                                <Grid Grid.Row="1" Margin="0,12,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel>
-                                        <TextBlock Opacity="0.6" Text="Last check" />
-                                        <TextBlock Text="{Binding LastCheck}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Opacity="0.6" Text="Next run" />
-                                        <TextBlock Text="{Binding NextRun}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Opacity="0.6" Text="Stats" />
-                                        <TextBlock Text="{Binding Stats}" />
-
-                                        <!--  Ping  -->
-                                        <TextBlock
-                                            Margin="0,6,0,0"
-                                            Opacity="0.6"
-                                            Text="Ping"
-                                            Visibility="{Binding HasPing, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-                                        <TextBlock
-                                            FontWeight="SemiBold"
-                                            Foreground="{Binding PingBrush}"
-                                            Text="{Binding PingText}"
-                                            Visibility="{Binding HasPing, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                    </StackPanel>
-
-                                </Grid>
-                            </Grid>
-                        </ui:Card>
-
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-        </StackPanel>
-    </Grid>
+                                <!--  PROGRESS BAR  -->
+                                <ProgressBar
+                                    Height="6"
+                                    Margin="0,12,0,0"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    Visibility="{Binding HasProgress, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Value="{Binding Progress, Mode=OneWay}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </ScrollViewer>
 </Page>

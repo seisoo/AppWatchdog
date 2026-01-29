@@ -11,6 +11,9 @@ using System.Text;
 
 namespace AppWatchdog.Service;
 
+/// <summary>
+/// Background service that loads configuration, schedules jobs, and hosts the pipe server.
+/// </summary>
 public sealed class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _log;
@@ -28,11 +31,20 @@ public sealed class Worker : BackgroundService
 
     private HashSet<string> _knownJobIds = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Worker"/> class.
+    /// </summary>
+    /// <param name="log">Logger for service events.</param>
     public Worker(ILogger<Worker> log)
     {
         _log = log;
     }
 
+    /// <summary>
+    /// Executes the service background loop.
+    /// </summary>
+    /// <param name="stoppingToken">Token that signals service shutdown.</param>
+    /// <returns>A task that completes when the service stops.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         FileLogStore.WriteLine("INFO", "AppWatchdog Service gestartet");
@@ -51,6 +63,11 @@ public sealed class Worker : BackgroundService
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 
+    /// <summary>
+    /// Stops the service and releases job resources.
+    /// </summary>
+    /// <param name="cancellationToken">Token that signals stop timeout.</param>
+    /// <returns>A task that completes when shutdown finishes.</returns>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         try { _scheduler?.Dispose(); } catch { }
@@ -59,12 +76,19 @@ public sealed class Worker : BackgroundService
         return base.StopAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Loads configuration and initializes the notification dispatcher.
+    /// </summary>
     private void LoadConfig()
     {
         _cfg = ConfigStore.LoadOrCreateDefault(_configPath);
         _dispatcher = new NotificationDispatcher(_cfg);
     }
 
+    /// <summary>
+    /// Saves configuration and rebuilds jobs based on the new settings.
+    /// </summary>
+    /// <param name="cfg">Configuration to persist.</param>
     private void SaveConfig(WatchdogConfig cfg)
     {
         ConfigStore.Save(_configPath, cfg);
@@ -77,9 +101,15 @@ public sealed class Worker : BackgroundService
         BuildJobs();
     }
 
+    /// <summary>
+    /// Builds the scheduled jobs from the current configuration.
+    /// </summary>
     private void BuildJobs()
     {
         var desiredIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Configure scheduler with config getter
+        _scheduler.Configure(() => _cfg);
 
         // Snapshot
         {
@@ -129,6 +159,26 @@ public sealed class Worker : BackgroundService
             }
         }
 
+        foreach (var b in _cfg.Backups)
+        {
+            if (string.IsNullOrWhiteSpace(b.Id))
+                continue;
+
+            var job = new BackupJob(getConfig: () => _cfg, planId: b.Id);
+            _scheduler.AddOrUpdate(job);
+            desiredIds.Add(job.Id);
+        }
+
+        foreach (var r in _cfg.Restores)
+        {
+            if (string.IsNullOrWhiteSpace(r.Id))
+                continue;
+
+            var job = new RestoreJob(getConfig: () => _cfg, restoreId: r.Id, onConfigChanged: SaveConfig);
+            _scheduler.AddOrUpdate(job);
+            desiredIds.Add(job.Id);
+        }
+
         foreach (var oldId in _knownJobIds)
         {
             if (!desiredIds.Contains(oldId))
@@ -138,6 +188,12 @@ public sealed class Worker : BackgroundService
         _knownJobIds = desiredIds;
     }
 
+    /// <summary>
+    /// Creates a health monitor job for the specified app.
+    /// </summary>
+    /// <param name="app">App configuration.</param>
+    /// <param name="health">Health check to execute.</param>
+    /// <returns>The configured health monitor job.</returns>
     private HealthMonitorJob CreateHealthJob(
     WatchedApp app,
     IHealthCheck health)
@@ -165,6 +221,12 @@ public sealed class Worker : BackgroundService
     }
 
 
+    /// <summary>
+    /// Validates that a watched app has the required configuration fields.
+    /// </summary>
+    /// <param name="app">App configuration to validate.</param>
+    /// <param name="reason">Validation failure reason.</param>
+    /// <returns><c>true</c> when the configuration is valid.</returns>
     private static bool IsValidTarget(WatchedApp app, out string reason)
     {
         reason = "";
@@ -236,6 +298,9 @@ public sealed class Worker : BackgroundService
         }
     }
 
+    /// <summary>
+    /// Initializes the pipe handler and server.
+    /// </summary>
     private void InitPipe()
     {
         _pipeHandler = new PipeCommandHandler(
@@ -243,6 +308,7 @@ public sealed class Worker : BackgroundService
             getConfig: () => _cfg,
             getSnapshot: () => _lastSnapshot,
             triggerCheck: () => _ = TriggerCheckAsync(),
+            rebuildJobs: BuildJobs,
             onConfigSaved: cfg => SaveConfig(cfg),
             dispatcher: _dispatcher,
             scheduler: _scheduler
@@ -251,12 +317,21 @@ public sealed class Worker : BackgroundService
         _pipe = new PipeServer(_pipeHandler.Handle);
     }
 
+    /// <summary>
+    /// Forces all jobs to run once immediately.
+    /// </summary>
+    /// <returns>A task that completes when the run finishes.</returns>
     private async Task TriggerCheckAsync()
     {
         FileLogStore.WriteLine("INFO", "TriggerCheck: Jobs werden sofort ausgeführt");
         await _scheduler.RunAllOnceAsync();
     }
 
+    /// <summary>
+    /// Checks whether a process for the specified executable is running.
+    /// </summary>
+    /// <param name="exePath">Path to the executable.</param>
+    /// <returns><c>true</c> when a matching process is found.</returns>
     public static bool IsRunning(string exePath)
     {
         var name = Path.GetFileNameWithoutExtension(exePath);
@@ -287,6 +362,11 @@ public sealed class Worker : BackgroundService
         return false;
     }
 
+    /// <summary>
+    /// Attempts to resolve the full image path for a process.
+    /// </summary>
+    /// <param name="p">Process to inspect.</param>
+    /// <returns>The full path if available; otherwise <c>null</c>.</returns>
     private static string? TryGetProcessPath(Process p)
     {
         try
@@ -314,15 +394,39 @@ public sealed class Worker : BackgroundService
         try { return p.MainModule?.FileName; } catch { return null; }
     }
 
+    /// <summary>
+    /// Opens a handle to a process for querying information.
+    /// </summary>
+    /// <param name="dwDesiredAccess">Desired access flags.</param>
+    /// <param name="bInheritHandle">Whether the handle is inheritable.</param>
+    /// <param name="dwProcessId">Target process ID.</param>
+    /// <returns>A process handle.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
+    /// <summary>
+    /// Closes a native handle.
+    /// </summary>
+    /// <param name="hObject">Handle to close.</param>
+    /// <returns><c>true</c> if the handle was closed.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(IntPtr hObject);
 
+    /// <summary>
+    /// Queries the full executable path for a process handle.
+    /// </summary>
+    /// <param name="hProcess">Process handle.</param>
+    /// <param name="dwFlags">Query flags.</param>
+    /// <param name="lpExeName">Buffer that receives the image path.</param>
+    /// <param name="lpdwSize">Size of the buffer.</param>
+    /// <returns><c>true</c> if the path was retrieved.</returns>
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
 
+    /// <summary>
+    /// Collects system information for snapshot reporting.
+    /// </summary>
+    /// <returns>The collected system information.</returns>
     public static SystemInfo SystemInfoCollect()
     {
         var proc = Process.GetCurrentProcess();
@@ -342,6 +446,10 @@ public sealed class Worker : BackgroundService
         };
     }
 
+    /// <summary>
+    /// Reads total and available physical memory from the OS.
+    /// </summary>
+    /// <returns>Total and available memory in megabytes.</returns>
     private static (long totalMb, long availableMb) GetMemoryInfo()
     {
         var mem = new MEMORYSTATUSEX
@@ -358,6 +466,9 @@ public sealed class Worker : BackgroundService
         return (totalMb, availableMb);
     }
 
+    /// <summary>
+    /// Native structure for memory status.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     private struct MEMORYSTATUSEX
     {
@@ -372,6 +483,11 @@ public sealed class Worker : BackgroundService
         public ulong ullAvailExtendedVirtual;
     }
 
+    /// <summary>
+    /// Retrieves memory status information from the OS.
+    /// </summary>
+    /// <param name="lpBuffer">Structure that receives memory data.</param>
+    /// <returns><c>true</c> when successful.</returns>
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
 }

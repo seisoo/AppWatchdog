@@ -3,8 +3,17 @@ using System.ServiceProcess;
 
 namespace AppWatchdog.Service.Recovery;
 
+/// <summary>
+/// Recovery strategy that restarts a Windows service.
+/// </summary>
 public sealed class ServiceRestartStrategy : IRecoveryStrategy
 {
+    /// <summary>
+    /// Attempts to restart the target Windows service.
+    /// </summary>
+    /// <param name="app">App to recover.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The recovery result.</returns>
     public Task<RecoveryResult> TryRecoverAsync(WatchedApp app, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(app.ServiceName))

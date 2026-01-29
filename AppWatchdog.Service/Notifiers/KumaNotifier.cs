@@ -3,6 +3,9 @@ using System.Net.Http;
 
 namespace AppWatchdog.Service.Notifiers;
 
+/// <summary>
+/// Sends heartbeat pings to an Uptime Kuma server.
+/// </summary>
 internal static class KumaNotifier
 {
     private static readonly HttpClient _http = new()
@@ -10,17 +13,14 @@ internal static class KumaNotifier
         Timeout = TimeSpan.FromSeconds(5)
     };
 
-    static string Vis(string s)
-    {
-        if (s == null) return "<null>";
-        return s
-            .Replace("\r", "<CR>")
-            .Replace("\n", "<LF>")
-            .Replace("\t", "<TAB>")
-            .Replace("\u00A0", "<NBSP>")
-            .Replace("\u200B", "<ZWSP>");
-    }
-
+    /// <summary>
+    /// Sends a Kuma heartbeat ping.
+    /// </summary>
+    /// <param name="baseUrl">Base URL of the Kuma server.</param>
+    /// <param name="token">Push token.</param>
+    /// <param name="isUp">Whether the app is up.</param>
+    /// <param name="message">Optional message.</param>
+    /// <returns>A task representing the send operation.</returns>
     public static async Task SendAsync(string baseUrl, string token, bool isUp, string? message)
     {
         if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(token))
@@ -61,6 +61,4 @@ internal static class KumaNotifier
             FileLogStore.WriteLine("ERROR", $"Kuma EXCEPTION URL={url}", ex);
         }
     }
-
-
 }

@@ -94,11 +94,17 @@ public partial class App : Application
                 services.AddSingleton(_ => new ServiceControlFacade("AppWatchdog"));
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<ServiceViewModel>();
+                services.AddSingleton<FolderPickerService>();
+                services.AddSingleton<FilePickerService>();
+                services.AddTransient<RestorePageViewModel>();
+                services.AddTransient<BackupPageViewModel>();
                 services.AddSingleton<LogsViewModel>();
                 services.AddSingleton<AboutViewModel>();
                 services.AddSingleton<ServicePage>();
                 services.AddSingleton<JobsPage>();
                 services.AddSingleton<AppsPage>();
+                services.AddSingleton<BackupPage>();
+                services.AddSingleton<RestorePage>();
                 services.AddSingleton<NotificationsPage>();
                 services.AddSingleton<LogsPage>();
                 services.AddSingleton<AboutPage>();

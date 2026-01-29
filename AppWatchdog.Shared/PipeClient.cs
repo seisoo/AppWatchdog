@@ -11,7 +11,10 @@ namespace AppWatchdog.Shared;
 public static class PipeClient
 {
     public static TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(1.5);
-    public static TimeSpan RoundtripTimeout { get; set; } = TimeSpan.FromSeconds(3);
+    public static TimeSpan RoundtripTimeout { get; set; } = TimeSpan.FromSeconds(15);
+
+    // Buffer limit: 50MB für große Logs
+    private const int MaxResponseLength = 50 * 1024 * 1024;
 
     public static WatchdogConfig GetConfig()
         => SendRequestNoPayload<WatchdogConfig>(PipeProtocol.CmdGetConfig);
@@ -37,8 +40,11 @@ public static class PipeClient
     public static LogDayResponse GetLogDay(string day)
         => SendRequestWithPayload<LogDayResponse>(PipeProtocol.CmdGetLogDay, new LogDayRequest { Day = day });
 
-    public static List<JobSnapshot> GetJobs()
-    => SendRequestNoPayload<List<JobSnapshot>>(PipeProtocol.CmdGetJobs);
+    public static JobSnapshotsResponse GetJobs()
+    => SendRequestNoPayload<JobSnapshotsResponse>(PipeProtocol.CmdGetJobs);
+
+    public static void RebuildJobs()
+        => SendRequestNoPayload<object?>(PipeProtocol.CmdRebuildJobs);
 
 
 
@@ -141,12 +147,12 @@ public static class PipeClient
             using var br = new BinaryReader(client, Encoding.UTF8, leaveOpen: true);
 
             int len = br.ReadInt32();
-            if (len <= 0 || len > 1024 * 1024)
-                throw new InvalidOperationException("Ungültige Antwortlänge.");
+            if (len <= 0 || len > MaxResponseLength)
+                throw new InvalidOperationException($"Ungültige Antwortlänge: {len} bytes (Max: {MaxResponseLength} bytes).");
 
             var bytes = br.ReadBytes(len);
             if (bytes.Length != len)
-                throw new InvalidOperationException("Unvollständige Antwort.");
+                throw new InvalidOperationException($"Unvollständige Antwort: {bytes.Length} von {len} bytes gelesen.");
 
             var json = Encoding.UTF8.GetString(bytes);
             return PipeProtocol.Deserialize<PipeProtocol.Response>(json)
@@ -154,7 +160,7 @@ public static class PipeClient
         });
 
         if (!readTask.Wait(RoundtripTimeout))
-            throw new TimeoutException("Service antwortet nicht (Pipe Timeout).");
+            throw new TimeoutException($"Service antwortet nicht (Pipe Timeout: {RoundtripTimeout.TotalSeconds}s).");
 
         return readTask.Result;
     }
@@ -170,5 +176,54 @@ public static class PipeClient
 
     public static void TestTelegram()
         => SendRequestNoPayload<object?>(PipeProtocol.CmdTestTelegram);
+
+
+    public static BackupListResponse ListBackups()
+    => SendRequestNoPayload<BackupListResponse>(PipeProtocol.CmdListBackups);
+
+    public static BackupArtifactListResponse ListBackupArtifacts(string backupPlanId)
+        => SendRequestWithPayload<BackupArtifactListResponse>(
+            PipeProtocol.CmdListBackupArtifacts,
+            new BackupArtifactListRequest
+            {
+                BackupPlanId = backupPlanId
+            });
+
+    public static string GetBackupManifest(string backupPlanId, string artifactName)
+    {
+        var req = new PipeProtocol.Request
+        {
+            Version = PipeProtocol.ProtocolVersion,
+            Command = PipeProtocol.CmdGetBackupManifest,
+            PayloadJson = PipeProtocol.Serialize(new BackupManifestRequest
+            {
+                BackupPlanId = backupPlanId,
+                ArtifactName = artifactName
+            })
+        };
+
+        var resp = Roundtrip(req);
+        ValidateResponse(resp);
+
+        if (string.IsNullOrWhiteSpace(resp.PayloadJson))
+            throw new InvalidOperationException("Service returned no payload.");
+
+        // For manifest, return the PayloadJson directly - it's already the manifest JSON
+        return resp.PayloadJson;
+    }
+
+    public static void TriggerBackup(string backupPlanId)
+        => SendRequest(
+            PipeProtocol.CmdTriggerBackup,
+            new BackupTriggerRequest
+            {
+                BackupPlanId = backupPlanId
+            });
+
+    public static void TriggerRestore(RestoreTriggerRequest request)
+        => SendRequest(
+            PipeProtocol.CmdTriggerRestore,
+            request);
+
 
 }

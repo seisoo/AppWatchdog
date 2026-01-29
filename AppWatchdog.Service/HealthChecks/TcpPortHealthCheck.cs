@@ -3,17 +3,30 @@ using System.Net.Sockets;
 
 namespace AppWatchdog.Service.HealthChecks;
 
+/// <summary>
+/// Health check that verifies a TCP port is reachable.
+/// </summary>
 public sealed class TcpPortHealthCheck : IHealthCheck
 {
     private readonly string _host;
     private readonly int _port;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TcpPortHealthCheck"/> class.
+    /// </summary>
+    /// <param name="host">Target host name.</param>
+    /// <param name="port">Target port.</param>
     public TcpPortHealthCheck(string host, int port)
     {
         _host = host;
         _port = port;
     }
 
+    /// <summary>
+    /// Executes the TCP port health check.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The health check result.</returns>
     public async Task<HealthCheckResult> CheckAsync(CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_host))

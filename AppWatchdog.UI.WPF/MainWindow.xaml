@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:AppWatchdog.UI.WPF"
     xmlns:pages="clr-namespace:AppWatchdog.UI.WPF.Views.Pages"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="AppWatchdog – Control Center"
+    Title="AppWatchdog - Control Center"
     Width="1200"
     Height="1080"
     MinWidth="1024"
@@ -21,11 +21,12 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <ui:TitleBar
-            Title="AppWatchdog – Control Center"
+            Title="AppWatchdog - Control Center"
             Grid.Row="0"
             ShowClose="True"
             ShowMaximize="True"
@@ -38,15 +39,55 @@
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
+        <!--  BANNER  -->
+        <ui:Card
+            Grid.Row="1"
+            Height="154"
+            Margin="0,-8,0,8"
+            Padding="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Image Source="pack://application:,,,/Images/banner5.png" Stretch="UniformToFill" />
+
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Offset="0.0" Color="#AA000000" />
+                            <GradientStop Offset="1.0" Color="#AA000000" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <StackPanel Margin="24,36,24,36" VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="26"
+                        FontWeight="SemiBold"
+                        Foreground="White"
+                        Text="AppWatchdog" />
+
+                    <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+                        <TextBlock
+                            Margin="0,0,12,0"
+                            Foreground="#E5E7EB"
+                            Text="天網恢恢、疎にして漏らさず" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </ui:Card>
+
         <ui:ContentDialogHost
             x:Name="RootContentDialogHost"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Panel.ZIndex="999" />
 
         <!--  Snackbar Layer  -->
         <ui:SnackbarPresenter
             x:Name="SnackbarPresenter"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             Margin="0,0,0,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
@@ -54,7 +95,7 @@
 
         <ui:NavigationView
             x:Name="RootNavigationView"
-            Grid.Row="1"
+            Grid.Row="2"
             IsBackButtonVisible="Collapsed"
             IsFooterSeparatorVisible="False"
             IsPaneOpen="True"
@@ -101,6 +142,16 @@
                     TargetPageType="{x:Type pages:AppsPage}" />
 
                 <ui:NavigationViewItem
+                    Content="Backups"
+                    Icon="{ui:SymbolIcon Symbol=Save24}"
+                    TargetPageType="{x:Type pages:BackupPage}" />
+
+                <ui:NavigationViewItem
+                    Content="Restore"
+                    Icon="{ui:SymbolIcon Symbol=ArrowUpload24}"
+                    TargetPageType="{x:Type pages:RestorePage}" />
+
+                <ui:NavigationViewItem
                     Content="Alerts"
                     Icon="{ui:SymbolIcon Megaphone24}"
                     TargetPageType="{x:Type pages:NotificationsPage}" />
@@ -120,6 +171,4 @@
 
         </ui:NavigationView>
     </Grid>
-
-
 </ui:FluentWindow>

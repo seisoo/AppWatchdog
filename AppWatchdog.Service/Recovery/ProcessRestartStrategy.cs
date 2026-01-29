@@ -4,6 +4,9 @@ using System.Diagnostics;
 
 namespace AppWatchdog.Service.Recovery;
 
+/// <summary>
+/// Recovery strategy that restarts an executable process.
+/// </summary>
 public sealed class ProcessRestartStrategy : IRecoveryStrategy
 {
     private static readonly TimeSpan StartBackoffMin = TimeSpan.FromSeconds(5);
@@ -15,6 +18,12 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
     private int _consecutiveFailures;
     private DateTimeOffset _nextStartAttemptUtc = DateTimeOffset.MinValue;
 
+    /// <summary>
+    /// Attempts to restart the target executable.
+    /// </summary>
+    /// <param name="app">App to recover.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The recovery result.</returns>
     public Task<RecoveryResult> TryRecoverAsync(WatchedApp app, CancellationToken ct)
     {
         var sessionState = UserSessionLauncher.GetSessionState();
@@ -111,6 +120,11 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
         }
     }
 
+    /// <summary>
+    /// Computes exponential backoff delay for restart attempts.
+    /// </summary>
+    /// <param name="failures">Number of consecutive failures.</param>
+    /// <returns>The backoff delay.</returns>
     private static TimeSpan ComputeBackoffDelay(int failures)
     {
         double seconds =
@@ -121,6 +135,12 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
         return TimeSpan.FromSeconds(seconds);
     }
 
+    /// <summary>
+    /// Waits for the process to appear running.
+    /// </summary>
+    /// <param name="exePath">Executable path.</param>
+    /// <param name="maxWait">Maximum wait duration.</param>
+    /// <returns><c>true</c> when the process starts.</returns>
     private static bool WaitForRunning(string exePath, TimeSpan maxWait)
     {
         var sw = Stopwatch.StartNew();
@@ -135,6 +155,13 @@ public sealed class ProcessRestartStrategy : IRecoveryStrategy
         return Worker.IsRunning(exePath);
     }
 
+    /// <summary>
+    /// Searches the Windows event log for recent application errors.
+    /// </summary>
+    /// <param name="exePath">Executable path.</param>
+    /// <param name="startUtc">Start time in UTC.</param>
+    /// <param name="window">Search window length.</param>
+    /// <returns>An error string if found; otherwise <c>null</c>.</returns>
     private static string? FindAppErrorInEventLog(
         string exePath,
         DateTimeOffset startUtc,

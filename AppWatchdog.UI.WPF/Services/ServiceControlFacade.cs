@@ -71,6 +71,15 @@ public sealed class ServiceControlFacade
         RunElevated($"delete {_serviceName}");
     }
 
+    public void ReinstallService()
+    {
+        // Uninstall if exists (ignore errors if not installed)
+        try { UninstallService(); }
+        catch { }
+
+        // Install fresh
+        InstallServiceFromLocalExe();
+    }
 
     private static void RunElevated(string args)
     {

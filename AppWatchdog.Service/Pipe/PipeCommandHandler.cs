@@ -1,9 +1,14 @@
-﻿using AppWatchdog.Service.Helpers;
+﻿using AppWatchdog.Service.Backups;
+using AppWatchdog.Service.Helpers;
 using AppWatchdog.Service.Jobs;
 using AppWatchdog.Shared;
+using System.IO.Compression;
 
 namespace AppWatchdog.Service.Pipe;
 
+/// <summary>
+/// Handles incoming pipe commands and routes them to service operations.
+/// </summary>
 public sealed class PipeCommandHandler
 {
     private readonly string _configPath;
@@ -11,16 +16,29 @@ public sealed class PipeCommandHandler
     private readonly Func<WatchdogConfig> _getConfig;
     private readonly Func<ServiceSnapshot?> _getSnapshot;
     private readonly Action _triggerCheck;
+    private readonly Action _rebuildJobs;
     private readonly Action<WatchdogConfig> _onConfigSaved;
 
     private readonly NotificationDispatcher _dispatcher;
     private readonly JobScheduler _scheduler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PipeCommandHandler"/> class.
+    /// </summary>
+    /// <param name="configPath">Path to the configuration file.</param>
+    /// <param name="getConfig">Delegate that returns the current configuration.</param>
+    /// <param name="getSnapshot">Delegate that returns the latest snapshot.</param>
+    /// <param name="triggerCheck">Delegate that triggers immediate checks.</param>
+    /// <param name="rebuildJobs">Delegate that rebuilds job schedules.</param>
+    /// <param name="onConfigSaved">Callback invoked after saving config.</param>
+    /// <param name="dispatcher">Notification dispatcher.</param>
+    /// <param name="scheduler">Job scheduler.</param>
     public PipeCommandHandler(
         string configPath,
         Func<WatchdogConfig> getConfig,
         Func<ServiceSnapshot?> getSnapshot,
         Action triggerCheck,
+        Action rebuildJobs,
         Action<WatchdogConfig> onConfigSaved,
         NotificationDispatcher dispatcher,
         JobScheduler scheduler)
@@ -29,12 +47,26 @@ public sealed class PipeCommandHandler
         _getConfig = getConfig;
         _getSnapshot = getSnapshot;
         _triggerCheck = triggerCheck;
+        _rebuildJobs = rebuildJobs;
         _onConfigSaved = onConfigSaved;
         _dispatcher = dispatcher;
         _scheduler = scheduler;
     }
 
+    /// <summary>
+    /// Handles a pipe request synchronously.
+    /// </summary>
+    /// <param name="req">Incoming request.</param>
+    /// <returns>The response to send back.</returns>
     public PipeProtocol.Response Handle(PipeProtocol.Request req)
+        => HandleAsync(req).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Handles a pipe request asynchronously.
+    /// </summary>
+    /// <param name="req">Incoming request.</param>
+    /// <returns>The response to send back.</returns>
+    private async Task<PipeProtocol.Response> HandleAsync(PipeProtocol.Request req)
     {
         try
         {
@@ -90,7 +122,33 @@ public sealed class PipeCommandHandler
                     });
 
                 case PipeProtocol.CmdGetJobs:
-                    return Ok(_scheduler.GetSnapshots());
+                    return Ok(new JobSnapshotsResponse
+                    {
+                        Jobs = _scheduler.GetSnapshots()
+                    });
+
+                case PipeProtocol.CmdRebuildJobs:
+                    _rebuildJobs();
+                    FileLogStore.WriteLine("INFO", "Jobs werden neu aufgebaut (per Pipe).");
+                    return Ok();
+
+                case PipeProtocol.CmdListBackups:
+                    return Ok(new BackupListResponse
+                    {
+                        Plans = _getConfig().Backups
+                    });
+
+                case PipeProtocol.CmdTriggerBackup:
+                    return TriggerBackup(req);
+
+                case PipeProtocol.CmdListBackupArtifacts:
+                    return await ListBackupArtifacts(req);
+
+                case PipeProtocol.CmdGetBackupManifest:
+                    return await GetBackupManifest(req);
+
+                case PipeProtocol.CmdTriggerRestore:
+                    return TriggerRestore(req);
 
                 default:
                     return Error("Unknown command");
@@ -105,6 +163,11 @@ public sealed class PipeCommandHandler
         }
     }
 
+    /// <summary>
+    /// Saves the configuration provided in the request payload.
+    /// </summary>
+    /// <param name="req">Request containing the config payload.</param>
+    /// <returns>The response indicating success or failure.</returns>
     private PipeProtocol.Response SaveConfig(PipeProtocol.Request req)
     {
         if (string.IsNullOrWhiteSpace(req.PayloadJson))
@@ -121,6 +184,10 @@ public sealed class PipeCommandHandler
         return Ok();
     }
 
+    /// <summary>
+    /// Returns the latest service status snapshot.
+    /// </summary>
+    /// <returns>The response containing the snapshot.</returns>
     private PipeProtocol.Response GetStatus()
     {
         var snap = _getSnapshot();
@@ -139,6 +206,11 @@ public sealed class PipeCommandHandler
         return Ok(snap);
     }
 
+    /// <summary>
+    /// Retrieves a log day from the request payload.
+    /// </summary>
+    /// <param name="req">Request containing the log day.</param>
+    /// <returns>The response containing log contents.</returns>
     private PipeProtocol.Response GetLogDay(PipeProtocol.Request req)
     {
         if (string.IsNullOrWhiteSpace(req.PayloadJson))
@@ -155,6 +227,11 @@ public sealed class PipeCommandHandler
         });
     }
 
+    /// <summary>
+    /// Runs a notification test for the specified channel.
+    /// </summary>
+    /// <param name="channel">Channel to test.</param>
+    /// <returns>The response indicating success or failure.</returns>
     private PipeProtocol.Response RunNotificationTest(NotificationChannel channel)
     {
         try
@@ -197,9 +274,188 @@ public sealed class PipeCommandHandler
         }
     }
 
+    /// <summary>
+    /// Triggers a backup job by plan ID.
+    /// </summary>
+    /// <param name="req">Request containing the plan ID.</param>
+    /// <returns>The response indicating success or failure.</returns>
+    private PipeProtocol.Response TriggerBackup(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<BackupTriggerRequest>(req.PayloadJson ?? "");
+        if (r == null || string.IsNullOrWhiteSpace(r.BackupPlanId))
+            return Error("Invalid payload");
+
+        var jobId = $"backup:{r.BackupPlanId}";
+        
+        try
+        {
+            // Force-run the specific backup job instead of running all jobs
+            _scheduler.ForceRun(jobId);
+            FileLogStore.WriteLine("INFO", $"Backup triggered for plan: {r.BackupPlanId}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine("ERROR", $"Failed to trigger backup: {ex.Message}");
+            return Error(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Lists backup artifacts for a given plan.
+    /// </summary>
+    /// <param name="req">Request containing the plan ID.</param>
+    /// <returns>The response containing artifact names.</returns>
+    private async Task<PipeProtocol.Response> ListBackupArtifacts(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<BackupArtifactListRequest>(req.PayloadJson ?? "");
+        if (r == null || string.IsNullOrWhiteSpace(r.BackupPlanId))
+            return Error("Invalid payload");
+
+        var plan = _getConfig().Backups.FirstOrDefault(x =>
+            string.Equals(x.Id, r.BackupPlanId, StringComparison.OrdinalIgnoreCase));
+
+        if (plan == null)
+            return Error("Backup plan not found");
+
+        await using var storage = CreateStorage(plan.Target);
+        var list = await storage.ListAsync(CancellationToken.None);
+
+        return Ok(new BackupArtifactListResponse
+        {
+            Artifacts = list
+        });
+    }
+
+    /// <summary>
+    /// Retrieves a backup manifest for a specific artifact.
+    /// </summary>
+    /// <param name="req">Request containing plan and artifact identifiers.</param>
+    /// <returns>The response containing the manifest JSON.</returns>
+    private async Task<PipeProtocol.Response> GetBackupManifest(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<BackupManifestRequest>(req.PayloadJson ?? "");
+        if (r == null ||
+            string.IsNullOrWhiteSpace(r.BackupPlanId) ||
+            string.IsNullOrWhiteSpace(r.ArtifactName))
+            return Error("Invalid payload");
+
+        var plan = _getConfig().Backups.FirstOrDefault(x =>
+            string.Equals(x.Id, r.BackupPlanId, StringComparison.OrdinalIgnoreCase));
+
+        if (plan == null)
+            return Error("Backup plan not found");
+
+        var tmpEnc = Path.Combine(
+            BackupPaths.Staging,
+            "pipe_man_" + Guid.NewGuid().ToString("N") + ".awdb");
+
+        var tmpZip = Path.Combine(
+            BackupPaths.Staging,
+            "pipe_man_" + Guid.NewGuid().ToString("N") + ".zip");
+
+        try
+        {
+            await using var storage = CreateStorage(plan.Target);
+            await storage.DownloadAsync(r.ArtifactName, tmpEnc, null, CancellationToken.None);
+
+            if (plan.Crypto.Encrypt)
+                await AesCrypto.DecryptToFileAsync(tmpEnc, tmpZip, plan.Crypto.Password, CancellationToken.None);
+            else
+                File.Copy(tmpEnc, tmpZip, true);
+
+            using var fs = File.OpenRead(tmpZip);
+            using var zip = new ZipArchive(fs, ZipArchiveMode.Read, false);
+            var entry = zip.GetEntry("manifest.json");
+            if (entry == null)
+                return Error("Manifest missing");
+
+            using var sr = new StreamReader(entry.Open());
+            var json = await sr.ReadToEndAsync();
+
+            // Return the manifest JSON directly in PayloadJson (it's already JSON)
+            return new PipeProtocol.Response
+            {
+                Ok = true,
+                PayloadJson = json  // This is already the manifest JSON
+            };
+        }
+        finally
+        {
+            FileHelper.TryDelete(tmpEnc);
+            FileHelper.TryDelete(tmpZip);
+        }
+    }
+
+
+    /// <summary>
+    /// Triggers a restore operation by creating a temporary restore plan.
+    /// </summary>
+    /// <param name="req">Request containing restore parameters.</param>
+    /// <returns>The response indicating success or failure.</returns>
+    private PipeProtocol.Response TriggerRestore(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<RestoreTriggerRequest>(req.PayloadJson ?? "");
+        if (r == null ||
+            string.IsNullOrWhiteSpace(r.BackupPlanId) ||
+            string.IsNullOrWhiteSpace(r.ArtifactName))
+            return Error("Invalid payload");
+
+        var cfg = _getConfig();
+
+        var restore = new RestorePlanConfig
+        {
+            Enabled = true,
+            Id = "pipe_" + Guid.NewGuid().ToString("N"),
+            BackupPlanId = r.BackupPlanId,
+            BackupArtifactName = r.ArtifactName,
+            RestoreToDirectory = r.RestoreToDirectory,
+            OverwriteExisting = r.OverwriteExisting,
+            IncludePaths = r.IncludePaths,
+            RunOnce = true
+        };
+
+        cfg.Restores.Add(restore);
+        ConfigStore.Save(_configPath, cfg);
+        _onConfigSaved(cfg);
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Creates a backup storage implementation based on target settings.
+    /// </summary>
+    /// <param name="target">Backup target configuration.</param>
+    /// <returns>The storage instance.</returns>
+    private static IBackupStorage CreateStorage(BackupTargetConfig target)
+    {
+        return target.Type switch
+        {
+            BackupTargetType.Sftp => new SftpStorage(
+                target.SftpHost,
+                target.SftpPort <= 0 ? 22 : target.SftpPort,
+                target.SftpUser,
+                target.SftpPassword,
+                target.SftpRemoteDirectory,
+                target.SftpHostKeyFingerprint),
+
+            _ => new LocalStorage(target.LocalDirectory)
+        };
+    }
+
+    /// <summary>
+    /// Creates a success response without payload.
+    /// </summary>
+    /// <returns>The success response.</returns>
     private static PipeProtocol.Response Ok()
         => new() { Ok = true };
 
+    /// <summary>
+    /// Creates a success response with a payload.
+    /// </summary>
+    /// <typeparam name="T">Payload type.</typeparam>
+    /// <param name="payload">Payload to serialize.</param>
+    /// <returns>The success response.</returns>
     private static PipeProtocol.Response Ok<T>(T payload)
         => new()
         {
@@ -207,6 +463,11 @@ public sealed class PipeCommandHandler
             PayloadJson = PipeProtocol.Serialize(payload)
         };
 
+    /// <summary>
+    /// Creates an error response with a message.
+    /// </summary>
+    /// <param name="msg">Error message.</param>
+    /// <returns>The error response.</returns>
     private static PipeProtocol.Response Error(string msg)
         => new()
         {

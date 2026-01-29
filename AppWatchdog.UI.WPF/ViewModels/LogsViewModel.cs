@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
@@ -31,25 +32,35 @@ public partial class LogsViewModel : DirtyViewModelBase
     private int _searchMatchCount;
 
     public string SearchMatchText =>
-    string.Format(AppStrings.logs_search_matches, SearchMatchCount);
-
+        string.Format(AppStrings.logs_search_matches, SearchMatchCount);
 
     private const int SearchContextLines = 5;
-
+    private const int RefreshIntervalSeconds = 3;
 
     [ObservableProperty]
     private bool _isContentEnabled;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
     public ObservableCollection<string> Days { get; } = new();
 
-    [ObservableProperty] private string? _selectedDay;
-    [ObservableProperty] private string _logText = "";
-    [ObservableProperty] private string _header = AppStrings.logs_loading;
+    [ObservableProperty] 
+    private string? _selectedDay;
+    
+    [ObservableProperty] 
+    private string _logText = "";
+    
+    [ObservableProperty] 
+    private string _header = "Select a log to view";
 
-    private const int RefreshSeconds = 5;
     private bool _activated;
+    private CancellationTokenSource? _refreshCts;
+    private Task? _refreshTask;
+
     public LogsViewModel(
-    PipeFacade pipe,
-    BackendStateService backend)
+        PipeFacade pipe,
+        BackendStateService backend)
     {
         _pipe = pipe;
         _backend = backend;
@@ -57,49 +68,6 @@ public partial class LogsViewModel : DirtyViewModelBase
         _dispatcher = Dispatcher.CurrentDispatcher;
         _backend.PropertyChanged += OnBackendStateChanged;
     }
-    private async void OnTimerTick(object? sender, EventArgs e)
-    {
-        if (!_backend.IsReady)
-            return;
-
-        await RefreshSelectedAsync();
-    }
-    private async Task RefreshSelectedAsync()
-    {
-        if (string.IsNullOrWhiteSpace(SelectedDay))
-            return;
-
-        try
-        {
-            var resp = await Task.Run(() => _pipe.GetLogDay(SelectedDay));
-            await _dispatcher.InvokeAsync(() =>
-            {
-                Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
-
-                if (string.IsNullOrWhiteSpace(resp.Content))
-                {
-                    LogText = "";
-                    return;
-                }
-
-                LogText = string.Join(
-                    Environment.NewLine,
-                    resp.Content
-                        .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
-                        .Reverse()
-                );
-            });
-        }
-        catch (Exception ex)
-        {
-            await _dispatcher.InvokeAsync(() =>
-            {
-                Header = AppStrings.logs_error_while_loading;
-                LogText = ex.Message;
-            });
-        }
-    }
-
 
     public async Task ActivateAsync()
     {
@@ -112,13 +80,31 @@ public partial class LogsViewModel : DirtyViewModelBase
         if (!_activated)
         {
             _activated = true;
+            // Lade verfügbare Tage im Hintergrund ohne zu warten
+            _ = LoadAvailableDaysAsync();
+        }
+
+        IsContentEnabled = true;
+    }
+
+    public void Deactivate()
+    {
+        IsContentEnabled = false;
+        StopAutoRefresh();
+    }
+
+    private async Task LoadAvailableDaysAsync()
+    {
+        try
+        {
             var days = await Task.Run(() =>
             {
                 var resp = _pipe.ListLogDays();
                 return resp.Days
-                           .OrderByDescending(d => d)
-                           .ToList();
+                    .OrderByDescending(d => d)
+                    .ToList();
             });
+
             await _dispatcher.InvokeAsync(() =>
             {
                 Days.Clear();
@@ -127,34 +113,144 @@ public partial class LogsViewModel : DirtyViewModelBase
 
                 if (Days.Count == 0)
                 {
-                    Header = AppStrings.logs_no_logs_found;
+                    Header = "No logs available";
                     return;
                 }
 
+                // Standardmäßig den neuesten Log laden
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
                 SelectedDay = Days.Contains(today) ? today : Days.First();
-                Header = string.Format(AppStrings.logs_loaded_text, DateTime.Now.ToString("HH:mm:ss")); ;
             });
         }
-
-        IsContentEnabled = true;
+        catch (Exception ex)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Header = $"Error loading logs: {ex.Message}";
+            });
+        }
     }
 
-
-    public void Deactivate()
+    partial void OnSelectedDayChanged(string? value)
     {
-        IsContentEnabled = false;
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            StopAutoRefresh();
+            _ = LoadSelectedLogAsync(value);
+        }
     }
 
-    private async void OnBackendStateChanged(object? sender, PropertyChangedEventArgs e)
+    private async Task LoadSelectedLogAsync(string day)
     {
-        if (e.PropertyName != nameof(BackendStateService.State))
+        IsLoading = true;
+        try
+        {
+            var resp = await Task.Run(() => _pipe.GetLogDay(day));
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
+
+                if (string.IsNullOrWhiteSpace(resp.Content))
+                {
+                    LogText = "";
+                    _rawLogText = "";
+                    IsLoading = false;
+                    return;
+                }
+
+                var reversed = string.Join(
+                    Environment.NewLine,
+                    resp.Content
+                        .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+                        .Reverse()
+                );
+
+                _rawLogText = reversed;
+                ApplySearchFilter();
+
+                // Starte Auto-Refresh für den aktuellen Tag
+                StartAutoRefresh(day);
+                IsLoading = false;
+            });
+        }
+        catch (Exception ex)
+        {
+            await _dispatcher.InvokeAsync(() =>
+            {
+                Header = $"Error loading log: {ex.Message}";
+                LogText = "";
+                _rawLogText = "";
+                IsLoading = false;
+            });
+        }
+    }
+
+    private void StartAutoRefresh(string day)
+    {
+        StopAutoRefresh();
+
+        _refreshCts = new CancellationTokenSource();
+        _refreshTask = Task.Run(async () =>
+        {
+            while (!_refreshCts.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(RefreshIntervalSeconds * 1000, _refreshCts.Token);
+
+                    var resp = await Task.Run(() => _pipe.GetLogDay(day), _refreshCts.Token);
+                    await _dispatcher.InvokeAsync(() =>
+                    {
+                        Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
+
+                        if (string.IsNullOrWhiteSpace(resp.Content))
+                        {
+                            LogText = "";
+                            _rawLogText = "";
+                            return;
+                        }
+
+                        var reversed = string.Join(
+                            Environment.NewLine,
+                            resp.Content
+                                .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+                                .Reverse()
+                        );
+
+                        _rawLogText = reversed;
+                        ApplySearchFilter();
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                    // Fehler beim Refresh ignorieren, weitermachen
+                }
+            }
+        }, _refreshCts.Token);
+    }
+
+    private void StopAutoRefresh()
+    {
+        _refreshCts?.Cancel();
+        _refreshCts?.Dispose();
+        _refreshCts = null;
+        _refreshTask = null;
+    }
+
+    [RelayCommand]
+    private async Task RefreshLogs()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedDay))
+        {
+            await LoadAvailableDaysAsync();
             return;
+        }
 
-        if (_backend.IsReady)
-            await ActivateAsync();
-        else
-            IsContentEnabled = false;
+        await LoadSelectedLogAsync(SelectedDay);
     }
 
     [RelayCommand]
@@ -168,40 +264,6 @@ public partial class LogsViewModel : DirtyViewModelBase
             UseShellExecute = true,
             Verb = "open"
         });
-    }
-
-    [RelayCommand]
-    private void LoadSelected()
-    {
-        if (string.IsNullOrWhiteSpace(SelectedDay))
-            return;
-
-        try
-        {
-            var resp = _pipe.GetLogDay(SelectedDay);
-            Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
-
-            if (string.IsNullOrWhiteSpace(resp.Content))
-            {
-                LogText = "";
-                return;
-            }
-
-            var reversed = string.Join(
-                Environment.NewLine,
-                resp.Content
-                    .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
-                    .Reverse()
-            );
-
-            _rawLogText = reversed;
-            ApplySearchFilter();
-        }
-        catch (Exception ex)
-        {
-            Header = AppStrings.logs_error_while_loading;
-            LogText = ex.Message;
-        }
     }
 
     partial void OnSearchTextChanged(string value)
@@ -231,7 +293,7 @@ public partial class LogsViewModel : DirtyViewModelBase
         var resultLines = new List<string>();
         var addedIndices = new HashSet<int>();
 
-        int matchCount = 0; 
+        int matchCount = 0;
 
         for (int i = 0; i < allLines.Length; i++)
         {
@@ -250,7 +312,7 @@ public partial class LogsViewModel : DirtyViewModelBase
             }
         }
 
-        SearchMatchCount = matchCount; 
+        SearchMatchCount = matchCount;
         LogText = string.Join(Environment.NewLine, resultLines);
     }
 
@@ -259,6 +321,17 @@ public partial class LogsViewModel : DirtyViewModelBase
         OnPropertyChanged(nameof(SearchMatchText));
     }
 
+    private async void OnBackendStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(BackendStateService.State))
+            return;
 
+        if (_backend.IsReady)
+            await ActivateAsync();
+        else
+        {
+            Deactivate();
+        }
+    }
 }
 

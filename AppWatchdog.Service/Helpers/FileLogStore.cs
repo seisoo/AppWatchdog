@@ -3,10 +3,16 @@ using System.Text;
 
 namespace AppWatchdog.Service.Helpers;
 
+/// <summary>
+/// Provides file-based logging for the service.
+/// </summary>
 public static class FileLogStore
 {
     private static readonly object _lock = new();
 
+    /// <summary>
+    /// Gets the log directory path.
+    /// </summary>
     public static string LogDir
     {
         get
@@ -20,6 +26,12 @@ public static class FileLogStore
         }
     }
 
+    /// <summary>
+    /// Appends a log entry to the current day log file.
+    /// </summary>
+    /// <param name="level">Log level.</param>
+    /// <param name="message">Log message.</param>
+    /// <param name="ex">Optional exception.</param>
     public static void WriteLine(string level, string message, Exception? ex = null)
     {
         var ts = DateTimeOffset.Now;
@@ -45,6 +57,10 @@ public static class FileLogStore
         }
     }
 
+    /// <summary>
+    /// Lists available log day files.
+    /// </summary>
+    /// <returns>List of day strings.</returns>
     public static List<string> ListDays()
     {
         try
@@ -64,6 +80,11 @@ public static class FileLogStore
         }
     }
 
+    /// <summary>
+    /// Reads the log file for a specific day.
+    /// </summary>
+    /// <param name="day">Day in yyyy-MM-dd format.</param>
+    /// <returns>The log contents.</returns>
     public static string ReadDay(string day)
     {
         if (string.IsNullOrWhiteSpace(day))

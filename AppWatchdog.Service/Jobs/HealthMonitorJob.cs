@@ -7,6 +7,9 @@ using AppWatchdog.Shared.Monitoring;
 
 namespace AppWatchdog.Service.Jobs;
 
+/// <summary>
+/// Monitors application health and triggers recovery and notifications.
+/// </summary>
 public sealed class HealthMonitorJob : IJob
 {
     private const bool ISDEBUG = false;
@@ -28,6 +31,15 @@ public sealed class HealthMonitorJob : IJob
     private DateTimeOffset _lastDownNotificationUtc = DateTimeOffset.MinValue;
     private DateTimeOffset _nextRecoveryTryUtc = DateTimeOffset.MinValue;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HealthMonitorJob"/> class.
+    /// </summary>
+    /// <param name="app">Watched application configuration.</param>
+    /// <param name="healthCheck">Health check implementation.</param>
+    /// <param name="recovery">Recovery strategy for failures.</param>
+    /// <param name="dispatcher">Notification dispatcher.</param>
+    /// <param name="interval">Execution interval.</param>
+    /// <param name="mailIntervalHours">Notification throttle interval in hours.</param>
     public HealthMonitorJob(
         WatchedApp app,
         IHealthCheck healthCheck,
@@ -44,9 +56,21 @@ public sealed class HealthMonitorJob : IJob
         _mailIntervalHours = mailIntervalHours;
     }
 
+    /// <summary>
+    /// Gets the unique job identifier.
+    /// </summary>
     public string Id => $"health:{_app.Type}:{_app.Name}";
+
+    /// <summary>
+    /// Gets the execution interval.
+    /// </summary>
     public TimeSpan Interval => _interval;
 
+    /// <summary>
+    /// Executes the health check and recovery logic.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task representing the execution.</returns>
     public async Task ExecuteAsync(CancellationToken ct)
     {
         Debug("ExecuteAsync tick");
@@ -174,6 +198,12 @@ public sealed class HealthMonitorJob : IJob
         _lastStatus = currentStatus;
     }
 
+    /// <summary>
+    /// Attempts to recover the application when down.
+    /// </summary>
+    /// <param name="current">Current status.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A task representing the recovery attempt.</returns>
     private async Task TryRecoveryAsync(AppStatus current, CancellationToken ct)
     {
         _recoveryAttemptedInThisDown = true;
@@ -251,6 +281,12 @@ public sealed class HealthMonitorJob : IJob
         Dispatch(AppNotificationType.Down, current, startAttempted);
     }
 
+    /// <summary>
+    /// Dispatches a notification for the specified state.
+    /// </summary>
+    /// <param name="type">Notification type.</param>
+    /// <param name="status">Current app status.</param>
+    /// <param name="startAttempted">Whether a recovery attempt occurred.</param>
     private void Dispatch(
         AppNotificationType type,
         AppStatus status,
@@ -288,6 +324,9 @@ public sealed class HealthMonitorJob : IJob
         });
     }
 
+    /// <summary>
+    /// Resets counters for down and recovery state.
+    /// </summary>
     private void ResetCounters()
     {
         _consecutiveDown = 0;
@@ -296,6 +335,9 @@ public sealed class HealthMonitorJob : IJob
         _nextRecoveryTryUtc = DateTimeOffset.MinValue;
     }
 
+    /// <summary>
+    /// Resets cached status and counters.
+    /// </summary>
     private void ResetState()
     {
         _lastStatus = null;
@@ -303,6 +345,9 @@ public sealed class HealthMonitorJob : IJob
         ResetCounters();
     }
 
+    /// <summary>
+    /// Schedules the next recovery attempt.
+    /// </summary>
     private void ScheduleRetry()
     {
         _recoveryAttemptedInThisDown = false;
@@ -310,11 +355,20 @@ public sealed class HealthMonitorJob : IJob
         Debug($"Next recovery try scheduled at {FormatTime(_nextRecoveryTryUtc)}");
     }
 
+    /// <summary>
+    /// Formats a timestamp for logging.
+    /// </summary>
+    /// <param name="t">Timestamp to format.</param>
+    /// <returns>Formatted time string.</returns>
     private static string FormatTime(DateTimeOffset t)
         => t == DateTimeOffset.MinValue
             ? "-"
             : t.ToLocalTime().ToString("HH:mm:ss");
 
+    /// <summary>
+    /// Writes debug output when enabled.
+    /// </summary>
+    /// <param name="message">Message to write.</param>
     private void Debug(string message)
     {
         if (!ISDEBUG)
@@ -325,8 +379,23 @@ public sealed class HealthMonitorJob : IJob
             $"[{_app.Name}] {message}");
     }
 
+    /// <summary>
+    /// Creates a job snapshot for UI display.
+    /// </summary>
+    /// <param name="entry">Scheduler entry.</param>
+    /// <returns>The snapshot.</returns>
     public JobSnapshot CreateSnapshot(JobScheduler.JobEntry entry)
     {
+        var healthCheckType = _app.Type.ToString();
+        var healthCheckTarget = _app.Type switch
+        {
+            WatchTargetType.HttpEndpoint => _app.Url ?? "—",
+            WatchTargetType.TcpPort => $"{_app.Host}:{_app.Port}",
+            WatchTargetType.Executable => _app.ExePath ?? "—",
+            WatchTargetType.WindowsService => _app.ServiceName ?? "—",
+            _ => "—"
+        };
+
         return new JobSnapshot
         {
             JobId = Id,
@@ -336,14 +405,20 @@ public sealed class HealthMonitorJob : IJob
             LastCheckUtc = entry.LastRunUtc,
             NextRunUtc = entry.NextRunUtc,
             AppName = _app.Name,
+            ExePath = _app.ExePath ?? "",
             EffectiveState = _lastStatus == null
                 ? "UNKNOWN"
                 : _lastStatus.IsRunning ? "UP" : "DOWN",
             ConsecutiveDown = _consecutiveDown,
             ConsecutiveStartFailures = _consecutiveStartFailures,
-            PingMs = _lastStatus?.PingMs
+            PingMs = _lastStatus?.PingMs,
+            HealthCheckType = healthCheckType,
+            HealthCheckTarget = healthCheckTarget
         };
     }
 
+    /// <summary>
+    /// Disposes the job.
+    /// </summary>
     public void Dispose() { }
 }

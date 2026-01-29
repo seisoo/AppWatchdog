@@ -143,6 +143,8 @@ public partial class ServiceViewModel : DirtyViewModelBase
             try
             {
                 snap = await Task.Run(() => _pipe.GetStatus());
+                if(snap == null)
+                    throw new Exception(AppStrings.pipe_not_available_ex);
             }
             catch (Exception ex)
             {
@@ -245,16 +247,10 @@ public partial class ServiceViewModel : DirtyViewModelBase
             AppStrings.service_succesfully_stopped);
 
     [RelayCommand]
-    private async Task InstallService()
+    private async Task ReinstallService()
         => await RunServiceActionAsync(
-            () => _svc.InstallServiceFromLocalExe(),
+            () => _svc.ReinstallService(),
             AppStrings.service_succesfully_installed);
-
-    [RelayCommand]
-    private async Task UninstallService()
-        => await RunServiceActionAsync(
-            () => _svc.UninstallService(),
-            AppStrings.service_succesfully_uninstalled);
 
     // -------------------------------------------------
     // HELPERS

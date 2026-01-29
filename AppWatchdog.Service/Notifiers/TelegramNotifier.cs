@@ -6,15 +6,30 @@ using System.Text.Json;
 
 namespace AppWatchdog.Service;
 
+/// <summary>
+/// Sends notifications via the Telegram Bot API.
+/// </summary>
 public sealed class TelegramNotifier : NotifierBase<TelegramSettings>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TelegramNotifier"/> class.
+    /// </summary>
+    /// <param name="settings">Telegram settings.</param>
     public TelegramNotifier(TelegramSettings settings)
         : base(settings)
     {
     }
 
+    /// <summary>
+    /// Gets the notifier name.
+    /// </summary>
     public override string Name => "telegram";
 
+    /// <summary>
+    /// Validates that Telegram settings are configured.
+    /// </summary>
+    /// <param name="error">Error message if invalid.</param>
+    /// <returns><c>true</c> when configured.</returns>
     public override bool IsConfigured(out string? error)
     {
         if (!Settings.Enabled)
@@ -44,6 +59,12 @@ public sealed class TelegramNotifier : NotifierBase<TelegramSettings>
         Timeout = TimeSpan.FromSeconds(6)
     };
 
+    /// <summary>
+    /// Sends a message using the Telegram Bot API.
+    /// </summary>
+    /// <param name="telegram">Telegram settings.</param>
+    /// <param name="message">Message content.</param>
+    /// <returns>A task representing the send operation.</returns>
     public static async Task SendAsync(
         TelegramSettings telegram,
         string message)

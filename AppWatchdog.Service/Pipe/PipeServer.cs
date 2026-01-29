@@ -6,15 +6,27 @@ using System.Security.Principal;
 
 namespace AppWatchdog.Service.Pipe;
 
+/// <summary>
+/// Hosts the named pipe server used for service communication.
+/// </summary>
 public sealed class PipeServer
 {
     private readonly Func<PipeProtocol.Request, PipeProtocol.Response> _handler;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PipeServer"/> class.
+    /// </summary>
+    /// <param name="handler">Request handler for pipe messages.</param>
     public PipeServer(Func<PipeProtocol.Request, PipeProtocol.Response> handler)
     {
         _handler = handler;
     }
 
+    /// <summary>
+    /// Runs the pipe accept loop until cancellation is requested.
+    /// </summary>
+    /// <param name="token">Token used to stop the loop.</param>
+    /// <returns>A task that completes when the loop stops.</returns>
     public async Task RunAsync(CancellationToken token)
     {
         FileLogStore.WriteLine("INFO", "PipeServer AcceptLoop gestartet");
@@ -47,6 +59,10 @@ public sealed class PipeServer
         }
     }
 
+    /// <summary>
+    /// Creates a secured named pipe server stream.
+    /// </summary>
+    /// <returns>The configured named pipe server stream.</returns>
     private static NamedPipeServerStream CreatePipe()
     {
         var ps = new PipeSecurity();

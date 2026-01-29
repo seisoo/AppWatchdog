@@ -1,0 +1,557 @@
+<Page
+    x:Class="AppWatchdog.UI.WPF.Views.Pages.BackupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:AppWatchdog.UI.WPF.Converters"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    MinWidth="800">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid VerticalAlignment="Stretch" IsEnabled="{Binding IsContentEnabled}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  HEADER CARD  -->
+        <ui:Card
+            Grid.Row="0"
+            Margin="16,16,16,0"
+            Padding="20">
+            <StackPanel>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <ui:SymbolIcon
+                        Margin="0,0,12,0"
+                        FontSize="32"
+                        Symbol="Archive24" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="{Binding Source={StaticResource Strings}, Path=[backup_plans_title]}" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            FontSize="12"
+                            Opacity="0.6"
+                            Text="{Binding Source={StaticResource Strings}, Path=[backup_description]}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <WrapPanel Margin="0,16,0,0">
+                    <ui:Button
+                        Margin="0,0,12,0"
+                        Command="{Binding ReloadCommand}"
+                        Content="{Binding Source={StaticResource Strings}, Path=[backup_reload]}"
+                        Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}" />
+
+                    <ui:Button
+                        Margin="0,0,12,0"
+                        Appearance="Primary"
+                        Command="{Binding SaveCommand}"
+                        Content="{Binding Source={StaticResource Strings}, Path=[backup_save]}"
+                        Icon="{ui:SymbolIcon Symbol=Save24}"
+                        IsEnabled="{Binding IsDirty}" />
+
+                    <ui:Button
+                        Margin="0,0,12,0"
+                        Command="{Binding RunNowCommand}"
+                        Content="{Binding Source={StaticResource Strings}, Path=[backup_run_now]}"
+                        Icon="{ui:SymbolIcon Symbol=Play24}"
+                        IsEnabled="{Binding CanRunNow}" />
+
+                    <ui:ProgressRing
+                        Width="24"
+                        Height="24"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        IsIndeterminate="True"
+                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
+                </WrapPanel>
+            </StackPanel>
+        </ui:Card>
+
+        <!--  MAIN CONTENT GRID  -->
+        <Grid Grid.Row="1" Margin="16,16,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" MinWidth="400" />
+            </Grid.ColumnDefinitions>
+
+            <!--  LEFT COLUMN: PLANS LIST  -->
+            <ScrollViewer
+                Grid.Column="0"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto"
+                CanContentScroll="False">
+                <StackPanel>
+                    <ui:Card Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="200" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0">
+                                <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="18"
+                                        Symbol="Save24" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Source={StaticResource Strings}, Path=[backup_plans_title]}" />
+                                </StackPanel>
+                                <TextBlock
+                                    Margin="0,2,0,0"
+                                    FontSize="11"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_plans_select]}"
+                                    TextWrapping="Wrap" />
+                                <Separator Margin="0,12,0,12" />
+                            </StackPanel>
+
+                            <WrapPanel Grid.Row="1" Margin="0,0,0,12">
+                                <ui:Button
+                                    Margin="0,0,8,0"
+                                    Padding="10,4"
+                                    Appearance="Primary"
+                                    Command="{Binding AddCommand}"
+                                    Content="{Binding Source={StaticResource Strings}, Path=[backup_add]}"
+                                    Icon="{ui:SymbolIcon Symbol=Add24}" />
+
+                                <ui:Button
+                                    Padding="10,4"
+                                    Command="{Binding RemoveCommand}"
+                                    Content="{Binding Source={StaticResource Strings}, Path=[backup_remove]}"
+                                    Icon="{ui:SymbolIcon Symbol=Delete24}"
+                                    IsEnabled="{Binding HasSelected}" />
+                            </WrapPanel>
+
+                            <Grid Grid.Row="2">
+                                <ui:ProgressRing
+                                    Width="40"
+                                    Height="40"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    IsIndeterminate="True"
+                                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                <ui:ListView
+                                    ItemsSource="{Binding Plans}"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    SelectedItem="{Binding SelectedPlan}"
+                                    Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <ui:ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="8,10">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon
+                                                        Margin="0,0,6,0"
+                                                        FontSize="14"
+                                                        Symbol="Save24" />
+                                                    <TextBlock
+                                                        FontWeight="SemiBold"
+                                                        Text="{Binding Name}"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Margin="0,2,0,0"
+                                                    FontSize="10"
+                                                    Opacity="0.5"
+                                                    Text="{Binding Id}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ui:ListView.ItemTemplate>
+                                </ui:ListView>
+                            </Grid>
+                        </Grid>
+                    </ui:Card>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  RIGHT COLUMN: PLAN DETAILS  -->
+            <ui:Card
+                Grid.Column="2"
+                Padding="16"
+                VerticalAlignment="Top">
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto"
+                    CanContentScroll="False">
+                    <StackPanel DataContext="{Binding SelectedPlan}">
+
+                        <!--  GENERAL  -->
+                        <ui:CardExpander IsExpanded="True">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="Settings24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_general]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_general_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[backup_enabled]}" IsChecked="{Binding Enabled}" />
+
+                                <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_name]}" />
+                                <ui:TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  SCHEDULE  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="Calendar24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_schedule]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_schedule_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_daily_time]}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="10"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_daily_time_desc]}" />
+
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock FontSize="10" Text="{Binding Source={StaticResource Strings}, Path=[backup_hour]}" />
+                                        <ui:NumberBox
+                                            Maximum="23"
+                                            Minimum="0"
+                                            Value="{Binding ScheduleHour, Mode=TwoWay}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock FontSize="10" Text="{Binding Source={StaticResource Strings}, Path=[backup_minute]}" />
+                                        <ui:NumberBox
+                                            Maximum="59"
+                                            Minimum="0"
+                                            Value="{Binding ScheduleMinute, Mode=TwoWay}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock
+                                    Margin="0,12,0,0"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_run_days]}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="10"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_run_days_desc]}" />
+
+                                <WrapPanel Margin="0,8,0,0">
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_mon]}"
+                                        IsChecked="{Binding DayMon}" />
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_tue]}"
+                                        IsChecked="{Binding DayTue}" />
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_wed]}"
+                                        IsChecked="{Binding DayWed}" />
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_thu]}"
+                                        IsChecked="{Binding DayThu}" />
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_fri]}"
+                                        IsChecked="{Binding DayFri}" />
+                                    <ui:ToggleSwitch
+                                        Margin="0,0,12,0"
+                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_sat]}"
+                                        IsChecked="{Binding DaySat}" />
+                                    <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[backup_day_sun]}" IsChecked="{Binding DaySun}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  SOURCE  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="DocumentFolder24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_source]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_source_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[backup_source_type]}" />
+                                <ComboBox ItemsSource="{Binding DataContext.BackupSourceTypes, RelativeSource={RelativeSource AncestorType=Page}}" SelectedItem="{Binding SourceType}" />
+
+                                <!--  Folder  -->
+                                <StackPanel Visibility="{Binding IsSourceFolder, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_folder]}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:TextBox Text="{Binding SourcePath}" />
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            Padding="12,6"
+                                            Command="{Binding PickSourceCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Folder24}" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  File  -->
+                                <StackPanel Visibility="{Binding IsSourceFile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_file]}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:TextBox Text="{Binding SourcePath}" />
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            Padding="12,6"
+                                            Command="{Binding PickSourceCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Document24}" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  SQL  -->
+                                <StackPanel Visibility="{Binding IsSourceSql, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_sql_connection]}" />
+                                    <ui:TextBox Text="{Binding SqlConnectionString}" TextWrapping="Wrap" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_database]}" />
+                                    <ui:TextBox Text="{Binding SqlDatabase}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  TARGET  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="ArrowDownload24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_target]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_target_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[backup_target_type]}" />
+                                <ComboBox ItemsSource="{Binding DataContext.BackupTargetTypes, RelativeSource={RelativeSource AncestorType=Page}}" SelectedItem="{Binding TargetType}" />
+
+                                <!--  Local  -->
+                                <StackPanel Visibility="{Binding IsTargetLocal, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_local_directory]}" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:TextBox Text="{Binding LocalDirectory}" />
+                                        <ui:Button
+                                            Grid.Column="2"
+                                            Padding="12,6"
+                                            Command="{Binding PickTargetLocalCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Folder24}" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!--  SFTP  -->
+                                <StackPanel Visibility="{Binding IsTargetSftp, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_host]}" />
+                                    <ui:TextBox Text="{Binding SftpHost}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_port]}" />
+                                    <ui:NumberBox
+                                        Maximum="65535"
+                                        Minimum="1"
+                                        Value="{Binding SftpPort}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_user]}" />
+                                    <ui:TextBox Text="{Binding SftpUser}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_password]}" />
+                                    <ui:TextBox Text="{Binding SftpPassword}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_remote_directory]}" />
+                                    <ui:TextBox Text="{Binding SftpRemoteDirectory}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_host_key]}" />
+                                    <ui:TextBox Text="{Binding SftpHostKeyFingerprint}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  COMPRESSION  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="Filter24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_compression]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_compression_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[backup_compression_enable]}" IsChecked="{Binding CompressionCompress}" />
+
+                                <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_compression_level]}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="10"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_compression_hint]}" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    Maximum="9"
+                                    Minimum="1"
+                                    Value="{Binding CompressionLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  ENCRYPTION  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="LockClosed24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_encryption]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_encryption_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[backup_encryption_enable]}" IsChecked="{Binding CryptoEncrypt}" />
+
+                                <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_password]}" />
+                                <ui:TextBox Text="{Binding CryptoPassword}" />
+
+                                <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_iterations]}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="10"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_iterations_hint]}" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    Maximum="1000000"
+                                    Minimum="10000"
+                                    Value="{Binding CryptoIterations}" />
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <!--  RETENTION  -->
+                        <ui:CardExpander Margin="0,12,0,0">
+                            <ui:CardExpander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="16"
+                                        Symbol="Clock24" />
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding Source={StaticResource Strings}, Path=[backup_retention]}" />
+                                        <TextBlock
+                                            FontSize="10"
+                                            Opacity="0.6"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[backup_retention_desc]}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander.Header>
+
+                            <StackPanel>
+                                <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[backup_keep_last]}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="10"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[backup_keep_last_hint]}" />
+                                <ui:NumberBox
+                                    Margin="0,4,0,0"
+                                    Maximum="3650"
+                                    Minimum="1"
+                                    Value="{Binding RetentionKeepLast, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </ui:CardExpander>
+
+                        <TextBlock Margin="0,24,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </ui:Card>
+        </Grid>
+    </Grid>
+</Page>

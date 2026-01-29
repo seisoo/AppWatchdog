@@ -32,7 +32,17 @@
 
             <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+
             <conv:CheckIntervalHintConverter x:Key="CheckIntervalHintConverter" />
+
+            <conv:BoolToLastLabelConverter x:Key="BoolToLastLabelConverter" />
+
+            <conv:BoolToNextLabelConverter x:Key="BoolToNextLabelConverter" />
+
+            <conv:IsRunningToBrushConverter x:Key="IsRunningToBrushConverter" />
 
         </ResourceDictionary>
     </Application.Resources>

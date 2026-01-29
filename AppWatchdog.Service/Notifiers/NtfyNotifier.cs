@@ -4,13 +4,30 @@ using AppWatchdog.Shared;
 
 namespace AppWatchdog.Service.Notifiers;
 
+/// <summary>
+/// Sends notifications using the Ntfy service.
+/// </summary>
 public sealed class NtfyNotifier : NotifierBase<NtfySettings>
 {
+    /// <summary>
+    /// Gets the notifier name.
+    /// </summary>
     public override string Name => "ntfy";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NtfyNotifier"/> class.
+    /// </summary>
+    /// <param name="settings">Ntfy settings.</param>
     public NtfyNotifier(NtfySettings settings)
         : base(settings)
     {
     }
+
+    /// <summary>
+    /// Validates that Ntfy settings are configured.
+    /// </summary>
+    /// <param name="error">Error message if invalid.</param>
+    /// <returns><c>true</c> when configured.</returns>
     public override bool IsConfigured(out string? error)
     {
         if (!Settings.Enabled)
@@ -34,10 +51,21 @@ public sealed class NtfyNotifier : NotifierBase<NtfySettings>
         error = null;
         return true;
     }
+
     private static readonly HttpClient _http = new HttpClient
     {
         Timeout = TimeSpan.FromSeconds(6)
     };
+
+    /// <summary>
+    /// Sends a notification through Ntfy.
+    /// </summary>
+    /// <param name="ntfy">Ntfy settings.</param>
+    /// <param name="title">Message title.</param>
+    /// <param name="message">Message body.</param>
+    /// <param name="tagsCsv">Optional tags.</param>
+    /// <param name="priority">Optional priority.</param>
+    /// <returns>A task representing the send operation.</returns>
     public static async Task SendAsync(NtfySettings ntfy, string title, string message, string? tagsCsv = null, int? priority = null)
     {
         if (ntfy == null || !ntfy.Enabled)

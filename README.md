@@ -1,28 +1,33 @@
-![AppWatchdog Banner](https://repository-images.githubusercontent.com/1137178517/5aff3f7d-291a-4316-a3ab-aa8dcb3bd138)
+﻿![AppWatchdog Banner](https://repository-images.githubusercontent.com/1137178517/5aff3f7d-291a-4316-a3ab-aa8dcb3bd138)
 
-# 🛡️ AppWatchdog
-**Windows Application & Service Watchdog**
+# AppWatchdog
+Windows application and service watchdog.
 
-AppWatchdog is a **Windows watchdog** consisting of a **Windows Service** and a **WPF UI**.  
-It monitors applications, detects failures, and restarts them when needed.
+AppWatchdog is a Windows watchdog made of a Windows Service and a WPF UI. It monitors apps and services, checks endpoints, and can restart targets when needed.
 
 ---
 
-## ✨ Features
-- Process/Service/TCP/HTTP monitoring
-- Automatic restart with retry & backoff
+## Features
+- Process, Windows service, TCP, and HTTP checks
+- Automatic restart with retry and backoff
 - Windows Service + WPF UI
-- Notifications: SMTP · ntfy · Discord · Telegram · Uptime Kuma
+- Notifications: SMTP, ntfy, Discord, Telegram, Uptime Kuma
 - Job-based service (health checks, snapshots, heartbeats)
-- Live status & job overview in UI
-- File-based logging with log viewer
+- Live status and job list in the UI
+- File-based logs with a log viewer
 - Named Pipes IPC (versioned)
 - Encrypted configuration values
 - Multi-language UI
+- Backup and restore plans (local or SFTP targets)
+- Backup scheduling, retention, compression, and encryption
+- Manual backup/restore triggers from the UI
+- Snapshot-based system info (CPU, memory, uptime)
+- Service control from the UI (install/start/stop/reinstall)
+- Single-file, self-contained builds
 
 ---
 
-## 🧩 Architecture
+## Architecture
 ```
 ┌────────────────────────┐
 │ AppWatchdog.UI.WPF     │ ← Configuration, Live Status, Logs
@@ -36,7 +41,8 @@ It monitors applications, detects failures, and restarts them when needed.
 │ - Notifications        │
 └────────────────────────┘
 ```
-## 🖥️ Screenshots
+
+## Screenshots
 
 <table width="100%" border="0">
   <tr>
@@ -73,36 +79,30 @@ It monitors applications, detects failures, and restarts them when needed.
   </tr>
 </table>
 
-
-
-  </tr>
-</table>
-
-
 ---
 
-## 🚀 Installation
+## Installation
 - Windows 10 / 11
 - Administrator rights required
 
 **Steps**
-1. Download release
+1. Download a release
 2. Extract:
    - `AppWatchdog.Service.exe`
    - `AppWatchdog.UI.WPF.exe`
-3. Start UI
-4. Install & start service
+3. Start the UI
+4. Install and start the service
 5. Configure applications
 
 > Builds are self-contained (no .NET runtime needed)
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 Configured via the UI:
 
-- Application path & arguments
-- Enable / disable monitoring
+- Application path and arguments
+- Enable/disable monitoring
 - Check interval
 - Notifications (SMTP, ntfy, Discord, Telegram)
 - Uptime Kuma heartbeat
@@ -112,11 +112,11 @@ Logs are stored locally.
 
 ---
 
-## 🧭 Roadmap
-- ~~Multi-language UI~~ ✔️
-- ~~Encryption~~ ✔️
-- ~~Telegram & Discord notifications~~ ✔️
-- ~~HTTP/TCP checks~~ ✔️
+## Roadmap
+- Multi-language UI
+- Encryption
+- Telegram and Discord notifications
+- HTTP/TCP checks
 - More recovery options
 
 ---
@@ -126,15 +126,15 @@ If you find a bug or have a suggestion, please open an issue.
 
 ---
 
-## 📄 License
+## License
 MIT License  
 *(LICENSE file pending)*
 
 ---
 
-## 📌 Status
+## Status
 Early access, under development.  
 Windows-only.
 
-Thank you for using **AppWatchdog**. Feedback and contributions are welcome.<br>
+Thanks for using AppWatchdog. Feedback and contributions are welcome.<br>
 <img src="https://i.imgur.com/WXDHQi0.gif" />

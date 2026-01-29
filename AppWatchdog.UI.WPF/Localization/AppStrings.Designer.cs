@@ -304,6 +304,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expected HTTP status code.
+        /// </summary>
+        public static string apps_expected_http_status {
+            get {
+                return ResourceManager.GetString("apps_expected_http_status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to General monitoring.
         /// </summary>
         public static string apps_general_monitoring {
@@ -318,6 +327,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string apps_hint_text {
             get {
                 return ResourceManager.GetString("apps_hint_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host.
+        /// </summary>
+        public static string apps_host {
+            get {
+                return ResourceManager.GetString("apps_host", resourceCulture);
             }
         }
         
@@ -430,6 +448,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Port.
+        /// </summary>
+        public static string apps_port {
+            get {
+                return ResourceManager.GetString("apps_port", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reload.
         /// </summary>
         public static string apps_reload {
@@ -502,11 +529,29 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Service name.
+        /// </summary>
+        public static string apps_service_name {
+            get {
+                return ResourceManager.GetString("apps_service_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Monitoring settings.
         /// </summary>
         public static string apps_settings_title {
             get {
                 return ResourceManager.GetString("apps_settings_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target type.
+        /// </summary>
+        public static string apps_target_type {
+            get {
+                return ResourceManager.GetString("apps_target_type", resourceCulture);
             }
         }
         
@@ -520,11 +565,560 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to URL.
+        /// </summary>
+        public static string apps_url {
+            get {
+                return ResourceManager.GetString("apps_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Must be a valid absolute URL (http/https).
+        /// </summary>
+        public static string apps_url_tooltip {
+            get {
+                return ResourceManager.GetString("apps_url_tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Watched applications.
         /// </summary>
         public static string apps_watched_apps_title {
             get {
                 return ResourceManager.GetString("apps_watched_apps_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add.
+        /// </summary>
+        public static string backup_add {
+            get {
+                return ResourceManager.GetString("backup_add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Compression.
+        /// </summary>
+        public static string backup_compression {
+            get {
+                return ResourceManager.GetString("backup_compression", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reduce backup size with compression.
+        /// </summary>
+        public static string backup_compression_desc {
+            get {
+                return ResourceManager.GetString("backup_compression_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable compression.
+        /// </summary>
+        public static string backup_compression_enable {
+            get {
+                return ResourceManager.GetString("backup_compression_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Higher level = better compression but slower.
+        /// </summary>
+        public static string backup_compression_hint {
+            get {
+                return ResourceManager.GetString("backup_compression_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level (1-9).
+        /// </summary>
+        public static string backup_compression_level {
+            get {
+                return ResourceManager.GetString("backup_compression_level", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Daily execution time.
+        /// </summary>
+        public static string backup_daily_time {
+            get {
+                return ResourceManager.GetString("backup_daily_time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set the time when backups will run each day.
+        /// </summary>
+        public static string backup_daily_time_desc {
+            get {
+                return ResourceManager.GetString("backup_daily_time_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database.
+        /// </summary>
+        public static string backup_database {
+            get {
+                return ResourceManager.GetString("backup_database", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fri.
+        /// </summary>
+        public static string backup_day_fri {
+            get {
+                return ResourceManager.GetString("backup_day_fri", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mon.
+        /// </summary>
+        public static string backup_day_mon {
+            get {
+                return ResourceManager.GetString("backup_day_mon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sat.
+        /// </summary>
+        public static string backup_day_sat {
+            get {
+                return ResourceManager.GetString("backup_day_sat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sun.
+        /// </summary>
+        public static string backup_day_sun {
+            get {
+                return ResourceManager.GetString("backup_day_sun", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Thu.
+        /// </summary>
+        public static string backup_day_thu {
+            get {
+                return ResourceManager.GetString("backup_day_thu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tue.
+        /// </summary>
+        public static string backup_day_tue {
+            get {
+                return ResourceManager.GetString("backup_day_tue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wed.
+        /// </summary>
+        public static string backup_day_wed {
+            get {
+                return ResourceManager.GetString("backup_day_wed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Create and manage backup plans for your data.
+        /// </summary>
+        public static string backup_description {
+            get {
+                return ResourceManager.GetString("backup_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        public static string backup_enabled {
+            get {
+                return ResourceManager.GetString("backup_enabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Encryption.
+        /// </summary>
+        public static string backup_encryption {
+            get {
+                return ResourceManager.GetString("backup_encryption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Protect backups with password encryption.
+        /// </summary>
+        public static string backup_encryption_desc {
+            get {
+                return ResourceManager.GetString("backup_encryption_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable encryption.
+        /// </summary>
+        public static string backup_encryption_enable {
+            get {
+                return ResourceManager.GetString("backup_encryption_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File.
+        /// </summary>
+        public static string backup_file {
+            get {
+                return ResourceManager.GetString("backup_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string backup_folder {
+            get {
+                return ResourceManager.GetString("backup_folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to General.
+        /// </summary>
+        public static string backup_general {
+            get {
+                return ResourceManager.GetString("backup_general", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic plan name and backup mode.
+        /// </summary>
+        public static string backup_general_desc {
+            get {
+                return ResourceManager.GetString("backup_general_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host.
+        /// </summary>
+        public static string backup_host {
+            get {
+                return ResourceManager.GetString("backup_host", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host Key Fingerprint.
+        /// </summary>
+        public static string backup_host_key {
+            get {
+                return ResourceManager.GetString("backup_host_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hour (0-23).
+        /// </summary>
+        public static string backup_hour {
+            get {
+                return ResourceManager.GetString("backup_hour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Iterations.
+        /// </summary>
+        public static string backup_iterations {
+            get {
+                return ResourceManager.GetString("backup_iterations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Higher values are more secure but slower (typical: 100,000 - 500,000).
+        /// </summary>
+        public static string backup_iterations_hint {
+            get {
+                return ResourceManager.GetString("backup_iterations_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep last backups.
+        /// </summary>
+        public static string backup_keep_last {
+            get {
+                return ResourceManager.GetString("backup_keep_last", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Number of recent backups to keep (older ones are automatically deleted).
+        /// </summary>
+        public static string backup_keep_last_hint {
+            get {
+                return ResourceManager.GetString("backup_keep_last_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local Directory.
+        /// </summary>
+        public static string backup_local_directory {
+            get {
+                return ResourceManager.GetString("backup_local_directory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minute (0-59).
+        /// </summary>
+        public static string backup_minute {
+            get {
+                return ResourceManager.GetString("backup_minute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mode.
+        /// </summary>
+        public static string backup_mode {
+            get {
+                return ResourceManager.GetString("backup_mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string backup_name {
+            get {
+                return ResourceManager.GetString("backup_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        public static string backup_password {
+            get {
+                return ResourceManager.GetString("backup_password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a plan to edit.
+        /// </summary>
+        public static string backup_plans_select {
+            get {
+                return ResourceManager.GetString("backup_plans_select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup Plans.
+        /// </summary>
+        public static string backup_plans_title {
+            get {
+                return ResourceManager.GetString("backup_plans_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Port.
+        /// </summary>
+        public static string backup_port {
+            get {
+                return ResourceManager.GetString("backup_port", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload.
+        /// </summary>
+        public static string backup_reload {
+            get {
+                return ResourceManager.GetString("backup_reload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remote Directory.
+        /// </summary>
+        public static string backup_remote_directory {
+            get {
+                return ResourceManager.GetString("backup_remote_directory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove.
+        /// </summary>
+        public static string backup_remove {
+            get {
+                return ResourceManager.GetString("backup_remove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Retention.
+        /// </summary>
+        public static string backup_retention {
+            get {
+                return ResourceManager.GetString("backup_retention", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Automatically delete old backups.
+        /// </summary>
+        public static string backup_retention_desc {
+            get {
+                return ResourceManager.GetString("backup_retention_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run on days.
+        /// </summary>
+        public static string backup_run_days {
+            get {
+                return ResourceManager.GetString("backup_run_days", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select which days of the week the backup should run.
+        /// </summary>
+        public static string backup_run_days_desc {
+            get {
+                return ResourceManager.GetString("backup_run_days_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run Now.
+        /// </summary>
+        public static string backup_run_now {
+            get {
+                return ResourceManager.GetString("backup_run_now", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        public static string backup_save {
+            get {
+                return ResourceManager.GetString("backup_save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schedule.
+        /// </summary>
+        public static string backup_schedule {
+            get {
+                return ResourceManager.GetString("backup_schedule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Define when and how often backups run.
+        /// </summary>
+        public static string backup_schedule_desc {
+            get {
+                return ResourceManager.GetString("backup_schedule_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source.
+        /// </summary>
+        public static string backup_source {
+            get {
+                return ResourceManager.GetString("backup_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to What to back up: folder, file, or SQL database.
+        /// </summary>
+        public static string backup_source_desc {
+            get {
+                return ResourceManager.GetString("backup_source_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source Type.
+        /// </summary>
+        public static string backup_source_type {
+            get {
+                return ResourceManager.GetString("backup_source_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SQL Connection String.
+        /// </summary>
+        public static string backup_sql_connection {
+            get {
+                return ResourceManager.GetString("backup_sql_connection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target.
+        /// </summary>
+        public static string backup_target {
+            get {
+                return ResourceManager.GetString("backup_target", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Where to store backups: local or SFTP.
+        /// </summary>
+        public static string backup_target_desc {
+            get {
+                return ResourceManager.GetString("backup_target_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target Type.
+        /// </summary>
+        public static string backup_target_type {
+            get {
+                return ResourceManager.GetString("backup_target_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User.
+        /// </summary>
+        public static string backup_user {
+            get {
+                return ResourceManager.GetString("backup_user", resourceCulture);
             }
         }
         
@@ -790,6 +1384,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        public static string jobs_details {
+            get {
+                return ResourceManager.GetString("jobs_details", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to From:.
+        /// </summary>
+        public static string jobs_from_label {
+            get {
+                return ResourceManager.GetString("jobs_from_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Here you can see all currently running jobs in the service..
         /// </summary>
         public static string jobs_live_description {
@@ -804,6 +1416,60 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string jobs_live_title {
             get {
                 return ResourceManager.GetString("jobs_live_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plan:.
+        /// </summary>
+        public static string jobs_plan_label {
+            get {
+                return ResourceManager.GetString("jobs_plan_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rebuild jobs.
+        /// </summary>
+        public static string jobs_rebuild {
+            get {
+                return ResourceManager.GetString("jobs_rebuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source:.
+        /// </summary>
+        public static string jobs_source_label {
+            get {
+                return ResourceManager.GetString("jobs_source_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stats.
+        /// </summary>
+        public static string jobs_stats {
+            get {
+                return ResourceManager.GetString("jobs_stats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string jobs_status {
+            get {
+                return ResourceManager.GetString("jobs_status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target:.
+        /// </summary>
+        public static string jobs_target_label {
+            get {
+                return ResourceManager.GetString("jobs_target_label", resourceCulture);
             }
         }
         
@@ -831,6 +1497,42 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string logs_autorefresh {
             get {
                 return ResourceManager.GetString("logs_autorefresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to load log.
+        /// </summary>
+        public static string logs_available_hint {
+            get {
+                return ResourceManager.GetString("logs_available_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Available logs.
+        /// </summary>
+        public static string logs_available_title {
+            get {
+                return ResourceManager.GetString("logs_available_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Log content.
+        /// </summary>
+        public static string logs_content_title {
+            get {
+                return ResourceManager.GetString("logs_content_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to View and search service logs in real-time.
+        /// </summary>
+        public static string logs_description {
+            get {
+                return ResourceManager.GetString("logs_description", resourceCulture);
             }
         }
         
@@ -898,6 +1600,24 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Refresh logs.
+        /// </summary>
+        public static string logs_refresh {
+            get {
+                return ResourceManager.GetString("logs_refresh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find text in logs.
+        /// </summary>
+        public static string logs_search_hint {
+            get {
+                return ResourceManager.GetString("logs_search_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} matches.
         /// </summary>
         public static string logs_search_matches {
@@ -912,6 +1632,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string logs_search_placeholder {
             get {
                 return ResourceManager.GetString("logs_search_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search logs.
+        /// </summary>
+        public static string logs_search_title {
+            get {
+                return ResourceManager.GetString("logs_search_title", resourceCulture);
             }
         }
         
@@ -1294,6 +2023,159 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choose a backup artifact to restore.
+        /// </summary>
+        public static string restore_artifacts_hint {
+            get {
+                return ResourceManager.GetString("restore_artifacts_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup artifacts.
+        /// </summary>
+        public static string restore_artifacts_title {
+            get {
+                return ResourceManager.GetString("restore_artifacts_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore blocked.
+        /// </summary>
+        public static string restore_blocked_title {
+            get {
+                return ResourceManager.GetString("restore_blocked_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Browse folder.
+        /// </summary>
+        public static string restore_browse_folder {
+            get {
+                return ResourceManager.GetString("restore_browse_folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration.
+        /// </summary>
+        public static string restore_configuration_title {
+            get {
+                return ResourceManager.GetString("restore_configuration_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recover your data from backup artifacts.
+        /// </summary>
+        public static string restore_description {
+            get {
+                return ResourceManager.GetString("restore_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore details.
+        /// </summary>
+        public static string restore_details_title {
+            get {
+                return ResourceManager.GetString("restore_details_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select which files to restore.
+        /// </summary>
+        public static string restore_files_hint {
+            get {
+                return ResourceManager.GetString("restore_files_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files to restore.
+        /// </summary>
+        public static string restore_files_title {
+            get {
+                return ResourceManager.GetString("restore_files_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore location.
+        /// </summary>
+        public static string restore_location_title {
+            get {
+                return ResourceManager.GetString("restore_location_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Overwrite existing files.
+        /// </summary>
+        public static string restore_overwrite_toggle {
+            get {
+                return ResourceManager.GetString("restore_overwrite_toggle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a plan to restore from.
+        /// </summary>
+        public static string restore_plans_hint {
+            get {
+                return ResourceManager.GetString("restore_plans_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload plans.
+        /// </summary>
+        public static string restore_reload_plans {
+            get {
+                return ResourceManager.GetString("restore_reload_plans", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select all.
+        /// </summary>
+        public static string restore_select_all {
+            get {
+                return ResourceManager.GetString("restore_select_all", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select none.
+        /// </summary>
+        public static string restore_select_none {
+            get {
+                return ResourceManager.GetString("restore_select_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start restore.
+        /// </summary>
+        public static string restore_start {
+            get {
+                return ResourceManager.GetString("restore_start", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore backup.
+        /// </summary>
+        public static string restore_title {
+            get {
+                return ResourceManager.GetString("restore_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Save.
         /// </summary>
         public static string save {
@@ -1362,6 +2244,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string service_button_install {
             get {
                 return ResourceManager.GetString("service_button_install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reinstall.
+        /// </summary>
+        public static string service_button_reinstall {
+            get {
+                return ResourceManager.GetString("service_button_reinstall", resourceCulture);
             }
         }
         
