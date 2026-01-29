@@ -48,11 +48,21 @@ AppWatchdog is a Windows watchdog made of a Windows Service and a WPF UI. It mon
   <tr>
     <td align="center" width="50%">
       <b>Service</b><br>---
-      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/main/AppWatchdog.UI.WPF/README.md.Images/md_service.png" width="100%">
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png="100%">
     </td>
     <td align="center" width="50%">
       <b>Applications</b><br>---
       <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_apps.png" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <b>Backups</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_backups.png" width="100%">
+    </td>
+    <td align="center" width="50%">
+      <b>Restore</b><br>---
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_restore.png" width="100%">
     </td>
   </tr>
   <tr>
