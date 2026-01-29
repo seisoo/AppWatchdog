@@ -48,7 +48,7 @@ AppWatchdog is a Windows watchdog made of a Windows Service and a WPF UI. It mon
   <tr>
     <td align="center" width="50%">
       <b>Service</b><br>---
-      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png="100%">
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_service.png" width="100%">
     </td>
     <td align="center" width="50%">
       <b>Applications</b><br>---
