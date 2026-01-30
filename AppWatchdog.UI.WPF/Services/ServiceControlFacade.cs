@@ -8,10 +8,35 @@ namespace AppWatchdog.UI.WPF.Services;
 public sealed class ServiceControlFacade
 {
     private readonly string _serviceName;
+    private const string InstallDirectory = @"C:\AppWatchdog\Service";
+    private const string ServiceExeName = "AppWatchdog.Service.exe";
 
     public ServiceControlFacade(string serviceName)
     {
         _serviceName = serviceName;
+    }
+
+    public string GetServiceExecutablePath()
+        => Path.Combine(InstallDirectory, ServiceExeName);
+
+    public string GetInstallDirectory()
+        => InstallDirectory;
+
+    public string GetServiceVersion()
+    {
+        try
+        {
+            var exe = GetServiceExecutablePath();
+            if (!File.Exists(exe))
+                return "-";
+
+            var info = FileVersionInfo.GetVersionInfo(exe);
+            return string.IsNullOrWhiteSpace(info.FileVersion) ? "-" : info.FileVersion;
+        }
+        catch
+        {
+            return "-";
+        }
     }
 
     public string GetServiceStatusText()
@@ -118,6 +143,36 @@ public sealed class ServiceControlFacade
         {
             return false;
         }
+    }
+
+    public bool IsServiceInstalled()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "sc.exe",
+                Arguments = $"query {_serviceName}",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var p = Process.Start(psi)!;
+            var output = p.StandardOutput.ReadToEnd();
+            return !output.Contains("FAILED 1060", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public void RestartService()
+    {
+        RunElevated($"stop {_serviceName}");
+        Thread.Sleep(1000);
+        RunElevated($"start {_serviceName}");
     }
 
 }

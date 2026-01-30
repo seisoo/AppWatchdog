@@ -2,9 +2,14 @@
     x:Class="AppWatchdog.UI.WPF.Views.Pages.ServicePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:AppWatchdog.UI.WPF.Converters"
     xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     MinWidth="800">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
 
     <Grid Margin="0,16,0,0" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
@@ -17,61 +22,130 @@
         <ui:Card
             Grid.Row="1"
             Margin="16,0,16,0"
-            Padding="20">
-            <StackPanel>
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <ui:SymbolIcon
-                        Margin="0,0,12,0"
-                        FontSize="32"
-                        Symbol="Settings24" />
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock
-                            FontSize="24"
-                            FontWeight="Bold"
-                            Text="{Binding Source={StaticResource Strings}, Path=[service_title]}" />
-                        <TextBlock
-                            Margin="0,4,0,0"
-                            FontSize="12"
-                            Opacity="0.6"
-                            Text="{Binding Source={StaticResource Strings}, Path=[service_description]}" />
+            Padding="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="4" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border
+                    Grid.Row="0"
+                    Background="{DynamicResource AccentFillColorDefaultBrush}" />
+
+                <StackPanel Grid.Row="1" Margin="20,16,20,0">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <ui:SymbolIcon
+                            Margin="0,0,12,0"
+                            FontSize="32"
+                            Symbol="Settings24" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock
+                                FontSize="24"
+                                FontWeight="Bold"
+                                Text="{Binding Source={StaticResource Strings}, Path=[service_title]}" />
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                FontSize="12"
+                                Opacity="0.6"
+                                Text="{Binding Source={StaticResource Strings}, Path=[service_description]}" />
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
 
-                <!--  ACTION BUTTONS  -->
-                <WrapPanel Margin="0,16,0,0">
-                    <ui:Button
-                        Margin="0,0,8,0"
-                        Appearance="Success"
-                        Command="{Binding StartServiceCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[service_button_start]}"
-                        Icon="{ui:SymbolIcon Symbol=Play24}" />
+                <StackPanel Grid.Row="3" Margin="20,0,20,16">
+                    <StackPanel Margin="0,12,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border
+                            Padding="10,4"
+                            Background="{Binding ServiceStateBrush}"
+                            CornerRadius="12">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon
+                                    FontSize="14"
+                                    Foreground="White"
+                                    Symbol="{Binding ServiceStateSymbol}" />
+                                <TextBlock
+                                    Margin="6,0,0,0"
+                                    Foreground="White"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding ServiceStateChipText}" />
+                            </StackPanel>
+                        </Border>
 
-                    <ui:Button
-                        Margin="0,0,8,0"
-                        Appearance="Danger"
-                        Command="{Binding StopServiceCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[service_button_stop]}"
-                        Icon="{ui:SymbolIcon Symbol=Stop24}" />
+                        <TextBlock
+                            Margin="12,0,0,0"
+                            Opacity="0.6"
+                            Text="Last action:" />
+                        <TextBlock
+                            Margin="6,0,0,0"
+                            Text="{Binding LastActionText}" />
+                    </StackPanel>
 
-                    <ui:Button
-                        Margin="0,0,8,0"
-                        Appearance="Caution"
-                        Command="{Binding ReinstallServiceCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[service_button_reinstall]}"
-                        Icon="{ui:SymbolIcon Symbol=ArrowSync24}" />
-                </WrapPanel>
-            </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Opacity="0.6"
+                        Text="{Binding StatusLine}"
+                        TextWrapping="Wrap" />
+
+                    <UniformGrid Columns="2" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Opacity="0.6" Text="Version" />
+                            <TextBlock Text="{Binding ServiceVersionText}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Opacity="0.6" Text="Account" />
+                            <TextBlock Text="{Binding ServiceAccountText}" />
+                        </StackPanel>
+                    </UniformGrid>
+
+                    <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Left">
+                        <ui:Button
+                            Margin="0,0,8,0"
+                            Appearance="{Binding PrimaryActionAppearance}"
+                            Command="{Binding PrimaryActionCommand}"
+                            Content="{Binding PrimaryActionText}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="{Binding PrimaryActionSymbol}" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+
+                        <Menu>
+                            <MenuItem Header="More">
+                                <MenuItem Header="Restart" Command="{Binding RestartServiceCommand}" />
+                                <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[reinstall]}" Command="{Binding ReinstallServiceCommand}" />
+                                <Separator />
+                                <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[logs_open_folder]}" Command="{Binding OpenLogsFolderCommand}" />
+                                <MenuItem Header="Service folder" Command="{Binding OpenServiceFolderCommand}" />
+                            </MenuItem>
+                        </Menu>
+                    </WrapPanel>
+
+                    <StackPanel
+                        Margin="0,10,0,0"
+                        Orientation="Horizontal"
+                        Visibility="{Binding IsActionRunning, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ui:ProgressRing
+                            Width="18"
+                            Height="18"
+                            IsIndeterminate="True" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Text="{Binding ActionStatusText}" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
         </ui:Card>
 
         <!--  MAIN CONTENT  -->
         <Grid Grid.Row="2" Margin="16,16,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--  LEFT COLUMN: STATUS & SYSTEM INFO  -->
+            <!--  LEFT COLUMN: STATUS + SYSTEM INFO  -->
             <ScrollViewer
                 Grid.Column="0"
                 HorizontalScrollBarVisibility="Disabled"
@@ -79,7 +153,7 @@
                 CanContentScroll="False">
                 <StackPanel>
                     <!--  STATUS SECTION  -->
-                    <ui:Card Margin="0,0,0,16" Padding="16">
+                    <ui:Card Margin="0,0,12,16" Padding="20">
                         <Grid VerticalAlignment="Stretch">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -159,7 +233,7 @@
                     </ui:Card>
 
                     <!--  SYSTEM INFO SECTION  -->
-                    <ui:Card Padding="16">
+                    <ui:Card Margin="0,0,12,0" Padding="20">
                         <Grid VerticalAlignment="Stretch">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -274,102 +348,156 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!--  RIGHT COLUMN: ACTIVE APPS  -->
-            <ui:Card
-                Grid.Column="2"
-                Padding="16"
-                VerticalAlignment="Top">
+            <!--  RIGHT COLUMN: DIAGNOSTICS + ACTIVE APPS  -->
+            <ScrollViewer
+                Grid.Column="1"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto"
+                CanContentScroll="False">
+                <StackPanel>
+                    <ui:Card Margin="12,0,0,16" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                <Grid VerticalAlignment="Stretch">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="18"
+                                        Symbol="PlugDisconnected24" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="Diagnostics" />
+                                </StackPanel>
+                                <Separator Margin="0,8,0,12" />
+                            </StackPanel>
 
-                    <!--  HEADER  -->
-                    <StackPanel Grid.Row="0">
-                        <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
-                            <ui:SymbolIcon
-                                Margin="0,0,8,0"
-                                FontSize="18"
-                                Symbol="Checkmark24" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Text="{Binding Source={StaticResource Strings}, Path=[service_active_apps_title]}" />
-                        </StackPanel>
-                        <Separator Margin="0,8" />
-                    </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Opacity="0.6" Text="Pipe status" />
+                                <TextBlock Text="{Binding BackendStatusText}" TextWrapping="Wrap" />
 
-                    <!--  APPS LIST  -->
-                    <ScrollViewer
-                        Grid.Row="1"
-                        HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto"
-                        CanContentScroll="False">
-                        <StackPanel VerticalAlignment="Top">
-                            <TextBlock
-                                Margin="0,0,0,16"
-                                Opacity="0.6"
-                                Text="{Binding Source={StaticResource Strings}, Path=[service_no_active_apps]}"
-                                TextWrapping="Wrap"
-                                Visibility="{Binding HasNoEnabledApps, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <TextBlock Margin="0,12,0,0" Opacity="0.6" Text="Protocol" />
+                                <TextBlock Text="{Binding ClientProtocolVersion}" />
+                                <TextBlock Text="{Binding ServiceProtocolVersion}" />
 
-                            <ItemsControl ItemsSource="{Binding EnabledApps}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border
-                                            Margin="0,0,0,8"
-                                            Padding="12,8"
-                                            Background="{DynamicResource CardBackgroundBrush}"
-                                            BorderBrush="{DynamicResource CardBorderBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="6">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Margin="0,12,0,0"
+                                    Foreground="#f97316"
+                                    Text="{Binding ProtocolMismatchText}"
+                                    TextWrapping="Wrap"
+                                    Visibility="{Binding HasProtocolMismatch, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                                                <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                                                    <TextBlock
-                                                        Margin="0,2,0,0"
-                                                        FontSize="11"
-                                                        Opacity="0.6"
-                                                        Text="{Binding ExePath}"
-                                                        TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
+                                <ui:Button
+                                    Margin="0,12,0,0"
+                                    Command="{Binding CheckServiceHealthCommand}"
+                                    Content="Check service health"
+                                    Icon="{ui:SymbolIcon Symbol=Pulse24}" />
+                            </StackPanel>
+                        </Grid>
+                    </ui:Card>
 
+                    <ui:Card
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        Padding="20"
+                        VerticalAlignment="Top">
+                        <Grid VerticalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--  HEADER  -->
+                            <StackPanel Grid.Row="0">
+                                <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Margin="0,0,8,0"
+                                        FontSize="18"
+                                        Symbol="Checkmark24" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Source={StaticResource Strings}, Path=[service_active_apps_title]}" />
+                                </StackPanel>
+                                <Separator Margin="0,8" />
+                            </StackPanel>
+
+                            <!--  APPS LIST  -->
+                            <ScrollViewer
+                                Grid.Row="1"
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto"
+                                CanContentScroll="False">
+                                <StackPanel VerticalAlignment="Top">
+                                    <TextBlock
+                                        Margin="0,0,0,16"
+                                        Opacity="0.6"
+                                        Text="{Binding Source={StaticResource Strings}, Path=[service_no_active_apps]}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{Binding HasNoEnabledApps, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                    <ItemsControl ItemsSource="{Binding EnabledApps}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
                                                 <Border
-                                                    Grid.Column="1"
-                                                    Height="24"
-                                                    Margin="12,0,0,0"
-                                                    Padding="8,4"
-                                                    Background="{Binding IsRunning, Converter={StaticResource IsRunningToBrushConverter}}"
-                                                    CornerRadius="4">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        FontSize="11"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="White"
-                                                        Text="{Binding IsRunning, StringFormat='{}{0}'}" />
+                                                    Margin="0,0,0,8"
+                                                    Padding="12,8"
+                                                    Background="{DynamicResource CardBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                                            <TextBlock
+                                                                Margin="0,2,0,0"
+                                                                FontSize="11"
+                                                                Opacity="0.6"
+                                                                Text="{Binding ExePath}"
+                                                                TextTrimming="CharacterEllipsis" />
+                                                        </StackPanel>
+
+                                                        <Border
+                                                            Grid.Column="1"
+                                                            Height="24"
+                                                            Margin="12,0,0,0"
+                                                            Padding="8,4"
+                                                            Background="{Binding IsRunning, Converter={StaticResource IsRunningToBrushConverter}}"
+                                                            CornerRadius="4">
+                                                            <TextBlock
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="White"
+                                                                Text="{Binding IsRunning, StringFormat='{}{0}'}" />
+                                                        </Border>
+                                                    </Grid>
                                                 </Border>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </ui:Card>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </ui:Card>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Page>
