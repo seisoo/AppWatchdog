@@ -5,7 +5,7 @@ namespace AppWatchdog.Shared;
 
 public static class PipeProtocol
 {
-    public const int ProtocolVersion = 23;
+    public const int ProtocolVersion = 24;
 
     public const string PipeName = "AppWatchdogPipe";
 

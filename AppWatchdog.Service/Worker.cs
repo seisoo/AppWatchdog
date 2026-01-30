@@ -164,7 +164,7 @@ public sealed class Worker : BackgroundService
             if (string.IsNullOrWhiteSpace(b.Id))
                 continue;
 
-            var job = new BackupJob(getConfig: () => _cfg, planId: b.Id);
+            var job = new BackupJob(getConfig: () => _cfg, dispatcher: _dispatcher, planId: b.Id);
             _scheduler.AddOrUpdate(job);
             desiredIds.Add(job.Id);
         }
@@ -198,7 +198,9 @@ public sealed class Worker : BackgroundService
     WatchedApp app,
     IHealthCheck health)
     {
-        IRecoveryStrategy recovery = app.Type switch
+        var supportsRestart = app.Type is WatchTargetType.Executable or WatchTargetType.WindowsService;
+
+        IRecoveryStrategy recovery = (!supportsRestart || !app.RestartEnabled) ? new NoRecoveryStrategy() : app.Type switch
         {
             WatchTargetType.Executable =>
                 new ProcessRestartStrategy(),

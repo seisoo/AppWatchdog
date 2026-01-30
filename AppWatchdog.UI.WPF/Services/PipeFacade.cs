@@ -49,17 +49,17 @@ public sealed class PipeFacade
     public LogPathResponse? GetLogPath()
         => Execute(PipeClient.GetLogPath);
 
-    public void TestSmtp()
-        => Execute(PipeClient.TestSmtp);
+    public string? TestSmtp()
+        => ExecuteWithError(PipeClient.TestSmtp);
 
-    public void TestNtfy()
-        => Execute(PipeClient.TestNtfy);
+    public string? TestNtfy()
+        => ExecuteWithError(PipeClient.TestNtfy);
 
-    public void TestDiscord()
-        => Execute(PipeClient.TestDiscord);
+    public string? TestDiscord()
+        => ExecuteWithError(PipeClient.TestDiscord);
 
-    public void TestTelegram()
-        => Execute(PipeClient.TestTelegram);
+    public string? TestTelegram()
+        => ExecuteWithError(PipeClient.TestTelegram);
 
     public List<JobSnapshot> GetJobs()
     => Execute(() => PipeClient.GetJobs()?.Jobs ?? new());
@@ -150,6 +150,31 @@ public sealed class PipeFacade
         catch (Exception ex)
         {
             HandleException(ex);
+        }
+    }
+
+    private string? ExecuteWithError(Action action)
+    {
+        try
+        {
+            action();
+            _backend.SetReady(AppStrings.service_connected);
+            return null;
+        }
+        catch (TimeoutException ex)
+        {
+            _backend.SetOffline(ex.Message);
+            return AppStrings.error_service_timeout_text;
+        }
+        catch (IOException ex)
+        {
+            _backend.SetOffline(ex.Message);
+            return AppStrings.error_service_notavailable_text;
+        }
+        catch (Exception ex)
+        {
+            _backend.SetOffline(ex.Message);
+            return ex.Message;
         }
     }
 

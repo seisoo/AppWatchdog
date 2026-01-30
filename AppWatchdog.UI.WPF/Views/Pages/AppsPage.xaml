@@ -178,6 +178,26 @@
                                 </StackPanel>
 
 
+                                <!--  RESTART PLAN (Executable / Service)  -->
+                                <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
+                                    <StackPanel.Style>
+                                        <Style BasedOn="{StaticResource TargetBlockStyle}" TargetType="{x:Type StackPanel}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.Executable}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Type}" Value="{x:Static sharedMon:WatchTargetType.WindowsService}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+
+                                    <ui:ToggleSwitch
+                                        Content="{Binding Source={StaticResource Strings}, Path=[apps_restart_enable], Mode=OneWay}"
+                                        IsChecked="{Binding RestartEnabled}" />
+                                </StackPanel>
+
                                 <!--  Target Type  -->
                                 <StackPanel Margin="0,12,0,0" IsEnabled="{Binding Enabled}">
                                     <TextBlock Text="{Binding Source={StaticResource Strings}, Path=[apps_target_type], Mode=OneWay}" />

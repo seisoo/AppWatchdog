@@ -4,6 +4,7 @@ using AppWatchdog.Service.Notifiers;
 using AppWatchdog.Shared;
 using AppWatchdog.Shared.Monitoring;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace AppWatchdog.Service;
@@ -46,6 +47,15 @@ public sealed class NotificationDispatcher
         _ = Task.Run(() => DispatchInternalAsync(ctx));
     }
 
+    /// <summary>
+    /// Queues a backup notification dispatch task.
+    /// </summary>
+    /// <param name="ctx">Backup notification context.</param>
+    public void DispatchBackup(BackupNotificationContext ctx)
+    {
+        _ = Task.Run(() => DispatchBackupInternalAsync(ctx));
+    }
+
     // =====================================================
     // CORE
     // =====================================================
@@ -60,26 +70,46 @@ public sealed class NotificationDispatcher
         {
             var strings = new NotificationStringProvider(_cfg.CultureName);
 
-            string title = $"AppWatchdog – {ctx.App.Name}";
+            var template = ResolveTemplate(ctx.Type);
+            var placeholders = BuildPlaceholders(ctx, strings);
 
-            string summaryText = ctx.Type switch
+            var defaultTitle = $"AppWatchdog – {ctx.App.Name}";
+            var defaultSummary = ctx.Type switch
             {
                 AppNotificationType.Up => strings.SummaryUp,
                 AppNotificationType.Restart => strings.SummaryRestart,
                 _ => strings.SummaryDown
             };
 
-            string summaryColor = ctx.Type switch
+            var defaultColor = ctx.Type switch
             {
                 AppNotificationType.Up => "#15803d",
                 AppNotificationType.Restart => "#2563eb",
                 _ => "#b91c1c"
             };
 
-            string detailsText = BuildDetailsText(ctx, strings);
-            string plainText = BuildPlainText(ctx, strings);
+            string title = ApplyTemplate(template.Title, placeholders);
+            if (string.IsNullOrWhiteSpace(title))
+                title = defaultTitle;
+
+            string summaryText = ApplyTemplate(template.Summary, placeholders);
+            if (string.IsNullOrWhiteSpace(summaryText))
+                summaryText = defaultSummary;
+
+            string summaryColor = NormalizeColor(template.Color, defaultColor);
+
+            string templateBody = ApplyTemplate(template.Body, placeholders);
+
+            string detailsText = string.IsNullOrWhiteSpace(templateBody)
+                ? BuildDetailsText(ctx, strings)
+                : templateBody;
+
+            string plainText = string.IsNullOrWhiteSpace(templateBody)
+                ? BuildPlainText(ctx, strings)
+                : templateBody;
+
             string html = BuildHtmlMail(
-                ctx.App.Name,
+                title,
                 summaryText,
                 summaryColor,
                 detailsText,
@@ -87,7 +117,7 @@ public sealed class NotificationDispatcher
 
             DispatchMail(ctx, title, html);
             await DispatchNtfyAsync(ctx, title, plainText);
-            await DispatchDiscordAsync(ctx, title, plainText);
+            await DispatchDiscordAsync(ctx, title, plainText, summaryColor);
             await DispatchTelegramAsync(ctx, plainText);
         }
         catch (Exception ex)
@@ -96,6 +126,198 @@ public sealed class NotificationDispatcher
                 "ERROR",
                 $"NotificationDispatcher failed for '{ctx.App.Name}': {ex}");
         }
+    }
+
+    /// <summary>
+    /// Builds and sends backup notifications across channels.
+    /// </summary>
+    /// <param name="ctx">Backup notification context.</param>
+    /// <returns>A task representing the dispatch work.</returns>
+    private async Task DispatchBackupInternalAsync(BackupNotificationContext ctx)
+    {
+        try
+        {
+            var strings = new NotificationStringProvider(_cfg.CultureName);
+
+            var (title, summary, color) = BuildBackupSummary(ctx);
+            var detailsText = BuildBackupDetailsText(ctx);
+            var plainText = BuildBackupPlainText(ctx);
+
+            var html = BuildHtmlMail(
+                title,
+                summary,
+                color,
+                detailsText,
+                strings);
+
+            var mappedType = ctx.Type == BackupNotificationType.Failed
+                ? AppNotificationType.Down
+                : AppNotificationType.Up;
+
+            var dispatchCtx = new NotificationContext
+            {
+                Type = mappedType,
+                App = new WatchedApp { Name = ctx.Plan.Name },
+                TestOnlyChannel = ctx.TestOnlyChannel
+            };
+
+            DispatchMail(dispatchCtx, title, html);
+            await DispatchNtfyAsync(dispatchCtx, title, plainText);
+            await DispatchDiscordAsync(dispatchCtx, title, plainText, color);
+            await DispatchTelegramAsync(dispatchCtx, plainText);
+        }
+        catch (Exception ex)
+        {
+            FileLogStore.WriteLine(
+                "ERROR",
+                $"Backup notification failed for '{ctx.Plan.Name}': {ex}");
+        }
+    }
+
+    private NotificationTemplate ResolveTemplate(AppNotificationType type)
+    {
+        var templates = _cfg.NotificationTemplates ?? NotificationTemplateSet.CreateDefault();
+
+        return type switch
+        {
+            AppNotificationType.Up => templates.Up ?? NotificationTemplate.CreateDefaultUp(),
+            AppNotificationType.Restart => templates.Restart ?? NotificationTemplate.CreateDefaultRestart(),
+            _ => templates.Down ?? NotificationTemplate.CreateDefaultDown()
+        };
+    }
+
+    private static Dictionary<string, string> BuildPlaceholders(
+        NotificationContext ctx,
+        NotificationStringProvider strings)
+    {
+        var summary = ctx.Type switch
+        {
+            AppNotificationType.Up => strings.SummaryUp,
+            AppNotificationType.Restart => strings.SummaryRestart,
+            _ => strings.SummaryDown
+        };
+
+        var status = ctx.Type switch
+        {
+            AppNotificationType.Up => "UP",
+            AppNotificationType.Restart => "RESTART",
+            _ => "DOWN"
+        };
+
+        var error = ctx.Status?.LastStartError ?? "";
+        var ping = ctx.Status?.PingMs.HasValue == true
+            ? $"{ctx.Status.PingMs.Value} ms"
+            : ctx.Status?.IsRunning == false ? "timeout" : "";
+
+        var target = BuildTargetLabel(ctx.App, strings);
+
+        return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["$jobname"] = ctx.App.Name,
+            ["$summary"] = summary,
+            ["$status"] = status,
+            ["$target"] = target,
+            ["$error"] = error,
+            ["$ping"] = ping,
+            ["$machine"] = Environment.MachineName,
+            ["$time"] = DateTimeOffset.Now.ToString(CultureInfo.InvariantCulture)
+        };
+    }
+
+    private static (string title, string summary, string color) BuildBackupSummary(BackupNotificationContext ctx)
+    {
+        var title = $"AppWatchdog – Backup {ctx.Plan.Name}";
+        return ctx.Type switch
+        {
+            BackupNotificationType.Started => (title, "Backup started", "#2563eb"),
+            BackupNotificationType.Completed => (title, "Backup completed", "#15803d"),
+            _ => (title, "Backup failed", "#b91c1c")
+        };
+    }
+
+    private static string BuildBackupDetailsText(BackupNotificationContext ctx)
+    {
+        var source = ctx.Plan.Source.Type switch
+        {
+            BackupSourceType.MsSql => ctx.Plan.Source.SqlDatabase,
+            _ => ctx.Plan.Source.Path
+        };
+
+        var target = ctx.Plan.Target.Type switch
+        {
+            BackupTargetType.Sftp => $"{ctx.Plan.Target.SftpHost}:{ctx.Plan.Target.SftpRemoteDirectory}",
+            _ => ctx.Plan.Target.LocalDirectory
+        };
+
+        var start = ctx.StartedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+        var finish = ctx.FinishedUtc?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? "-";
+        var size = ctx.SizeBytes.HasValue
+            ? $"{ctx.SizeBytes.Value / (1024d * 1024d):0.##} MB"
+            : "-";
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Plan: {ctx.Plan.Name}");
+        sb.AppendLine($"Source: {source}");
+        sb.AppendLine($"Target: {target}");
+        sb.AppendLine($"Start: {start}");
+
+        if (ctx.Type != BackupNotificationType.Started)
+            sb.AppendLine($"Finish: {finish}");
+
+        if (ctx.Type == BackupNotificationType.Completed)
+            sb.AppendLine($"Size: {size}");
+
+        if (ctx.Type == BackupNotificationType.Failed)
+            sb.AppendLine($"Error: {ctx.Error ?? "Unknown error"}");
+
+        return sb.ToString();
+    }
+
+    private static string BuildBackupPlainText(BackupNotificationContext ctx)
+        => BuildBackupDetailsText(ctx);
+
+    private static string ApplyTemplate(string template, Dictionary<string, string> values)
+    {
+        if (string.IsNullOrWhiteSpace(template))
+            return "";
+
+        var text = template;
+        foreach (var kvp in values)
+            text = text.Replace(kvp.Key, kvp.Value ?? "", StringComparison.OrdinalIgnoreCase);
+
+        return text;
+    }
+
+    private static string NormalizeColor(string? color, string fallback)
+    {
+        var candidate = string.IsNullOrWhiteSpace(color) ? fallback : color.Trim();
+        if (!candidate.StartsWith('#'))
+            candidate = "#" + candidate;
+
+        return IsHexColor(candidate) ? candidate : fallback;
+    }
+
+    private static bool IsHexColor(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var hex = value.StartsWith('#') ? value[1..] : value;
+        if (hex.Length != 6)
+            return false;
+
+        return hex.All(c => Uri.IsHexDigit(c));
+    }
+
+    private static int? ToDiscordColor(string hex)
+    {
+        if (!IsHexColor(hex))
+            return null;
+
+        var raw = hex.StartsWith('#') ? hex[1..] : hex;
+        return int.TryParse(raw, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgb)
+            ? rgb
+            : null;
     }
 
     // =====================================================
@@ -161,8 +383,9 @@ public sealed class NotificationDispatcher
     /// <param name="ctx">Notification context.</param>
     /// <param name="title">Message title.</param>
     /// <param name="text">Message body.</param>
+    /// <param name="summaryColor">Message color.</param>
     /// <returns>A task representing the send.</returns>
-    private async Task DispatchDiscordAsync(NotificationContext ctx, string title, string text)
+    private async Task DispatchDiscordAsync(NotificationContext ctx, string title, string text, string summaryColor)
     {
         if (ctx.TestOnlyChannel is { } ch && ch != NotificationChannel.Discord)
             return;
@@ -172,10 +395,13 @@ public sealed class NotificationDispatcher
 
         try
         {
+            var color = ToDiscordColor(summaryColor)
+                ?? (ctx.Type == AppNotificationType.Down ? 0xB91C1C : 0x7C3AED);
+
             await _discord.SendAsync(
                 title,
                 text,
-                ctx.Type == AppNotificationType.Down ? 0xB91C1C : 0x7C3AED);
+                color);
         }
         catch (Exception ex)
         {
@@ -279,7 +505,7 @@ public sealed class NotificationDispatcher
                 sb.AppendLine(
                     ctx.Status.IsRunning
                         ? $"Ping: {ctx.Status.PingMs.Value} ms"
-                        : $"Ping: timeout");
+                        : "Ping: timeout");
             }
 
         }
@@ -331,19 +557,25 @@ public sealed class NotificationDispatcher
     /// <summary>
     /// Builds the HTML email body for notifications.
     /// </summary>
-    /// <param name="appName">App name.</param>
+    /// <param name="headerText">Header text.</param>
     /// <param name="summaryText">Summary text.</param>
     /// <param name="summaryColorHex">Summary color hex code.</param>
     /// <param name="detailsText">Details body.</param>
     /// <param name="strings">Localized strings.</param>
     /// <returns>The HTML string.</returns>
     private static string BuildHtmlMail(
-        string appName,
+        string headerText,
         string summaryText,
         string summaryColorHex,
         string detailsText,
         NotificationStringProvider strings)
     {
+        var machine = Environment.MachineName;
+        var user = Environment.UserName;
+        var os = Environment.OSVersion.ToString();
+        var dotnet = Environment.Version.ToString();
+        var time = DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
         return $@"
 <!DOCTYPE html>
 <html>
@@ -352,66 +584,122 @@ public sealed class NotificationDispatcher
 <style>
 body {{
     font-family: 'Segoe UI', Arial, sans-serif;
-    background-color: #0f172a;
-    color: #e5e7eb;
+    background-color: #f5f5f7;
+    color: #111827;
+    margin: 0;
     padding: 24px;
 }}
 .card {{
-    max-width: 720px;
+    max-width: 760px;
     margin: auto;
-    background-color: #020617;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    background-color: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
     overflow: hidden;
 }}
 .header {{
-    background: linear-gradient(90deg, #7c3aed, #6366f1);
-    padding: 20px;
-    font-size: 22px;
+    padding: 22px 24px 8px 24px;
+    font-size: 20px;
     font-weight: 600;
 }}
-.badge {{
-    display: inline-block;
-    padding: 6px 14px;
-    border-radius: 999px;
+.accent {{
+    height: 4px;
+    background: {summaryColorHex};
+}}
+.summary {{
+    margin: 16px 24px 10px 24px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: 600;
+}}
+.dot {{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
     background-color: {summaryColorHex};
-    margin-bottom: 12px;
 }}
-.content {{
-    padding: 24px;
+.section {{
+    padding: 0 24px 16px 24px;
 }}
-.mono {{
-    font-family: Consolas, monospace;
+.section-title {{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #6b7280;
+    margin: 6px 0 8px 0;
+}}
+.details {{
     font-size: 13px;
-    opacity: .9;
+    line-height: 1.6;
     white-space: pre-line;
 }}
+.meta-grid {{
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    row-gap: 6px;
+    column-gap: 12px;
+    font-size: 12px;
+    color: #374151;
+}}
+.mono {{
+    font-family: Consolas, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    display: inline-block;
+}}
 .footer {{
-    padding: 16px;
+    padding: 10px 24px 20px 24px;
     font-size: 11px;
-    opacity: .6;
-    text-align: center;
+    color: #6b7280;
 }}
 </style>
 </head>
 
 <body>
 <div class='card'>
+    <div class='accent'></div>
     <div class='header'>
-        AppWatchdog – {appName}
+        {headerText}
     </div>
 
-    <div class='content'>
-        <div class='badge'>{summaryText}</div>
+    <div class='summary'>
+        <span class='dot'></span>
+        <span>{summaryText}</span>
+    </div>
 
-        <div class='mono'>
+    <div class='section'>
+        <div class='section-title'>Details</div>
+        <div class='details'>
 {detailsText}
         </div>
     </div>
 
+    <div class='section'>
+        <div class='section-title'>System</div>
+        <div class='meta-grid'>
+            <div>Machine</div>
+            <div><span class='mono'>{machine}</span></div>
+            <div>User</div>
+            <div><span class='mono'>{user}</span></div>
+            <div>OS</div>
+            <div>{os}</div>
+            <div>.NET</div>
+            <div><span class='mono'>{dotnet}</span></div>
+            <div>Time</div>
+            <div><span class='mono'>{time}</span></div>
+        </div>
+    </div>
+
     <div class='footer'>
-        {strings.Footer(Environment.MachineName, DateTimeOffset.Now.ToString())}
+        {strings.Footer(machine, DateTimeOffset.Now.ToString())}
     </div>
 </div>
 </body>

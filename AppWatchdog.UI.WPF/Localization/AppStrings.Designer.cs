@@ -502,6 +502,15 @@ namespace AppWatchdog.UI.WPF.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable restart plan.
+        /// </summary>
+        public static string apps_restart_enable {
+            get {
+                return ResourceManager.GetString("apps_restart_enable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select EXE.
         /// </summary>
         public static string apps_select_exe {
@@ -1974,6 +1983,105 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string notifications_header {
             get {
                 return ResourceManager.GetString("notifications_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connections.
+        /// </summary>
+        public static string notifications_tab_connections {
+            get {
+                return ResourceManager.GetString("notifications_tab_connections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Message templates.
+        /// </summary>
+        public static string notifications_tab_templates {
+            get {
+                return ResourceManager.GetString("notifications_tab_templates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Message body.
+        /// </summary>
+        public static string notifications_template_body {
+            get {
+                return ResourceManager.GetString("notifications_template_body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Accent color.
+        /// </summary>
+        public static string notifications_template_color {
+            get {
+                return ResourceManager.GetString("notifications_template_color", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DOWN notification.
+        /// </summary>
+        public static string notifications_template_down {
+            get {
+                return ResourceManager.GetString("notifications_template_down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RESTART notification.
+        /// </summary>
+        public static string notifications_template_restart {
+            get {
+                return ResourceManager.GetString("notifications_template_restart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Summary text.
+        /// </summary>
+        public static string notifications_template_summary {
+            get {
+                return ResourceManager.GetString("notifications_template_summary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Title.
+        /// </summary>
+        public static string notifications_template_title {
+            get {
+                return ResourceManager.GetString("notifications_template_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UP notification.
+        /// </summary>
+        public static string notifications_template_up {
+            get {
+                return ResourceManager.GetString("notifications_template_up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customize the title, summary, body text, and colors. Use placeholders to inject live values..
+        /// </summary>
+        public static string notifications_templates_hint {
+            get {
+                return ResourceManager.GetString("notifications_templates_hint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notification message templates.
+        /// </summary>
+        public static string notifications_templates_title {
+            get {
+                return ResourceManager.GetString("notifications_templates_title", resourceCulture);
             }
         }
         

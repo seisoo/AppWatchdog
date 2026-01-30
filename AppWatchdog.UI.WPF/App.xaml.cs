@@ -96,6 +96,7 @@ public partial class App : Application
                 services.AddSingleton<ServiceViewModel>();
                 services.AddSingleton<FolderPickerService>();
                 services.AddSingleton<FilePickerService>();
+                services.AddSingleton<ColorPickerService>();
                 services.AddTransient<RestorePageViewModel>();
                 services.AddTransient<BackupPageViewModel>();
                 services.AddSingleton<LogsViewModel>();

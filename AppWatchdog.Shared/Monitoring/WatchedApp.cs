@@ -25,6 +25,8 @@ public sealed class WatchedApp
 
     public bool Enabled { get; set; } = true;
 
+    public bool RestartEnabled { get; set; } = true;
+
     public UptimeKumaSettings? UptimeKuma { get; set; }
 
     public int CheckIntervalSeconds { get; set; } = 60;

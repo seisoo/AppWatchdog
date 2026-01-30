@@ -18,8 +18,8 @@ public sealed class BackupEngine
     /// <param name="storage">Storage backend.</param>
     /// <param name="report">Progress reporter.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>The created artifact file name.</returns>
-    public async Task<string> CreateBackupAsync(
+    /// <returns>The created artifact result.</returns>
+    public async Task<BackupCreateResult> CreateBackupAsync(
         BackupPlanConfig plan,
         IBackupStorage storage,
         Action<int?, string, DateTimeOffset> report,
@@ -47,6 +47,7 @@ public sealed class BackupEngine
         report(0, "Prepare", nowUtc);
 
         string? sqlBak = null;
+        long sizeBytes = 0;
 
         try
         {
@@ -76,6 +77,9 @@ public sealed class BackupEngine
                 File.Copy(tmpZip, tmpOut, overwrite: true);
             }
 
+            if (File.Exists(tmpOut))
+                sizeBytes = new FileInfo(tmpOut).Length;
+
             report(95, "Upload", nowUtc);
             var up = new Progress<int>(x => report(95 + (int)Math.Clamp(x * 0.05, 0, 5), "Upload", nowUtc));
             await storage.UploadAsync(tmpOut, Path.GetFileName(tmpOut), up, ct);
@@ -89,7 +93,12 @@ public sealed class BackupEngine
             }
 
             report(100, "Done", nowUtc);
-            return Path.GetFileName(tmpOut);
+            return new BackupCreateResult
+            {
+                ArtifactName = Path.GetFileName(tmpOut),
+                SizeBytes = sizeBytes,
+                CreatedUtc = nowUtc
+            };
         }
         finally
         {
@@ -625,4 +634,11 @@ public sealed class BackupEngine
             _ => plan.Source.Path
         };
     }
+}
+
+public sealed class BackupCreateResult
+{
+    public required string ArtifactName { get; init; }
+    public required long SizeBytes { get; init; }
+    public required DateTimeOffset CreatedUtc { get; init; }
 }

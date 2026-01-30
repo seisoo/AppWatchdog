@@ -853,4 +853,16 @@
   <data name="backup_day_fri" xml:space="preserve"><value>Fr</value></data>
   <data name="backup_day_sat" xml:space="preserve"><value>Sa</value></data>
   <data name="backup_day_sun" xml:space="preserve"><value>So</value></data>
+  <data name="apps_restart_enable" xml:space="preserve"> <value>Neustartplan aktivieren</value> </data>
+  <data name="notifications_tab_connections" xml:space="preserve"><value>Verbindungen</value></data>
+  <data name="notifications_tab_templates" xml:space="preserve"><value>Nachrichtenvorlagen</value></data>
+  <data name="notifications_templates_title" xml:space="preserve"><value>Benachrichtigungs-Vorlagen</value></data>
+  <data name="notifications_templates_hint" xml:space="preserve"><value>Titel, Zusammenfassung, Nachrichtentext und Farben anpassen. Platzhalter fügen Live-Werte ein.</value></data>
+  <data name="notifications_template_up" xml:space="preserve"><value>UP-Benachrichtigung</value></data>
+  <data name="notifications_template_down" xml:space="preserve"><value>DOWN-Benachrichtigung</value></data>
+  <data name="notifications_template_restart" xml:space="preserve"><value>NEUSTART-Benachrichtigung</value></data>
+  <data name="notifications_template_title" xml:space="preserve"><value>Titel</value></data>
+  <data name="notifications_template_summary" xml:space="preserve"><value>Zusammenfassung</value></data>
+  <data name="notifications_template_body" xml:space="preserve"><value>Nachrichtentext</value></data>
+  <data name="notifications_template_color" xml:space="preserve"><value>Akzentfarbe</value></data>
 </root>

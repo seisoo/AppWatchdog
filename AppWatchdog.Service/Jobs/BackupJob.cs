@@ -11,6 +11,7 @@ namespace AppWatchdog.Service.Jobs;
 public sealed class BackupJob : IJob, IJobStatusProvider
 {
     private readonly Func<WatchdogConfig> _getConfig;
+    private readonly NotificationDispatcher _dispatcher;
     private readonly string _planId;
     private volatile bool _forceRun;
 
@@ -31,10 +32,12 @@ public sealed class BackupJob : IJob, IJobStatusProvider
     /// Initializes a new instance of the <see cref="BackupJob"/> class.
     /// </summary>
     /// <param name="getConfig">Delegate to retrieve configuration.</param>
+    /// <param name="dispatcher">Notification dispatcher.</param>
     /// <param name="planId">Backup plan identifier.</param>
-    public BackupJob(Func<WatchdogConfig> getConfig, string planId)
+    public BackupJob(Func<WatchdogConfig> getConfig, NotificationDispatcher dispatcher, string planId)
     {
         _getConfig = getConfig;
+        _dispatcher = dispatcher;
         _planId = planId;
     }
 
@@ -160,6 +163,8 @@ public sealed class BackupJob : IJob, IJobStatusProvider
 
         _forceRun = false;
 
+        var startedUtc = DateTimeOffset.UtcNow;
+
         lock (_sync)
         {
             _running = true;
@@ -169,12 +174,19 @@ public sealed class BackupJob : IJob, IJobStatusProvider
 
         Raise(JobEventType.Started, 0, "Starting");
 
+        _dispatcher.DispatchBackup(new BackupNotificationContext
+        {
+            Type = BackupNotificationType.Started,
+            Plan = plan,
+            StartedUtc = startedUtc
+        });
+
         try
         {
             await using var storage = CreateStorage(plan.Target);
             var engine = new BackupEngine();
 
-            await engine.CreateBackupAsync(
+            var result = await engine.CreateBackupAsync(
                 plan,
                 storage,
                 report: (pct, text, _) =>
@@ -202,6 +214,15 @@ public sealed class BackupJob : IJob, IJobStatusProvider
             }
 
             Raise(JobEventType.Completed, 100, "Done");
+
+            _dispatcher.DispatchBackup(new BackupNotificationContext
+            {
+                Type = BackupNotificationType.Completed,
+                Plan = plan,
+                StartedUtc = startedUtc,
+                FinishedUtc = DateTimeOffset.UtcNow,
+                SizeBytes = result.SizeBytes
+            });
         }
         catch (Exception ex)
         {
@@ -212,6 +233,15 @@ public sealed class BackupJob : IJob, IJobStatusProvider
             }
 
             Raise(JobEventType.Failed, null, ex.Message);
+
+            _dispatcher.DispatchBackup(new BackupNotificationContext
+            {
+                Type = BackupNotificationType.Failed,
+                Plan = plan,
+                StartedUtc = startedUtc,
+                FinishedUtc = DateTimeOffset.UtcNow,
+                Error = ex.Message
+            });
 
             FileLogStore.WriteLine(
                 "ERROR",

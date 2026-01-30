@@ -1,6 +1,7 @@
 ﻿using AppWatchdog.Service.Backups;
 using AppWatchdog.Service.Helpers;
 using AppWatchdog.Service.Jobs;
+using AppWatchdog.Service.Notifiers;
 using AppWatchdog.Shared;
 using System.IO.Compression;
 
@@ -236,6 +237,19 @@ public sealed class PipeCommandHandler
     {
         try
         {
+            var cfg = _getConfig();
+            string? error = channel switch
+            {
+                NotificationChannel.Mail => new MailNotifier(cfg.Smtp).IsConfigured(out var err) ? null : err,
+                NotificationChannel.Ntfy => new NtfyNotifier(cfg.Ntfy).IsConfigured(out var err) ? null : err,
+                NotificationChannel.Discord => new DiscordNotifier(cfg.Discord).IsConfigured(out var err) ? null : err,
+                NotificationChannel.Telegram => new TelegramNotifier(cfg.Telegram).IsConfigured(out var err) ? null : err,
+                _ => "Unknown channel"
+            };
+
+            if (!string.IsNullOrWhiteSpace(error))
+                return Error(error);
+
             FileLogStore.WriteLine(
                 "INFO",
                 $"Notification Test gestartet (per Pipe) [{channel}]");

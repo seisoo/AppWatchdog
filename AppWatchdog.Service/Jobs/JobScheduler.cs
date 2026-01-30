@@ -27,7 +27,7 @@ public sealed class JobScheduler : IDisposable
         /// <summary>
         /// Gets or sets the task running the job loop.
         /// </summary>
-        public required Task Runner { get; init; }
+        public required Task Runner { get; set; }
 
         /// <summary>
         /// Last run time in UTC.
@@ -63,19 +63,17 @@ public sealed class JobScheduler : IDisposable
 
         var cts = new CancellationTokenSource();
 
-        JobEntry entry = null!;
-
-        var runner = Task.Run(async () =>
-        {
-            await RunLoopAsync(entry, cts.Token);
-        });
-
-        entry = new JobEntry
+        var entry = new JobEntry
         {
             Job = job,
             Cts = cts,
-            Runner = runner
+            Runner = Task.CompletedTask
         };
+
+        entry.Runner = Task.Run(async () =>
+        {
+            await RunLoopAsync(entry, cts.Token);
+        });
 
         if (job is IJobEvents ev)
         {

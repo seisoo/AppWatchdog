@@ -13,8 +13,55 @@ public sealed class WatchdogConfig
     public TelegramSettings Telegram { get; set; } = new();
     public string CultureName { get; set; } = "en-US";
 
+    public NotificationTemplateSet NotificationTemplates { get; set; } = NotificationTemplateSet.CreateDefault();
+
     public List<BackupPlanConfig> Backups { get; set; } = new();
     public List<RestorePlanConfig> Restores { get; set; } = new();
+}
+
+public sealed class NotificationTemplateSet
+{
+    public NotificationTemplate Up { get; set; } = NotificationTemplate.CreateDefaultUp();
+    public NotificationTemplate Down { get; set; } = NotificationTemplate.CreateDefaultDown();
+    public NotificationTemplate Restart { get; set; } = NotificationTemplate.CreateDefaultRestart();
+
+    public static NotificationTemplateSet CreateDefault()
+        => new();
+}
+
+public sealed class NotificationTemplate
+{
+    public string Title { get; set; } = "";
+    public string Summary { get; set; } = "";
+    public string Body { get; set; } = "";
+    public string Color { get; set; } = "#2563eb";
+
+    public static NotificationTemplate CreateDefaultUp()
+        => new()
+        {
+            Title = "AppWatchdog – $jobname",
+            Summary = "$summary",
+            Body = "$target\n\nStatus: $status\nPing: $ping\n\nHost: $machine\nTime: $time",
+            Color = "#15803d"
+        };
+
+    public static NotificationTemplate CreateDefaultDown()
+        => new()
+        {
+            Title = "AppWatchdog – $jobname",
+            Summary = "$summary",
+            Body = "$target\n\nStatus: $status\nError: $error\nPing: $ping\n\nHost: $machine\nTime: $time",
+            Color = "#b91c1c"
+        };
+
+    public static NotificationTemplate CreateDefaultRestart()
+        => new()
+        {
+            Title = "AppWatchdog – $jobname",
+            Summary = "$summary",
+            Body = "$target\n\nStatus: $status\nError: $error\nPing: $ping\n\nHost: $machine\nTime: $time",
+            Color = "#2563eb"
+        };
 }
 
 public sealed class SmtpSettings

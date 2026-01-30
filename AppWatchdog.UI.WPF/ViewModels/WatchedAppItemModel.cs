@@ -50,6 +50,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
     [ObservableProperty] private string _arguments = "";
     [ObservableProperty] private bool _enabled;
 
+    [ObservableProperty] private bool _restartEnabled = true;
+
     [ObservableProperty] private bool _kumaEnabled;
     [ObservableProperty] private string _kumaBaseUrl = "";
     [ObservableProperty] private string _kumaPushToken = "";
@@ -59,6 +61,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
     partial void OnExePathChanged(string value) => _markDirty();
     partial void OnArgumentsChanged(string value) => _markDirty();
     partial void OnEnabledChanged(bool value) => _markDirty();
+
+    partial void OnRestartEnabledChanged(bool value) => _markDirty();
 
     partial void OnKumaEnabledChanged(bool value) => _markDirty();
     partial void OnKumaBaseUrlChanged(string value) => _markDirty();
@@ -89,6 +93,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
             Name = Name,
             Type = Type,
             Enabled = Enabled,
+
+            RestartEnabled = RestartEnabled,
 
             CheckIntervalSeconds = CheckIntervalSeconds,
 
@@ -121,6 +127,8 @@ public partial class WatchedAppItemViewModel : ObservableObject
         Type = model.Type;
 
         Enabled = model.Enabled;
+
+        RestartEnabled = model.RestartEnabled;
 
         ExePath = model.ExePath;
         Arguments = model.Arguments;

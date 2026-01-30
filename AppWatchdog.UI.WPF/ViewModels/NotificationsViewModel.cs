@@ -1,9 +1,11 @@
 ﻿using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels.Base;
+using AppWatchdog.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 using AppWatchdog.UI.WPF.Common;
@@ -15,9 +17,14 @@ namespace AppWatchdog.UI.WPF.ViewModels;
 
 public partial class NotificationsViewModel : DirtyViewModelBase
 {
+    private const string DefaultUpColor = "#15803d";
+    private const string DefaultDownColor = "#b91c1c";
+    private const string DefaultRestartColor = "#2563eb";
+
     private readonly PipeFacade _pipe;
     private readonly IContentDialogService _dialogService;
     private readonly BackendStateService _backend;
+    private readonly ColorPickerService _colorPicker;
     private bool _activated;
 
     [ObservableProperty]
@@ -98,12 +105,14 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     public NotificationsViewModel(
     PipeFacade pipe,
     IContentDialogService dialogService,
-    BackendStateService backend, 
+    BackendStateService backend,
+    ColorPickerService colorPicker,
     ISnackbarService snackbar)
     {
         _pipe = pipe;
         _dialogService = dialogService;
         _backend = backend;
+        _colorPicker = colorPicker;
         _snackbar = snackbar;
 
         _backend.PropertyChanged += OnBackendStateChanged;
@@ -145,6 +154,45 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     }
 
 
+    [ObservableProperty]
+    private string _upTitleTemplate = "";
+
+    [ObservableProperty]
+    private string _upSummaryTemplate = "";
+
+    [ObservableProperty]
+    private string _upBodyTemplate = "";
+
+    [ObservableProperty]
+    private string _upColor = DefaultUpColor;
+
+    [ObservableProperty]
+    private string _downTitleTemplate = "";
+
+    [ObservableProperty]
+    private string _downSummaryTemplate = "";
+
+    [ObservableProperty]
+    private string _downBodyTemplate = "";
+
+    [ObservableProperty]
+    private string _downColor = DefaultDownColor;
+
+    [ObservableProperty]
+    private string _restartTitleTemplate = "";
+
+    [ObservableProperty]
+    private string _restartSummaryTemplate = "";
+
+    [ObservableProperty]
+    private string _restartBodyTemplate = "";
+
+    [ObservableProperty]
+    private string _restartColor = DefaultRestartColor;
+
+    public string TemplatePlaceholdersHint =>
+        "$jobname, $summary, $status, $target, $error, $ping, $machine, $time";
+
     private async Task Load()
     {
         using var _ = SuppressDirty();
@@ -172,6 +220,25 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         TelegramEnabled = cfg.Telegram.Enabled;
         TelegramBotToken = cfg.Telegram.BotToken;
         TelegramChatId = cfg.Telegram.ChatId;
+
+        var templates = cfg.NotificationTemplates ?? NotificationTemplateSet.CreateDefault();
+        ApplyTemplate(templates.Up ?? NotificationTemplate.CreateDefaultUp(), NotificationTemplate.CreateDefaultUp(), DefaultUpColor,
+            v => UpTitleTemplate = v,
+            v => UpSummaryTemplate = v,
+            v => UpBodyTemplate = v,
+            v => UpColor = v);
+
+        ApplyTemplate(templates.Down ?? NotificationTemplate.CreateDefaultDown(), NotificationTemplate.CreateDefaultDown(), DefaultDownColor,
+            v => DownTitleTemplate = v,
+            v => DownSummaryTemplate = v,
+            v => DownBodyTemplate = v,
+            v => DownColor = v);
+
+        ApplyTemplate(templates.Restart ?? NotificationTemplate.CreateDefaultRestart(), NotificationTemplate.CreateDefaultRestart(), DefaultRestartColor,
+            v => RestartTitleTemplate = v,
+            v => RestartSummaryTemplate = v,
+            v => RestartBodyTemplate = v,
+            v => RestartColor = v);
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -201,6 +268,22 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         cfg.Telegram.BotToken = TelegramBotToken;
         cfg.Telegram.ChatId = TelegramChatId;
 
+        cfg.NotificationTemplates ??= NotificationTemplateSet.CreateDefault();
+
+        cfg.NotificationTemplates.Up.Title = UpTitleTemplate;
+        cfg.NotificationTemplates.Up.Summary = UpSummaryTemplate;
+        cfg.NotificationTemplates.Up.Body = UpBodyTemplate;
+        cfg.NotificationTemplates.Up.Color = NormalizeColor(UpColor, DefaultUpColor);
+
+        cfg.NotificationTemplates.Down.Title = DownTitleTemplate;
+        cfg.NotificationTemplates.Down.Summary = DownSummaryTemplate;
+        cfg.NotificationTemplates.Down.Body = DownBodyTemplate;
+        cfg.NotificationTemplates.Down.Color = NormalizeColor(DownColor, DefaultDownColor);
+
+        cfg.NotificationTemplates.Restart.Title = RestartTitleTemplate;
+        cfg.NotificationTemplates.Restart.Summary = RestartSummaryTemplate;
+        cfg.NotificationTemplates.Restart.Body = RestartBodyTemplate;
+        cfg.NotificationTemplates.Restart.Color = NormalizeColor(RestartColor, DefaultRestartColor);
 
         await Task.Run(() => _pipe.SaveConfig(cfg));
         ClearDirty();
@@ -216,6 +299,42 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         });
     }
 
+    private static void ApplyTemplate(
+        NotificationTemplate template,
+        NotificationTemplate defaults,
+        string fallbackColor,
+        Action<string> setTitle,
+        Action<string> setSummary,
+        Action<string> setBody,
+        Action<string> setColor)
+    {
+        setTitle(string.IsNullOrWhiteSpace(template.Title) ? defaults.Title : template.Title);
+        setSummary(string.IsNullOrWhiteSpace(template.Summary) ? defaults.Summary : template.Summary);
+        setBody(string.IsNullOrWhiteSpace(template.Body) ? defaults.Body : template.Body);
+        setColor(NormalizeColor(template.Color, fallbackColor));
+    }
+
+    private static string NormalizeColor(string? value, string fallback)
+    {
+        var candidate = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        if (!candidate.StartsWith('#'))
+            candidate = "#" + candidate;
+
+        return IsHexColor(candidate) ? candidate : fallback;
+    }
+
+    private static bool IsHexColor(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var hex = value.StartsWith('#') ? value[1..] : value;
+        if (hex.Length != 6)
+            return false;
+
+        return hex.All(Uri.IsHexDigit);
+    }
+
     protected override void OnIsDirtyChanged(bool value)
     {
         SaveCommand.NotifyCanExecuteChanged();
@@ -227,11 +346,11 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     [RelayCommand]
     private async Task TestSmtpAsync()
     {
-        try
-        {
-            await Task.Run(() => _pipe.TestSmtp());
+        var error = await Task.Run(() => _pipe.TestSmtp());
 
-            RunOnUiThread(() =>
+        RunOnUiThread(() =>
+        {
+            if (string.IsNullOrWhiteSpace(error))
             {
                 _snackbar.Show(
                     AppStrings.notific_smtp_test,
@@ -239,31 +358,27 @@ public partial class NotificationsViewModel : DirtyViewModelBase
                     ControlAppearance.Success,
                     new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
                     TimeSpan.FromSeconds(4));
-            });
-        }
-        catch (Exception ex)
-        {
-            RunOnUiThread(() =>
+            }
+            else
             {
                 _snackbar.Show(
                     AppStrings.notific_smtp_test,
-                    ex.Message,
+                    error,
                     ControlAppearance.Danger,
                     new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
                     TimeSpan.FromSeconds(6));
-            });
-        }
+            }
+        });
     }
-
 
     [RelayCommand]
     private async Task TestNtfyAsync()
     {
-        try
-        {
-            await Task.Run(() => _pipe.TestNtfy());
+        var error = await Task.Run(() => _pipe.TestNtfy());
 
-            RunOnUiThread(() =>
+        RunOnUiThread(() =>
+        {
+            if (string.IsNullOrWhiteSpace(error))
             {
                 _snackbar.Show(
                     AppStrings.notific_ntfy_test,
@@ -271,32 +386,27 @@ public partial class NotificationsViewModel : DirtyViewModelBase
                     ControlAppearance.Success,
                     new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
                     TimeSpan.FromSeconds(4));
-            });
-        }
-        catch (Exception ex)
-        {
-            RunOnUiThread(() =>
+            }
+            else
             {
                 _snackbar.Show(
                     AppStrings.notific_ntfy_test,
-                    ex.Message,
+                    error,
                     ControlAppearance.Danger,
                     new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
                     TimeSpan.FromSeconds(6));
-            });
-        }
+            }
+        });
     }
-
-
 
     [RelayCommand]
     private async Task TestTelegramAsync()
     {
-        try
-        {
-            await Task.Run(() => _pipe.TestTelegram());
+        var error = await Task.Run(() => _pipe.TestTelegram());
 
-            RunOnUiThread(() =>
+        RunOnUiThread(() =>
+        {
+            if (string.IsNullOrWhiteSpace(error))
             {
                 _snackbar.Show(
                     AppStrings.notific_telegram_test,
@@ -304,32 +414,27 @@ public partial class NotificationsViewModel : DirtyViewModelBase
                     ControlAppearance.Success,
                     new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
                     TimeSpan.FromSeconds(4));
-            });
-        }
-        catch (Exception ex)
-        {
-            RunOnUiThread(() =>
+            }
+            else
             {
                 _snackbar.Show(
                     AppStrings.notific_telegram_test,
-                    ex.Message,
+                    error,
                     ControlAppearance.Danger,
                     new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
                     TimeSpan.FromSeconds(6));
-            });
-        }
+            }
+        });
     }
-
-
 
     [RelayCommand]
     private async Task TestDiscordAsync()
     {
-        try
-        {
-            await Task.Run(() => _pipe.TestDiscord());
+        var error = await Task.Run(() => _pipe.TestDiscord());
 
-            RunOnUiThread(() =>
+        RunOnUiThread(() =>
+        {
+            if (string.IsNullOrWhiteSpace(error))
             {
                 _snackbar.Show(
                     AppStrings.notific_discord_test,
@@ -337,23 +442,44 @@ public partial class NotificationsViewModel : DirtyViewModelBase
                     ControlAppearance.Success,
                     new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
                     TimeSpan.FromSeconds(4));
-            });
-        }
-        catch (Exception ex)
-        {
-            RunOnUiThread(() =>
+            }
+            else
             {
                 _snackbar.Show(
                     AppStrings.notific_discord_test,
-                    ex.Message,
+                    error,
                     ControlAppearance.Danger,
-                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false), 
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
                     TimeSpan.FromSeconds(6));
-            });
-        }
+            }
+        });
     }
 
 
+
+    [RelayCommand]
+    private async Task PickUpColorAsync()
+    {
+        var hex = await _colorPicker.PickAsync(UpColor);
+        if (!string.IsNullOrWhiteSpace(hex))
+            UpColor = hex;
+    }
+
+    [RelayCommand]
+    private async Task PickDownColorAsync()
+    {
+        var hex = await _colorPicker.PickAsync(DownColor);
+        if (!string.IsNullOrWhiteSpace(hex))
+            DownColor = hex;
+    }
+
+    [RelayCommand]
+    private async Task PickRestartColorAsync()
+    {
+        var hex = await _colorPicker.PickAsync(RestartColor);
+        if (!string.IsNullOrWhiteSpace(hex))
+            RestartColor = hex;
+    }
 
     #region Dirty-Events
     partial void OnSmtpServerChanged(string value)
@@ -405,6 +531,21 @@ public partial class NotificationsViewModel : DirtyViewModelBase
         => MarkDirty();
     partial void OnTelegramChatIdChanged(string value) 
         => MarkDirty();
+
+    partial void OnUpTitleTemplateChanged(string value) => MarkDirty();
+    partial void OnUpSummaryTemplateChanged(string value) => MarkDirty();
+    partial void OnUpBodyTemplateChanged(string value) => MarkDirty();
+    partial void OnUpColorChanged(string value) => MarkDirty();
+
+    partial void OnDownTitleTemplateChanged(string value) => MarkDirty();
+    partial void OnDownSummaryTemplateChanged(string value) => MarkDirty();
+    partial void OnDownBodyTemplateChanged(string value) => MarkDirty();
+    partial void OnDownColorChanged(string value) => MarkDirty();
+
+    partial void OnRestartTitleTemplateChanged(string value) => MarkDirty();
+    partial void OnRestartSummaryTemplateChanged(string value) => MarkDirty();
+    partial void OnRestartBodyTemplateChanged(string value) => MarkDirty();
+    partial void OnRestartColorChanged(string value) => MarkDirty();
 
 
     #endregion

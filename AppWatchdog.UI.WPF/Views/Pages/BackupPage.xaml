@@ -275,31 +275,34 @@
                                     Text="{Binding Source={StaticResource Strings}, Path=[backup_run_days_desc]}" />
 
                                 <WrapPanel Margin="0,8,0,0">
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_mon]}"
-                                        IsChecked="{Binding DayMon}" />
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_tue]}"
-                                        IsChecked="{Binding DayTue}" />
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_wed]}"
-                                        IsChecked="{Binding DayWed}" />
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_thu]}"
-                                        IsChecked="{Binding DayThu}" />
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_fri]}"
-                                        IsChecked="{Binding DayFri}" />
-                                    <ui:ToggleSwitch
-                                        Margin="0,0,12,0"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[backup_day_sat]}"
-                                        IsChecked="{Binding DaySat}" />
-                                    <ui:ToggleSwitch Content="{Binding Source={StaticResource Strings}, Path=[backup_day_sun]}" IsChecked="{Binding DaySun}" />
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_mon]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DayMon}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_tue]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DayTue}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_wed]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DayWed}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_thu]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DayThu}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_fri]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DayFri}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,12,0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_sat]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DaySat}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Margin="0,0,6,0" Text="{Binding Source={StaticResource Strings}, Path=[backup_day_sun]}" />
+                                        <ui:ToggleSwitch IsChecked="{Binding DaySun}" />
+                                    </StackPanel>
                                 </WrapPanel>
                             </StackPanel>
                         </ui:CardExpander>

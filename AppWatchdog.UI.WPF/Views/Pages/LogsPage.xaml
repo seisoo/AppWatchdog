@@ -29,7 +29,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                     <ui:SymbolIcon
                         Margin="0,0,12,0"
                         FontSize="32"
@@ -47,7 +47,10 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
                     <WrapPanel HorizontalAlignment="Right">
                         <ui:Button
                             Margin="0,0,12,0"
@@ -85,9 +88,9 @@
             <!--  LEFT COLUMN: LOG DAYS & SEARCH  -->
             <ScrollViewer
                 Grid.Column="0"
+                CanContentScroll="False"
                 HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto"
-                CanContentScroll="False">
+                VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!--  LOG DAYS  -->
                     <ui:Card Margin="0,0,0,12" Padding="16">
@@ -131,9 +134,7 @@
                                                     Margin="0,0,6,0"
                                                     FontSize="14"
                                                     Symbol="Calendar24" />
-                                                <TextBlock
-                                                    FontWeight="SemiBold"
-                                                    Text="{Binding }" />
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding}" />
                                             </StackPanel>
                                         </StackPanel>
                                     </DataTemplate>
@@ -148,7 +149,7 @@
             <ui:Card
                 Grid.Column="2"
                 Padding="16"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Top">
                 <Grid VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -198,18 +199,20 @@
                     <!--  LOG TEXT VIEWER  -->
                     <ScrollViewer
                         Grid.Row="2"
+                        VerticalAlignment="Stretch"
+                        CanContentScroll="False"
                         HorizontalScrollBarVisibility="Auto"
                         VerticalScrollBarVisibility="Auto"
-                        CanContentScroll="False"
                         Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                         <TextBox
+                            Padding="0"
+                            VerticalContentAlignment="Top"
                             AcceptsReturn="True"
                             Background="Transparent"
                             BorderThickness="0"
                             FontFamily="Consolas"
                             FontSize="11"
                             IsReadOnly="True"
-                            Padding="0"
                             Text="{Binding LogText}"
                             TextWrapping="NoWrap" />
                     </ScrollViewer>

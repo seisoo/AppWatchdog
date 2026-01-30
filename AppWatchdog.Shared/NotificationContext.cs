@@ -9,11 +9,29 @@ public sealed class NotificationContext
     public NotificationChannel? TestOnlyChannel { get; init; }
 }
 
+public sealed class BackupNotificationContext
+{
+    public required BackupNotificationType Type { get; init; }
+    public required BackupPlanConfig Plan { get; init; }
+    public required DateTimeOffset StartedUtc { get; init; }
+    public DateTimeOffset? FinishedUtc { get; init; }
+    public long? SizeBytes { get; init; }
+    public string? Error { get; init; }
+    public NotificationChannel? TestOnlyChannel { get; init; }
+}
+
 public enum AppNotificationType
 {
     Down,
     Restart,
     Up
+}
+
+public enum BackupNotificationType
+{
+    Started,
+    Completed,
+    Failed
 }
 
 public enum NotificationChannel

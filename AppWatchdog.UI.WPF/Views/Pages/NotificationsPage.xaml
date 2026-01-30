@@ -3,9 +3,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="clr-namespace:AppWatchdog.UI.WPF.Common"
+    xmlns:conv="clr-namespace:AppWatchdog.UI.WPF.Converters"
     xmlns:loc="clr-namespace:AppWatchdog.UI.WPF.Localization"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{Binding Source={StaticResource Strings}, Path=[notifications_title], Mode=OneWay}">
+
+    <Page.Resources>
+        <conv:HexToBrushConverter x:Key="HexToBrushConverter" />
+    </Page.Resources>
 
     <Grid VerticalAlignment="Stretch" IsEnabled="{Binding IsContentEnabled}">
         <Grid.RowDefinitions>
@@ -73,323 +78,520 @@
             </StackPanel>
         </ui:Card>
 
-        <ScrollViewer
+        <TabControl
             Grid.Row="1"
-            Margin="16,16,16,16"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <!--  ================= NOTIFICATION CARDS =================  -->
+            Margin="16,16,16,16">
+            <TabItem Header="{Binding Source={StaticResource Strings}, Path=[notifications_tab_connections], Mode=OneWay}">
+                <ScrollViewer
+                    Margin="0"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!--  ================= NOTIFICATION CARDS =================  -->
 
-                <Grid Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                        <Grid Margin="0,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                    <!--  LEFT COLUMN  -->
-                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <!--  LEFT COLUMN  -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
 
-                        <!--  ================= SMTP =================  -->
-                        <ui:Card
-                            Width="auto"
-                            Margin="0,0,0,16"
-                            Padding="16">
-                            <StackPanel>
+                                <!--  ================= SMTP =================  -->
+                                <ui:Card
+                                    Width="auto"
+                                    Margin="0,0,0,16"
+                                    Padding="16">
+                                    <StackPanel>
 
-                                <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                    <ui:SymbolIcon FontSize="19" Symbol="Mail24" />
-                                    <TextBlock
-                                        Margin="6,0,0,0"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_title], Mode=OneWay}" />
-                                </StackPanel>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <ui:SymbolIcon FontSize="19" Symbol="Mail24" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_title], Mode=OneWay}" />
+                                        </StackPanel>
 
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_server], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        Text="{Binding SmtpServer}" />
+                                            <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_server], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Text="{Binding SmtpServer}" />
 
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_port], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding SmtpPortText}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_port], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding SmtpPortText}" />
 
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_ssl], Mode=OneWay}" />
-                                    <CheckBox
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        Margin="-10,6,0,0"
-                                        IsChecked="{Binding SmtpEnableSsl}" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_ssl], Mode=OneWay}" />
+                                            <CheckBox
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="-10,6,0,0"
+                                                IsChecked="{Binding SmtpEnableSsl}" />
 
-                                    <TextBlock
-                                        Grid.Row="3"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_user], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="3"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding SmtpUser}" />
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_user], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding SmtpUser}" />
 
-                                    <TextBlock
-                                        Grid.Row="4"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_password], Mode=OneWay}" />
-                                    <ui:PasswordBox
-                                        Grid.Row="4"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        ui:RevealButtonEnabled="True"
-                                        Password="{Binding SmtpPassword, Mode=TwoWay}" />
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_password], Mode=OneWay}" />
+                                            <ui:PasswordBox
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                ui:RevealButtonEnabled="True"
+                                                Password="{Binding SmtpPassword, Mode=TwoWay}" />
 
-                                    <TextBlock
-                                        Grid.Row="5"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_from], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="5"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding SmtpFrom}" />
+                                            <TextBlock
+                                                Grid.Row="5"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_from], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="5"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding SmtpFrom}" />
 
-                                    <TextBlock
-                                        Grid.Row="6"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_to], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="6"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding SmtpTo}" />
-                                </Grid>
+                                            <TextBlock
+                                                Grid.Row="6"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_smtp_to], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="6"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding SmtpTo}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </ui:Card>
+
+                                <!--  ================= DISCORD =================  -->
+                                <ui:Card
+                                    Width="auto"
+                                    Margin="0,0,0,16"
+                                    Padding="16">
+                                    <StackPanel>
+
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <ui:SymbolIcon FontSize="18" Symbol="Chat24" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_discord_title], Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_enabled], Mode=OneWay}" />
+                                            <CheckBox
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="-10,0,0,0"
+                                                IsChecked="{Binding DiscordEnabled}" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_discord_webhook], Mode=OneWay}" />
+                                            <ui:PasswordBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                ui:RevealButtonEnabled="True"
+                                                Password="{Binding DiscordWebhookUrl, Mode=TwoWay}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </ui:Card>
+
                             </StackPanel>
-                        </ui:Card>
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
 
-                        <!--  ================= DISCORD =================  -->
-                        <ui:Card
-                            Width="auto"
-                            Margin="0,0,0,16"
-                            Padding="16">
-                            <StackPanel>
+                                <!--  ================= NTFY =================  -->
+                                <ui:Card
+                                    Width="auto"
+                                    Margin="0,0,0,16"
+                                    Padding="16">
+                                    <StackPanel>
 
-                                <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                    <ui:SymbolIcon FontSize="18" Symbol="Chat24" />
-                                    <TextBlock
-                                        Margin="6,0,0,0"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_discord_title], Mode=OneWay}" />
-                                </StackPanel>
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <ui:SymbolIcon FontSize="16" Symbol="Send24" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_title], Mode=OneWay}" />
+                                        </StackPanel>
 
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
 
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_enabled], Mode=OneWay}" />
-                                    <CheckBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        Margin="-10,0,0,0"
-                                        IsChecked="{Binding DiscordEnabled}" />
+                                            <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_enabled], Mode=OneWay}" />
+                                            <CheckBox
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="-10,0,0,0"
+                                                IsChecked="{Binding NtfyEnabled}" />
 
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_discord_webhook], Mode=OneWay}" />
-                                    <ui:PasswordBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        ui:RevealButtonEnabled="True"
-                                        Password="{Binding DiscordWebhookUrl, Mode=TwoWay}" />
-                                </Grid>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_base_url], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding NtfyBaseUrl}" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_topic], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding NtfyTopic}" />
+
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_token], Mode=OneWay}" />
+                                            <ui:PasswordBox
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                ui:RevealButtonEnabled="True"
+                                                Password="{Binding NtfyToken, Mode=TwoWay}" />
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_priority], Mode=OneWay}" />
+                                            <ui:NumberBox
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Maximum="5"
+                                                Minimum="1"
+                                                Value="{Binding NtfyPriorityText, Mode=TwoWay}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </ui:Card>
+
+
+                                <!--  ================= TELEGRAM =================  -->
+                                <ui:Card
+                                    Width="auto"
+                                    Margin="0,0,0,16"
+                                    Padding="16"
+                                    VerticalAlignment="top">
+                                    <StackPanel>
+
+                                        <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
+                                            <ui:SymbolIcon FontSize="18" Symbol="People24" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="16"
+                                                FontWeight="SemiBold"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_title], Mode=OneWay}" />
+                                        </StackPanel>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_enabled], Mode=OneWay}" />
+                                            <CheckBox
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="-10,0,0,0"
+                                                IsChecked="{Binding TelegramEnabled}" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_bot_token], Mode=OneWay}" />
+                                            <ui:PasswordBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                ui:RevealButtonEnabled="True"
+                                                Password="{Binding TelegramBotToken, Mode=TwoWay}" />
+
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_chat_id], Mode=OneWay}" />
+                                            <TextBox
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="0,6,0,0"
+                                                Text="{Binding TelegramChatId}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </ui:Card>
+
                             </StackPanel>
-                        </ui:Card>
-
+                        </Grid>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                </ScrollViewer>
+            </TabItem>
 
-                        <!--  ================= NTFY =================  -->
-                        <ui:Card
-                            Width="auto"
-                            Margin="0,0,0,16"
-                            Padding="16">
+            <TabItem Header="{Binding Source={StaticResource Strings}, Path=[notifications_tab_templates], Mode=OneWay}">
+                <ScrollViewer
+                    Margin="0"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <ui:Card Margin="0,0,0,16" Padding="16">
                             <StackPanel>
-
-                                <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                    <ui:SymbolIcon FontSize="16" Symbol="Send24" />
-                                    <TextBlock
-                                        Margin="6,0,0,0"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_title], Mode=OneWay}" />
-                                </StackPanel>
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-
-                                    <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_enabled], Mode=OneWay}" />
-                                    <CheckBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        Margin="-10,0,0,0"
-                                        IsChecked="{Binding NtfyEnabled}" />
-
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_base_url], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding NtfyBaseUrl}" />
-
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_topic], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding NtfyTopic}" />
-
-                                    <TextBlock
-                                        Grid.Row="3"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_token], Mode=OneWay}" />
-                                    <ui:PasswordBox
-                                        Grid.Row="3"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        ui:RevealButtonEnabled="True"
-                                        Password="{Binding NtfyToken, Mode=TwoWay}" />
-
-                                    <TextBlock
-                                        Grid.Row="4"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_priority], Mode=OneWay}" />
-                                    <ui:NumberBox
-                                        Grid.Row="4"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Maximum="5"
-                                        Minimum="1"
-                                        Value="{Binding NtfyPriorityText, Mode=TwoWay}" />
-                                </Grid>
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[notifications_templates_title], Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    FontSize="11"
+                                    Opacity="0.6"
+                                    Text="{Binding Source={StaticResource Strings}, Path=[notifications_templates_hint], Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="0,6,0,0"
+                                    FontSize="11"
+                                    Opacity="0.8"
+                                    Text="{Binding TemplatePlaceholdersHint}" />
                             </StackPanel>
                         </ui:Card>
 
-
-                        <!--  ================= TELEGRAM =================  -->
-                        <ui:Card
-                            Width="auto"
+                        <Border
                             Margin="0,0,0,16"
-                            Padding="16"
-                            VerticalAlignment="top">
-                            <StackPanel>
+                            BorderThickness="2"
+                            CornerRadius="12"
+                            BorderBrush="{Binding UpColor, Converter={StaticResource HexToBrushConverter}}">
+                            <ui:CardExpander IsExpanded="True">
+                                <ui:CardExpander.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            Margin="0,0,8,0"
+                                            FontSize="16"
+                                            Symbol="CheckmarkCircle24" />
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_up], Mode=OneWay}" />
+                                    </StackPanel>
+                                </ui:CardExpander.Header>
 
-                                <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                    <ui:SymbolIcon FontSize="18" Symbol="People24" />
-                                    <TextBlock
-                                        Margin="6,0,0,0"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_title], Mode=OneWay}" />
+                                <StackPanel>
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_title], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding UpTitleTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_summary], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding UpSummaryTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_body], Mode=OneWay}" />
+                                    <ui:TextBox
+                                        Height="120"
+                                        AcceptsReturn="True"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto"
+                                        Text="{Binding UpBodyTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_color], Mode=OneWay}" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:TextBox
+                                            Width="140"
+                                            Text="{Binding UpColor, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="#15803d" />
+                                        <ui:Button
+                                            Margin="8,0,0,0"
+                                            Command="{Binding PickUpColorCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Color24}" />
+                                        <Border
+                                            Width="32"
+                                            Height="20"
+                                            Margin="8,0,0,0"
+                                            BorderBrush="#33000000"
+                                            BorderThickness="1"
+                                            Background="{Binding UpColor, Converter={StaticResource HexToBrushConverter}}" />
+                                    </StackPanel>
                                 </StackPanel>
+                            </ui:CardExpander>
+                        </Border>
 
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                        <Border
+                            Margin="0,0,0,16"
+                            BorderThickness="2"
+                            CornerRadius="12"
+                            BorderBrush="{Binding DownColor, Converter={StaticResource HexToBrushConverter}}">
+                            <ui:CardExpander>
+                                <ui:CardExpander.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            Margin="0,0,8,0"
+                                            FontSize="16"
+                                            Symbol="Warning24" />
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_down], Mode=OneWay}" />
+                                    </StackPanel>
+                                </ui:CardExpander.Header>
 
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+                                <StackPanel>
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_title], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding DownTitleTemplate, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock Grid.Row="0" Text="{Binding Source={StaticResource Strings}, Path=[notific_enabled], Mode=OneWay}" />
-                                    <CheckBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        Margin="-10,0,0,0"
-                                        IsChecked="{Binding TelegramEnabled}" />
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_summary], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding DownSummaryTemplate, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_bot_token], Mode=OneWay}" />
-                                    <ui:PasswordBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        ui:RevealButtonEnabled="True"
-                                        Password="{Binding TelegramBotToken, Mode=TwoWay}" />
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_body], Mode=OneWay}" />
+                                    <ui:TextBox
+                                        Height="120"
+                                        AcceptsReturn="True"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto"
+                                        Text="{Binding DownBodyTemplate, UpdateSourceTrigger=PropertyChanged}" />
 
-                                    <TextBlock
-                                        Grid.Row="2"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding Source={StaticResource Strings}, Path=[notific_telegram_chat_id], Mode=OneWay}" />
-                                    <TextBox
-                                        Grid.Row="2"
-                                        Grid.Column="1"
-                                        Margin="0,6,0,0"
-                                        Text="{Binding TelegramChatId}" />
-                                </Grid>
-                            </StackPanel>
-                        </ui:Card>
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_color], Mode=OneWay}" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:TextBox
+                                            Width="140"
+                                            Text="{Binding DownColor, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="#b91c1c" />
+                                        <ui:Button
+                                            Margin="8,0,0,0"
+                                            Command="{Binding PickDownColorCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Color24}" />
+                                        <Border
+                                            Width="32"
+                                            Height="20"
+                                            Margin="8,0,0,0"
+                                            BorderBrush="#33000000"
+                                            BorderThickness="1"
+                                            Background="{Binding DownColor, Converter={StaticResource HexToBrushConverter}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander>
+                        </Border>
 
+                        <Border
+                            BorderThickness="2"
+                            CornerRadius="12"
+                            BorderBrush="{Binding RestartColor, Converter={StaticResource HexToBrushConverter}}">
+                            <ui:CardExpander>
+                                <ui:CardExpander.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon
+                                            Margin="0,0,8,0"
+                                            FontSize="16"
+                                            Symbol="ArrowClockwise24" />
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_restart], Mode=OneWay}" />
+                                    </StackPanel>
+                                </ui:CardExpander.Header>
+
+                                <StackPanel>
+                                    <TextBlock Margin="0,8,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_title], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding RestartTitleTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_summary], Mode=OneWay}" />
+                                    <ui:TextBox Text="{Binding RestartSummaryTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_body], Mode=OneWay}" />
+                                    <ui:TextBox
+                                        Height="120"
+                                        AcceptsReturn="True"
+                                        TextWrapping="Wrap"
+                                        VerticalScrollBarVisibility="Auto"
+                                        Text="{Binding RestartBodyTemplate, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Margin="0,12,0,0" Text="{Binding Source={StaticResource Strings}, Path=[notifications_template_color], Mode=OneWay}" />
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:TextBox
+                                            Width="140"
+                                            Text="{Binding RestartColor, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="#2563eb" />
+                                        <ui:Button
+                                            Margin="8,0,0,0"
+                                            Command="{Binding PickRestartColorCommand}"
+                                            Icon="{ui:SymbolIcon Symbol=Color24}" />
+                                        <Border
+                                            Width="32"
+                                            Height="20"
+                                            Margin="8,0,0,0"
+                                            BorderBrush="#33000000"
+                                            BorderThickness="1"
+                                            Background="{Binding RestartColor, Converter={StaticResource HexToBrushConverter}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ui:CardExpander>
+                        </Border>
                     </StackPanel>
-                </Grid>
-            </StackPanel>
-        </ScrollViewer>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Page>
