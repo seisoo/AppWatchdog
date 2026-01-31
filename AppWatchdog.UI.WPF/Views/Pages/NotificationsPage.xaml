@@ -45,26 +45,33 @@
                 <WrapPanel Margin="0,16,0,0">
                     <ui:Button
                         Margin="0,0,8,8"
+                        Appearance="Primary"
+                        Command="{Binding TestAllCommand}"
+                        Content="Test all"
+                        Icon="{ui:SymbolIcon Symbol=CheckmarkCircle24}" />
+
+                    <ui:Button
+                        Margin="0,0,8,8"
                         Command="{Binding TestSmtpCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[notific_smtp_test], Mode=OneWay}"
+                        ToolTip="{Binding Source={StaticResource Strings}, Path=[notific_smtp_test], Mode=OneWay}"
                         Icon="{ui:SymbolIcon Symbol=Mail24}" />
 
                     <ui:Button
                         Margin="0,0,8,8"
                         Command="{Binding TestNtfyCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_test], Mode=OneWay}"
+                        ToolTip="{Binding Source={StaticResource Strings}, Path=[notific_ntfy_test], Mode=OneWay}"
                         Icon="{ui:SymbolIcon Symbol=Send24}" />
 
                     <ui:Button
                         Margin="0,0,8,8"
                         Command="{Binding TestDiscordCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[notific_discord_test], Mode=OneWay}"
+                        ToolTip="{Binding Source={StaticResource Strings}, Path=[notific_discord_test], Mode=OneWay}"
                         Icon="{ui:SymbolIcon Symbol=Chat24}" />
 
                     <ui:Button
                         Margin="0,0,8,8"
                         Command="{Binding TestTelegramCommand}"
-                        Content="{Binding Source={StaticResource Strings}, Path=[notific_telegram_test], Mode=OneWay}"
+                        ToolTip="{Binding Source={StaticResource Strings}, Path=[notific_telegram_test], Mode=OneWay}"
                         Icon="{ui:SymbolIcon Symbol=People24}" />
 
                     <ui:Button
@@ -75,6 +82,12 @@
                         Icon="{ui:SymbolIcon Symbol=Save24}"
                         IsEnabled="{Binding IsDirty}" />
                 </WrapPanel>
+
+                <TextBlock
+                    Margin="0,12,0,0"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Text="{Binding Source={StaticResource Strings}, Path=[notifications_tab_connections], Mode=OneWay}" />
             </StackPanel>
         </ui:Card>
 
@@ -102,11 +115,11 @@
                                 <ui:Card
                                     Width="auto"
                                     Margin="0,0,0,16"
-                                    Padding="16">
+                                    Padding="20">
                                     <StackPanel>
 
                                         <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                            <ui:SymbolIcon FontSize="19" Symbol="Mail24" />
+                                            <ui:SymbolIcon FontSize="18" Symbol="Mail24" />
                                             <TextBlock
                                                 Margin="6,0,0,0"
                                                 FontSize="16"
@@ -204,7 +217,7 @@
                                 <ui:Card
                                     Width="auto"
                                     Margin="0,0,0,16"
-                                    Padding="16">
+                                    Padding="20">
                                     <StackPanel>
 
                                         <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
@@ -255,11 +268,11 @@
                                 <ui:Card
                                     Width="auto"
                                     Margin="0,0,0,16"
-                                    Padding="16">
+                                    Padding="20">
                                     <StackPanel>
 
                                         <StackPanel Margin="0,0,0,10" Orientation="Horizontal">
-                                            <ui:SymbolIcon FontSize="16" Symbol="Send24" />
+                                            <ui:SymbolIcon FontSize="18" Symbol="Send24" />
                                             <TextBlock
                                                 Margin="6,0,0,0"
                                                 FontSize="16"
@@ -339,7 +352,7 @@
                                 <ui:Card
                                     Width="auto"
                                     Margin="0,0,0,16"
-                                    Padding="16"
+                                    Padding="20"
                                     VerticalAlignment="top">
                                     <StackPanel>
 
@@ -407,7 +420,7 @@
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <ui:Card Margin="0,0,0,16" Padding="16">
+                        <ui:Card Margin="0,0,0,16" Padding="20">
                             <StackPanel>
                                 <TextBlock
                                     FontSize="16"

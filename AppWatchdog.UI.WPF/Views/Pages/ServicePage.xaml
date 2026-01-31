@@ -89,17 +89,6 @@
                         Text="{Binding StatusLine}"
                         TextWrapping="Wrap" />
 
-                    <UniformGrid Columns="2" Margin="0,12,0,0">
-                        <StackPanel>
-                            <TextBlock Opacity="0.6" Text="Version" />
-                            <TextBlock Text="{Binding ServiceVersionText}" />
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Opacity="0.6" Text="Account" />
-                            <TextBlock Text="{Binding ServiceAccountText}" />
-                        </StackPanel>
-                    </UniformGrid>
-
                     <WrapPanel Margin="0,12,0,0" HorizontalAlignment="Left">
                         <ui:Button
                             Margin="0,0,8,0"
@@ -111,15 +100,53 @@
                             </ui:Button.Icon>
                         </ui:Button>
 
-                        <Menu>
-                            <MenuItem Header="More">
-                                <MenuItem Header="Restart" Command="{Binding RestartServiceCommand}" />
-                                <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[reinstall]}" Command="{Binding ReinstallServiceCommand}" />
-                                <Separator />
-                                <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[logs_open_folder]}" Command="{Binding OpenLogsFolderCommand}" />
-                                <MenuItem Header="Service folder" Command="{Binding OpenServiceFolderCommand}" />
-                            </MenuItem>
-                        </Menu>
+                        <ui:Button
+                            x:Name="MoreButton"
+                            Margin="0,0,8,0"
+                            Content="More"
+                            Click="MoreButton_Click">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="MoreHorizontal24" />
+                            </ui:Button.Icon>
+                            <ui:Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Restart" Command="{Binding RestartServiceCommand}" />
+                                    <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[reinstall]}" Command="{Binding ReinstallServiceCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[service_export_config]}" Command="{Binding ExportConfigCommand}" />
+                                    <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[service_import_config]}" Command="{Binding ImportConfigCommand}" />
+                                    <Separator />
+                                    <MenuItem Header="{Binding Source={StaticResource Strings}, Path=[logs_open_folder]}" Command="{Binding OpenLogsFolderCommand}" />
+                                    <MenuItem Header="Service folder" Command="{Binding OpenServiceFolderCommand}" />
+                                </ContextMenu>
+                            </ui:Button.ContextMenu>
+                        </ui:Button>
+                    </WrapPanel>
+
+                    <WrapPanel Margin="0,12,0,0">
+                        <Border
+                            Margin="0,0,12,0"
+                            Padding="8,4"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Opacity="0.6" Text="Version" />
+                                <TextBlock Margin="6,0,0,0" FontWeight="SemiBold" Text="{Binding ServiceVersionText}" />
+                            </StackPanel>
+                        </Border>
+                        <Border
+                            Padding="8,4"
+                            Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Opacity="0.6" Text="Account" />
+                                <TextBlock Margin="6,0,0,0" FontWeight="SemiBold" Text="{Binding ServiceAccountText}" />
+                            </StackPanel>
+                        </Border>
                     </WrapPanel>
 
                     <StackPanel

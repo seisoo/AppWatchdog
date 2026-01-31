@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -257,14 +259,21 @@ public partial class RestorePageViewModel : DirtyViewModelBase
             if (token != _artifactLoadToken)
                 return;
 
+            var prefix = BuildArtifactPrefix(SelectedPlan.Id);
+
             Artifacts.Clear();
 
-            foreach (var name in artifacts.Artifacts)
+            foreach (var name in artifacts.Artifacts
+                         .Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
             {
+                var created = ParseCreatedUtcFromArtifactName(name);
+                if (created == DateTimeOffset.MinValue)
+                    continue;
+
                 Artifacts.Add(new BackupArtifactItem
                 {
                     Name = name,
-                    CreatedUtc = ParseCreatedUtcFromArtifactName(name)
+                    CreatedUtc = created
                 });
             }
 
@@ -294,6 +303,18 @@ public partial class RestorePageViewModel : DirtyViewModelBase
         }
     }
 
+    private static string BuildArtifactPrefix(string planId)
+    {
+        if (string.IsNullOrWhiteSpace(planId))
+            return "backup_";
+
+        var bad = Path.GetInvalidFileNameChars();
+        var parts = planId.Split(bad, StringSplitOptions.RemoveEmptyEntries);
+        var joined = string.Join("_", parts);
+        var safe = string.IsNullOrWhiteSpace(joined) ? "backup" : joined;
+        return safe + "_";
+    }
+
     [RelayCommand(CanExecute = nameof(CanLoadManifest))]
     private async Task LoadManifestAsync()
     {
@@ -309,6 +330,30 @@ public partial class RestorePageViewModel : DirtyViewModelBase
         var p = _folderPicker.Pick(RestoreToDirectory);
         if (!string.IsNullOrWhiteSpace(p))
             RestoreToDirectory = p;
+    }
+
+    [RelayCommand]
+    private void OpenRestoreDirectory()
+    {
+        if (string.IsNullOrWhiteSpace(RestoreToDirectory))
+        {
+            NotifyError("Restore directory is not set.");
+            return;
+        }
+
+        var path = RestoreToDirectory;
+        if (!Directory.Exists(path))
+        {
+            NotifyError("Restore directory does not exist.");
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = path,
+            UseShellExecute = true,
+            Verb = "open"
+        });
     }
 
     [RelayCommand(CanExecute = nameof(HasManifest))]

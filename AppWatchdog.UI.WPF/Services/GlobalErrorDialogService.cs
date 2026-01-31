@@ -99,8 +99,7 @@ public sealed class GlobalErrorDialogService
                             AppStrings.error_service_not_installed_text,
                             ex),
                         PrimaryButtonText = AppStrings.install,
-                        SecondaryButtonText = AppStrings.cancel,
-                        CloseButtonText = AppStrings.close
+                        CloseButtonText = AppStrings.cancel
                     },
                     CancellationToken.None
                 )
@@ -127,8 +126,7 @@ public sealed class GlobalErrorDialogService
                             AppStrings.error_service_not_running_text,
                             ex),
                         PrimaryButtonText = AppStrings.start,
-                        SecondaryButtonText = AppStrings.cancel,
-                        CloseButtonText = AppStrings.close
+                        CloseButtonText = AppStrings.cancel
                     },
                     CancellationToken.None
                 )

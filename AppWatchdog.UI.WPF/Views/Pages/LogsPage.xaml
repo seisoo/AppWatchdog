@@ -52,6 +52,11 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
                     <WrapPanel HorizontalAlignment="Right">
+                        <ui:ToggleSwitch
+                            Margin="0,0,12,0"
+                            Content="Auto refresh"
+                            IsChecked="{Binding IsAutoRefreshEnabled}" />
+
                         <ui:Button
                             Margin="0,0,12,0"
                             Command="{Binding RefreshLogsCommand}"

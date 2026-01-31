@@ -29,4 +29,16 @@ public partial class ServicePage : Page
     {
         _vm.StopAutoRefresh();
     }
+
+    private void MoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element)
+            return;
+
+        if (element.ContextMenu == null)
+            return;
+
+        element.ContextMenu.PlacementTarget = element;
+        element.ContextMenu.IsOpen = true;
+    }
 }

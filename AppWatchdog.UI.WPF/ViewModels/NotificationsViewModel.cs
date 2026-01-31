@@ -4,6 +4,7 @@ using AppWatchdog.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Wpf.Ui;
@@ -131,8 +132,14 @@ public partial class NotificationsViewModel : DirtyViewModelBase
 
         if (!_activated)
         {
+            var loaded = await LoadAsync();
+            if (!loaded)
+            {
+                IsContentEnabled = false;
+                return;
+            }
+
             _activated = true;
-            await Load();
         }
 
         IsContentEnabled = true;   
@@ -193,11 +200,13 @@ public partial class NotificationsViewModel : DirtyViewModelBase
     public string TemplatePlaceholdersHint =>
         "$jobname, $summary, $status, $target, $error, $ping, $machine, $time";
 
-    private async Task Load()
+    private async Task<bool> LoadAsync()
     {
         using var _ = SuppressDirty();
 
         var cfg = await Task.Run(() => _pipe.GetConfig());
+        if (cfg == null)
+            return false;
 
         SmtpServer = cfg.Smtp.Server;
         SmtpPortText = cfg.Smtp.Port;
@@ -239,12 +248,24 @@ public partial class NotificationsViewModel : DirtyViewModelBase
             v => RestartSummaryTemplate = v,
             v => RestartBodyTemplate = v,
             v => RestartColor = v);
+
+        return true;
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async void Save()
     {
         var cfg = await Task.Run(() => _pipe.GetConfig());
+        if (cfg == null)
+        {
+            _snackbar.Show(
+                AppStrings.config_saving_failed,
+                AppStrings.error_service_notavailable_text,
+                ControlAppearance.Danger,
+                new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                TimeSpan.FromSeconds(6));
+            return;
+        }
 
         cfg.Smtp.Server = SmtpServer;
         cfg.Smtp.Port = SmtpPortText;
@@ -452,6 +473,49 @@ public partial class NotificationsViewModel : DirtyViewModelBase
                     new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
                     TimeSpan.FromSeconds(6));
             }
+        });
+    }
+
+    [RelayCommand]
+    private async Task TestAllAsync()
+    {
+        var errors = new List<string>();
+
+        var smtp = await Task.Run(() => _pipe.TestSmtp());
+        if (!string.IsNullOrWhiteSpace(smtp))
+            errors.Add($"SMTP: {smtp}");
+
+        var ntfy = await Task.Run(() => _pipe.TestNtfy());
+        if (!string.IsNullOrWhiteSpace(ntfy))
+            errors.Add($"Ntfy: {ntfy}");
+
+        var discord = await Task.Run(() => _pipe.TestDiscord());
+        if (!string.IsNullOrWhiteSpace(discord))
+            errors.Add($"Discord: {discord}");
+
+        var telegram = await Task.Run(() => _pipe.TestTelegram());
+        if (!string.IsNullOrWhiteSpace(telegram))
+            errors.Add($"Telegram: {telegram}");
+
+        RunOnUiThread(() =>
+        {
+            if (errors.Count == 0)
+            {
+                _snackbar.Show(
+                    "Notifications",
+                    "All notification tests succeeded",
+                    ControlAppearance.Success,
+                    new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28, false),
+                    TimeSpan.FromSeconds(4));
+                return;
+            }
+
+            _snackbar.Show(
+                "Notifications",
+                string.Join(" | ", errors),
+                ControlAppearance.Danger,
+                new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                TimeSpan.FromSeconds(6));
         });
     }
 

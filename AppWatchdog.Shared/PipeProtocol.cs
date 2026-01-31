@@ -31,11 +31,15 @@ public static class PipeProtocol
 
     public const string CmdListBackups = "ListBackups";
     public const string CmdTriggerBackup = "TriggerBackup";
+    public const string CmdPurgeBackupArtifacts = "PurgeBackupArtifacts";
 
     public const string CmdListBackupArtifacts = "ListBackupArtifacts";
     public const string CmdGetBackupManifest = "GetBackupManifest";
 
     public const string CmdTriggerRestore = "TriggerRestore";
+
+    public const string CmdExportConfig = "ExportConfig";
+    public const string CmdImportConfig = "ImportConfig";
 
 
 

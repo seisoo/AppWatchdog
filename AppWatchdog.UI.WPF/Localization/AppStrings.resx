@@ -821,4 +821,30 @@
   <data name="notifications_template_summary" xml:space="preserve"><value>Summary text</value></data>
   <data name="notifications_template_body" xml:space="preserve"><value>Message body</value></data>
   <data name="notifications_template_color" xml:space="preserve"><value>Accent color</value></data>
+  <data name="backup_breaking_change_title" xml:space="preserve">
+    <value>Backup settings changed</value>
+  </data>
+  <data name="backup_breaking_change_text" xml:space="preserve">
+    <value>You changed critical backup settings for {0}.
+Existing restore points will be deleted and old backups may no longer be restorable.
+Do you want to continue?</value>
+  </data>
+  <data name="backup_breaking_change_default_plan" xml:space="preserve">
+    <value>one or more plans</value>
+  </data>
+  <data name="service_export_config" xml:space="preserve">
+    <value>Export config</value>
+  </data>
+  <data name="service_import_config" xml:space="preserve">
+    <value>Import config</value>
+  </data>
+  <data name="service_import_config_confirm" xml:space="preserve">
+    <value>Importing will overwrite the current service configuration. Continue?</value>
+  </data>
+  <data name="service_config_exported" xml:space="preserve">
+    <value>Configuration exported</value>
+  </data>
+  <data name="service_config_imported" xml:space="preserve">
+    <value>Configuration imported</value>
+  </data>
 </root>

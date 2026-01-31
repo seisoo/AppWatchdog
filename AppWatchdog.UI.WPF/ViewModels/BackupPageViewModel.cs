@@ -1,6 +1,8 @@
 ﻿using AppWatchdog.Shared;
+using AppWatchdog.UI.WPF.Dialogs;
 using AppWatchdog.UI.WPF.Services;
 using AppWatchdog.UI.WPF.ViewModels.Base;
+using AppWatchdog.UI.WPF.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -21,8 +23,11 @@ public partial class BackupPageViewModel : DirtyViewModelBase
     private readonly ISnackbarService _snackbar;
     private readonly FolderPickerService _folderPicker;
     private readonly FilePickerService _filePicker;
+    private readonly AppDialogService _dialogService;
 
     private bool _activated;
+    private bool _suppressBreakingChange;
+    private readonly System.Collections.Generic.Dictionary<string, BackupPlanChangeSnapshot> _planSnapshots = new(StringComparer.OrdinalIgnoreCase);
 
     public Array BackupSourceTypes => Enum.GetValues(typeof(BackupSourceType));
     public Array BackupTargetTypes => Enum.GetValues(typeof(BackupTargetType));
@@ -47,13 +52,15 @@ public partial class BackupPageViewModel : DirtyViewModelBase
         BackendStateService backend,
         ISnackbarService snackbar,
         FolderPickerService folderPicker,
-        FilePickerService filePicker)
+        FilePickerService filePicker,
+        AppDialogService dialogService)
     {
         _pipe = pipe;
         _backend = backend;
         _snackbar = snackbar;
         _folderPicker = folderPicker;
         _filePicker = filePicker;
+        _dialogService = dialogService;
 
         Plans.CollectionChanged += (_, __) => MarkDirty();
         _backend.PropertyChanged += OnBackendStateChanged;
@@ -100,6 +107,10 @@ public partial class BackupPageViewModel : DirtyViewModelBase
 
             SelectedPlan ??= Plans.FirstOrDefault();
 
+            _planSnapshots.Clear();
+            foreach (var plan in Plans)
+                StoreSnapshot(plan);
+
             ClearDirty();
 
             RunOnUiThread(() =>
@@ -122,7 +133,10 @@ public partial class BackupPageViewModel : DirtyViewModelBase
         {
             var vm = Plans[i];
             if (!models.Any(m => string.Equals(m.Id, vm.Id, StringComparison.OrdinalIgnoreCase)))
+            {
                 Plans.RemoveAt(i);
+                _planSnapshots.Remove(vm.Id);
+            }
         }
 
         foreach (var model in models)
@@ -147,58 +161,45 @@ public partial class BackupPageViewModel : DirtyViewModelBase
         }
     }
 
-    private void OnPlanVmChanged(object? sender, PropertyChangedEventArgs e) => MarkDirty();
-
-    [RelayCommand]
-    private async Task ReloadAsync() => await LoadAsync();
-
-    [RelayCommand]
-    private void Add()
+    private async void OnPlanVmChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var id = "backup_" + Guid.NewGuid().ToString("N");
-        var model = new BackupPlanConfig
-        {
-            Enabled = true,
-            Id = id,
-            Name = "New Backup",
-            VerifyAfterCreate = true,
-            Schedule = new BackupScheduleConfig(),
-            Source = new BackupSourceConfig { Type = BackupSourceType.Folder },
-            Target = new BackupTargetConfig { Type = BackupTargetType.Local },
-            Compression = new BackupCompressionConfig(),
-            Crypto = new BackupCryptoConfig(),
-            Retention = new BackupRetentionConfig()
-        };
-
-        var vm = BackupPlanItemViewModel.FromModel(model, MarkDirty, _folderPicker, _filePicker);
-        vm.PropertyChanged += OnPlanVmChanged;
-
-        Plans.Add(vm);
-        SelectedPlan = vm;
-
         MarkDirty();
-        OnPropertyChanged(nameof(HasSelected));
-        OnPropertyChanged(nameof(CanRunNow));
-        RunNowCommand.NotifyCanExecuteChanged();
-        RemoveCommand.NotifyCanExecuteChanged();
-    }
 
-    [RelayCommand(CanExecute = nameof(HasSelected))]
-    private void Remove()
-    {
-        if (SelectedPlan == null)
+        if (_suppressBreakingChange || sender is not BackupPlanItemViewModel vm)
             return;
 
-        SelectedPlan.PropertyChanged -= OnPlanVmChanged;
+        if (!BackupPlanChangeSnapshot.BreakingProperties.Contains(e.PropertyName ?? string.Empty))
+            return;
 
-        Plans.Remove(SelectedPlan);
-        SelectedPlan = Plans.FirstOrDefault();
+        if (!_planSnapshots.TryGetValue(vm.Id, out var snapshot))
+            return;
 
-        MarkDirty();
-        OnPropertyChanged(nameof(HasSelected));
-        OnPropertyChanged(nameof(CanRunNow));
-        RunNowCommand.NotifyCanExecuteChanged();
-        RemoveCommand.NotifyCanExecuteChanged();
+        if (!snapshot.HasBreakingChange(vm))
+            return;
+
+        _suppressBreakingChange = true;
+        try
+        {
+            var confirmed = await ConfirmBreakingChangeAsync(vm);
+            if (!confirmed)
+            {
+                snapshot.ApplyTo(vm);
+                return;
+            }
+
+            var purged = await PurgeRestorePointsAsync(vm);
+            if (!purged)
+            {
+                snapshot.ApplyTo(vm);
+                return;
+            }
+
+            StoreSnapshot(vm);
+        }
+        finally
+        {
+            _suppressBreakingChange = false;
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
@@ -209,6 +210,25 @@ public partial class BackupPageViewModel : DirtyViewModelBase
             var cfg = await Task.Run(() => _pipe.GetConfig());
             if (cfg == null)
                 return;
+
+            var breakingPlans = Plans
+                .Where(p => _planSnapshots.TryGetValue(p.Id, out var snap) && snap.HasBreakingChange(p))
+                .ToList();
+
+            if (breakingPlans.Count > 0)
+            {
+                var confirmed = await ConfirmBreakingChangeAsync(breakingPlans);
+                if (!confirmed)
+                    return;
+
+                foreach (var plan in breakingPlans)
+                {
+                    var ok = await PurgeRestorePointsAsync(plan);
+                    if (!ok)
+                        return;
+                    StoreSnapshot(plan);
+                }
+            }
 
             cfg.Backups.Clear();
             foreach (var vm in Plans)
@@ -242,7 +262,56 @@ public partial class BackupPageViewModel : DirtyViewModelBase
         }
     }
 
-    private bool CanSave() => IsDirty;
+    [RelayCommand]
+    private void Add()
+    {
+        var id = "backup_" + Guid.NewGuid().ToString("N");
+        var model = new BackupPlanConfig
+        {
+            Enabled = true,
+            Id = id,
+            Name = "New Backup",
+            VerifyAfterCreate = true,
+            Schedule = new BackupScheduleConfig(),
+            Source = new BackupSourceConfig { Type = BackupSourceType.Folder },
+            Target = new BackupTargetConfig { Type = BackupTargetType.Local },
+            Compression = new BackupCompressionConfig(),
+            Crypto = new BackupCryptoConfig(),
+            Retention = new BackupRetentionConfig()
+        };
+
+        var vm = BackupPlanItemViewModel.FromModel(model, MarkDirty, _folderPicker, _filePicker);
+        vm.PropertyChanged += OnPlanVmChanged;
+
+        Plans.Add(vm);
+        SelectedPlan = vm;
+        StoreSnapshot(vm);
+
+        MarkDirty();
+        OnPropertyChanged(nameof(HasSelected));
+        OnPropertyChanged(nameof(CanRunNow));
+        RunNowCommand.NotifyCanExecuteChanged();
+        RemoveCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(HasSelected))]
+    private void Remove()
+    {
+        if (SelectedPlan == null)
+            return;
+
+        SelectedPlan.PropertyChanged -= OnPlanVmChanged;
+        _planSnapshots.Remove(SelectedPlan.Id);
+
+        Plans.Remove(SelectedPlan);
+        SelectedPlan = Plans.FirstOrDefault();
+
+        MarkDirty();
+        OnPropertyChanged(nameof(HasSelected));
+        OnPropertyChanged(nameof(CanRunNow));
+        RunNowCommand.NotifyCanExecuteChanged();
+        RemoveCommand.NotifyCanExecuteChanged();
+    }
 
     [RelayCommand(CanExecute = nameof(CanRunNow))]
     private async Task RunNowAsync()
@@ -281,24 +350,102 @@ public partial class BackupPageViewModel : DirtyViewModelBase
         }
     }
 
-    partial void OnSelectedPlanChanged(BackupPlanItemViewModel? value)
+    private void StoreSnapshot(BackupPlanItemViewModel plan)
     {
-        OnPropertyChanged(nameof(HasSelected));
-        OnPropertyChanged(nameof(CanRunNow));
-        RemoveCommand.NotifyCanExecuteChanged();
-        RunNowCommand.NotifyCanExecuteChanged();
+        _planSnapshots[plan.Id] = new BackupPlanChangeSnapshot(plan);
     }
 
-    protected override void OnIsDirtyChanged(bool value)
+    private async Task<bool> ConfirmBreakingChangeAsync(BackupPlanItemViewModel plan)
     {
-        if (Application.Current.Dispatcher.CheckAccess())
-            SaveCommand.NotifyCanExecuteChanged();
-        else
-            Application.Current.Dispatcher.Invoke(SaveCommand.NotifyCanExecuteChanged);
-
-        if (Application.Current.Dispatcher.CheckAccess())
-            RunNowCommand.NotifyCanExecuteChanged();
-        else
-            Application.Current.Dispatcher.Invoke(RunNowCommand.NotifyCanExecuteChanged);
+        return await _dialogService.ShowConfirmAsync(
+            AppStrings.backup_breaking_change_title,
+            string.Format(AppStrings.backup_breaking_change_text, plan.Name));
     }
+
+    private async Task<bool> ConfirmBreakingChangeAsync(System.Collections.Generic.IReadOnlyCollection<BackupPlanItemViewModel> plans)
+    {
+        var names = string.Join(", ", plans.Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)));
+        var label = string.IsNullOrWhiteSpace(names) ? AppStrings.backup_breaking_change_default_plan : names;
+
+        return await _dialogService.ShowConfirmAsync(
+            AppStrings.backup_breaking_change_title,
+            string.Format(AppStrings.backup_breaking_change_text, label));
+    }
+
+    private async Task<bool> PurgeRestorePointsAsync(BackupPlanItemViewModel plan)
+    {
+        try
+        {
+            await Task.Run(() => _pipe.PurgeBackupArtifacts(plan.Id));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            RunOnUiThread(() =>
+            {
+                _snackbar.Show(
+                    "Backup",
+                    ex.Message,
+                    ControlAppearance.Danger,
+                    new SymbolIcon(SymbolRegular.ErrorCircle24, 28, false),
+                    TimeSpan.FromSeconds(6));
+            });
+            return false;
+        }
+    }
+
+    private sealed class BackupPlanChangeSnapshot
+    {
+        public static readonly System.Collections.Generic.HashSet<string> BreakingProperties = new(StringComparer.OrdinalIgnoreCase)
+        {
+            nameof(BackupPlanItemViewModel.SourceType),
+            nameof(BackupPlanItemViewModel.TargetType),
+            nameof(BackupPlanItemViewModel.CompressionCompress),
+            nameof(BackupPlanItemViewModel.CompressionLevel),
+            nameof(BackupPlanItemViewModel.CryptoEncrypt),
+            nameof(BackupPlanItemViewModel.CryptoPassword),
+            nameof(BackupPlanItemViewModel.CryptoIterations)
+        };
+
+        public BackupSourceType SourceType { get; }
+        public BackupTargetType TargetType { get; }
+        public bool CompressionCompress { get; }
+        public int CompressionLevel { get; }
+        public bool CryptoEncrypt { get; }
+        public string CryptoPassword { get; }
+        public int CryptoIterations { get; }
+
+        public BackupPlanChangeSnapshot(BackupPlanItemViewModel plan)
+        {
+            SourceType = plan.SourceType;
+            TargetType = plan.TargetType;
+            CompressionCompress = plan.CompressionCompress;
+            CompressionLevel = plan.CompressionLevel;
+            CryptoEncrypt = plan.CryptoEncrypt;
+            CryptoPassword = plan.CryptoPassword;
+            CryptoIterations = plan.CryptoIterations;
+        }
+
+        public bool HasBreakingChange(BackupPlanItemViewModel plan)
+            => SourceType != plan.SourceType
+               || TargetType != plan.TargetType
+               || CompressionCompress != plan.CompressionCompress
+               || CompressionLevel != plan.CompressionLevel
+               || CryptoEncrypt != plan.CryptoEncrypt
+               || !string.Equals(CryptoPassword ?? "", plan.CryptoPassword ?? "", StringComparison.Ordinal)
+               || CryptoIterations != plan.CryptoIterations;
+
+        public void ApplyTo(BackupPlanItemViewModel plan)
+        {
+            plan.SourceType = SourceType;
+            plan.TargetType = TargetType;
+            plan.CompressionCompress = CompressionCompress;
+            plan.CompressionLevel = CompressionLevel;
+            plan.CryptoEncrypt = CryptoEncrypt;
+            plan.CryptoPassword = CryptoPassword;
+            plan.CryptoIterations = CryptoIterations;
+        }
+    }
+
+    private bool CanSave() => IsDirty;
 }

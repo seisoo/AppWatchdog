@@ -2151,15 +2151,6 @@ namespace AppWatchdog.UI.WPF.Localization {
         /// <summary>
         ///   Looks up a localized string similar to Restore blocked.
         /// </summary>
-        public static string restore_blocked_title {
-            get {
-                return ResourceManager.GetString("restore_blocked_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Browse folder.
-        /// </summary>
         public static string restore_browse_folder {
             get {
                 return ResourceManager.GetString("restore_browse_folder", resourceCulture);
@@ -2649,6 +2640,80 @@ namespace AppWatchdog.UI.WPF.Localization {
         public static string yes {
             get {
                 return ResourceManager.GetString("yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to one or more plans.
+        /// </summary>
+        public static string backup_breaking_change_default_plan {
+            get {
+                return ResourceManager.GetString("backup_breaking_change_default_plan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You changed critical backup settings for {0}.
+        ///Existing restore points will be deleted and old backups may no longer be restorable.
+        ///Do you want to continue?.
+        /// </summary>
+        public static string backup_breaking_change_text {
+            get {
+                return ResourceManager.GetString("backup_breaking_change_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Backup settings changed.
+        /// </summary>
+        public static string backup_breaking_change_title {
+            get {
+                return ResourceManager.GetString("backup_breaking_change_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration exported.
+        /// </summary>
+        public static string service_config_exported {
+            get {
+                return ResourceManager.GetString("service_config_exported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration imported.
+        /// </summary>
+        public static string service_config_imported {
+            get {
+                return ResourceManager.GetString("service_config_imported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export config.
+        /// </summary>
+        public static string service_export_config {
+            get {
+                return ResourceManager.GetString("service_export_config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import config.
+        /// </summary>
+        public static string service_import_config {
+            get {
+                return ResourceManager.GetString("service_import_config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Importing will overwrite the current service configuration. Continue?.
+        /// </summary>
+        public static string service_import_config_confirm {
+            get {
+                return ResourceManager.GetString("service_import_config_confirm", resourceCulture);
             }
         }
     }

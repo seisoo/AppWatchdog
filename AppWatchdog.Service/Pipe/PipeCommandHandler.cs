@@ -142,6 +142,9 @@ public sealed class PipeCommandHandler
                 case PipeProtocol.CmdTriggerBackup:
                     return TriggerBackup(req);
 
+                case PipeProtocol.CmdPurgeBackupArtifacts:
+                    return await PurgeBackupArtifactsAsync(req);
+
                 case PipeProtocol.CmdListBackupArtifacts:
                     return await ListBackupArtifacts(req);
 
@@ -149,7 +152,13 @@ public sealed class PipeCommandHandler
                     return await GetBackupManifest(req);
 
                 case PipeProtocol.CmdTriggerRestore:
-                    return TriggerRestore(req);
+                    return await TriggerRestoreAsync(req);
+
+                case PipeProtocol.CmdExportConfig:
+                    return ExportConfig();
+
+                case PipeProtocol.CmdImportConfig:
+                    return ImportConfig(req);
 
                 default:
                     return Error("Unknown command");
@@ -332,12 +341,16 @@ public sealed class PipeCommandHandler
         if (plan == null)
             return Error("Backup plan not found");
 
+        var prefix = Sanitize(plan.Id) + "_";
+
         await using var storage = CreateStorage(plan.Target);
         var list = await storage.ListAsync(CancellationToken.None);
 
         return Ok(new BackupArtifactListResponse
         {
             Artifacts = list
+                .Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .ToList()
         });
     }
 
@@ -387,12 +400,15 @@ public sealed class PipeCommandHandler
             using var sr = new StreamReader(entry.Open());
             var json = await sr.ReadToEndAsync();
 
-            // Return the manifest JSON directly in PayloadJson (it's already JSON)
             return new PipeProtocol.Response
             {
                 Ok = true,
-                PayloadJson = json  // This is already the manifest JSON
+                PayloadJson = json
             };
+        }
+        catch (FileNotFoundException)
+        {
+            return Error("Backup artifact not found");
         }
         finally
         {
@@ -407,7 +423,7 @@ public sealed class PipeCommandHandler
     /// </summary>
     /// <param name="req">Request containing restore parameters.</param>
     /// <returns>The response indicating success or failure.</returns>
-    private PipeProtocol.Response TriggerRestore(PipeProtocol.Request req)
+    private async Task<PipeProtocol.Response> TriggerRestoreAsync(PipeProtocol.Request req)
     {
         var r = PipeProtocol.Deserialize<RestoreTriggerRequest>(req.PayloadJson ?? "");
         if (r == null ||
@@ -416,7 +432,13 @@ public sealed class PipeCommandHandler
             return Error("Invalid payload");
 
         var cfg = _getConfig();
+        var plan = cfg.Backups.FirstOrDefault(x =>
+            string.Equals(x.Id, r.BackupPlanId, StringComparison.OrdinalIgnoreCase));
 
+        if (plan == null)
+            return Error("Backup plan not found");
+
+// --- [CRITICAL CHANGE] ---
         var restore = new RestorePlanConfig
         {
             Enabled = true,
@@ -426,8 +448,11 @@ public sealed class PipeCommandHandler
             RestoreToDirectory = r.RestoreToDirectory,
             OverwriteExisting = r.OverwriteExisting,
             IncludePaths = r.IncludePaths,
-            RunOnce = true
+            RunOnce = true,
+            Target = plan.Target,
+            Crypto = plan.Crypto
         };
+// -----------------------
 
         cfg.Restores.Add(restore);
         ConfigStore.Save(_configPath, cfg);
@@ -488,4 +513,72 @@ public sealed class PipeCommandHandler
             Ok = false,
             Error = msg
         };
+
+    private async Task<PipeProtocol.Response> PurgeBackupArtifactsAsync(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<PurgeBackupArtifactsRequest>(req.PayloadJson ?? "");
+        if (r == null || string.IsNullOrWhiteSpace(r.BackupPlanId))
+            return Error("Invalid payload");
+
+        var cfg = _getConfig();
+        var plan = cfg.Backups.FirstOrDefault(x =>
+            string.Equals(x.Id, r.BackupPlanId, StringComparison.OrdinalIgnoreCase));
+
+        if (plan == null)
+            return Error("Backup plan not found");
+
+        var prefix = Sanitize(plan.Id) + "_";
+
+        await using (var storage = CreateStorage(plan.Target))
+        {
+            var list = await storage.ListAsync(CancellationToken.None);
+            foreach (var name in list.Where(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+            {
+                await storage.DeleteAsync(name, CancellationToken.None);
+            }
+        }
+
+        var removed = cfg.Restores.RemoveAll(x =>
+            string.Equals(x.BackupPlanId, plan.Id, StringComparison.OrdinalIgnoreCase));
+        if (removed > 0)
+        {
+            ConfigStore.Save(_configPath, cfg);
+            _onConfigSaved(cfg);
+        }
+
+        return Ok();
+    }
+
+    private static string Sanitize(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s))
+            return "backup";
+
+        var bad = Path.GetInvalidFileNameChars();
+        var parts = s.Split(bad, StringSplitOptions.RemoveEmptyEntries);
+        var joined = string.Join("_", parts);
+        return string.IsNullOrWhiteSpace(joined) ? "backup" : joined;
+    }
+
+    private PipeProtocol.Response ExportConfig()
+    {
+        if (!File.Exists(_configPath))
+            return Error("Config not found");
+
+        var json = File.ReadAllText(_configPath);
+        return Ok(new ConfigExportResponse { ConfigJson = json });
+    }
+
+    private PipeProtocol.Response ImportConfig(PipeProtocol.Request req)
+    {
+        var r = PipeProtocol.Deserialize<ConfigImportRequest>(req.PayloadJson ?? "");
+        if (r == null || string.IsNullOrWhiteSpace(r.ConfigJson))
+            return Error("Invalid payload");
+
+        File.WriteAllText(_configPath, r.ConfigJson);
+
+        var cfg = ConfigStore.LoadOrCreateDefault(_configPath);
+        _onConfigSaved(cfg);
+        return Ok();
+    }
 }
