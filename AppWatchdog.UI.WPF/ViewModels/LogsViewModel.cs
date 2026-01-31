@@ -43,6 +43,9 @@ public partial class LogsViewModel : DirtyViewModelBase
     [ObservableProperty]
     private bool _isLoading;
 
+    [ObservableProperty]
+    private bool _isAutoRefreshEnabled = true;
+
     public ObservableCollection<string> Days { get; } = new();
 
     [ObservableProperty] 
@@ -100,6 +103,9 @@ public partial class LogsViewModel : DirtyViewModelBase
             var days = await Task.Run(() =>
             {
                 var resp = _pipe.ListLogDays();
+                if (resp?.Days == null)
+                    return new List<string>();
+
                 return resp.Days
                     .OrderByDescending(d => d)
                     .ToList();
@@ -113,11 +119,10 @@ public partial class LogsViewModel : DirtyViewModelBase
 
                 if (Days.Count == 0)
                 {
-                    Header = "No logs available";
+                    Header = AppStrings.error_service_notavailable_text;
                     return;
                 }
 
-                // Standardmäßig den neuesten Log laden
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
                 SelectedDay = Days.Contains(today) ? today : Days.First();
             });
@@ -140,6 +145,18 @@ public partial class LogsViewModel : DirtyViewModelBase
         }
     }
 
+    partial void OnIsAutoRefreshEnabledChanged(bool value)
+    {
+        if (!value)
+        {
+            StopAutoRefresh();
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedDay))
+            StartAutoRefresh(SelectedDay);
+    }
+
     private async Task LoadSelectedLogAsync(string day)
     {
         IsLoading = true;
@@ -148,6 +165,15 @@ public partial class LogsViewModel : DirtyViewModelBase
             var resp = await Task.Run(() => _pipe.GetLogDay(day));
             await _dispatcher.InvokeAsync(() =>
             {
+                if (resp == null)
+                {
+                    Header = AppStrings.error_service_notavailable_text;
+                    LogText = "";
+                    _rawLogText = "";
+                    IsLoading = false;
+                    return;
+                }
+
                 Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
 
                 if (string.IsNullOrWhiteSpace(resp.Content))
@@ -168,8 +194,9 @@ public partial class LogsViewModel : DirtyViewModelBase
                 _rawLogText = reversed;
                 ApplySearchFilter();
 
-                // Starte Auto-Refresh für den aktuellen Tag
-                StartAutoRefresh(day);
+                if (IsAutoRefreshEnabled)
+                    StartAutoRefresh(day);
+
                 IsLoading = false;
             });
         }
@@ -187,6 +214,9 @@ public partial class LogsViewModel : DirtyViewModelBase
 
     private void StartAutoRefresh(string day)
     {
+        if (!IsAutoRefreshEnabled)
+            return;
+
         StopAutoRefresh();
 
         _refreshCts = new CancellationTokenSource();
@@ -199,6 +229,9 @@ public partial class LogsViewModel : DirtyViewModelBase
                     await Task.Delay(RefreshIntervalSeconds * 1000, _refreshCts.Token);
 
                     var resp = await Task.Run(() => _pipe.GetLogDay(day), _refreshCts.Token);
+                    if (resp == null)
+                        continue;
+
                     await _dispatcher.InvokeAsync(() =>
                     {
                         Header = string.Format(AppStrings.logs_last_update_text, resp.Day, DateTime.Now.ToString("HH:mm:ss"));
@@ -227,7 +260,6 @@ public partial class LogsViewModel : DirtyViewModelBase
                 }
                 catch
                 {
-                    // Fehler beim Refresh ignorieren, weitermachen
                 }
             }
         }, _refreshCts.Token);
@@ -257,10 +289,12 @@ public partial class LogsViewModel : DirtyViewModelBase
     private void OpenConfigFolder()
     {
         var cfg = _pipe.GetLogPath();
+        if (cfg == null || string.IsNullOrWhiteSpace(cfg.Path))
+            return;
 
         Process.Start(new ProcessStartInfo()
         {
-            FileName = $"{cfg.Path}",
+            FileName = cfg.Path,
             UseShellExecute = true,
             Verb = "open"
         });

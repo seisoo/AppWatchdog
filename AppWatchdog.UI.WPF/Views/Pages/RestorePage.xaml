@@ -48,15 +48,9 @@
                             Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}" />
                         <ui:Button
                             Margin="0,0,12,0"
-                            Command="{Binding BrowseRestoreDirectoryCommand}"
+                            Command="{Binding OpenRestoreDirectoryCommand}"
                             Content="{Binding Source={StaticResource Strings}, Path=[restore_browse_folder]}"
                             Icon="{ui:SymbolIcon Symbol=Folder24}" />
-                        <ui:Button
-                            Appearance="Primary"
-                            Command="{Binding TriggerRestoreCommand}"
-                            Content="{Binding Source={StaticResource Strings}, Path=[restore_start]}"
-                            Icon="{ui:SymbolIcon Symbol=Play24}"
-                            IsEnabled="{Binding CanRestore}" />
                     </WrapPanel>
                 </StackPanel>
             </ui:Card>
@@ -66,9 +60,11 @@
         <!--  MAIN CONTENT GRID  -->
         <Grid Grid.Row="1" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="360" />
                 <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="*" MinWidth="400" />
+                <ColumnDefinition Width="*" MinWidth="320" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="360" />
             </Grid.ColumnDefinitions>
 
             <!--  LEFT COLUMN: PLANS & ARTIFACTS  -->
@@ -218,7 +214,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!--  RIGHT COLUMN: RESTORE CONFIGURATION  -->
+            <!--  MIDDLE COLUMN: RESTORE CONFIGURATION  -->
             <ui:Card
                 Grid.Column="2"
                 Padding="16"
@@ -353,92 +349,121 @@
                                 TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <!--  FILE TREE  -->
-                        <StackPanel Margin="0,0,0,0" IsEnabled="{Binding HasSelectedArtifact}">
-                            <StackPanel Margin="0,0,0,6" Orientation="Horizontal">
-                                <ui:SymbolIcon
-                                    Margin="0,0,6,0"
-                                    FontSize="16"
-                                    Symbol="DocumentMultiple24" />
-                                <TextBlock
-                                    FontSize="13"
-                                    FontWeight="SemiBold"
-                                    Text="{Binding Source={StaticResource Strings}, Path=[restore_files_title]}" />
-                            </StackPanel>
-                            <TextBlock
-                                Margin="0,0,0,6"
-                                FontSize="10"
-                                Opacity="0.6"
-                                Text="{Binding Source={StaticResource Strings}, Path=[restore_files_hint]}"
-                                TextWrapping="Wrap" />
-
-                            <Border
-                                MinHeight="100"
-                                MaxHeight="200"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Opacity="0.8">
-                                <ScrollViewer
-                                    CanContentScroll="False"
-                                    HorizontalScrollBarVisibility="Disabled"
-                                    VerticalScrollBarVisibility="Auto">
-                                    <TreeView ItemsSource="{Binding ManifestTree}">
-                                        <TreeView.Resources>
-                                            <HierarchicalDataTemplate DataType="{x:Type local:ManifestTreeNode}" ItemsSource="{Binding Children}">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <ui:SymbolIcon FontSize="12" Symbol="{Binding Icon}" />
-                                                    <CheckBox
-                                                        Grid.Column="1"
-                                                        Margin="6,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                    <TextBlock
-                                                        Grid.Column="2"
-                                                        Margin="6,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="11"
-                                                        Text="{Binding Name}" />
-                                                </Grid>
-                                            </HierarchicalDataTemplate>
-                                        </TreeView.Resources>
-                                    </TreeView>
-                                </ScrollViewer>
-                            </Border>
-
-                            <!--  SELECTION SUMMARY & ACTIONS  -->
-                            <StackPanel Margin="0,8,0,0">
-                                <TextBlock
-                                    FontSize="11"
-                                    Opacity="0.7"
-                                    Text="{Binding SelectionSummary}"
-                                    TextWrapping="Wrap" />
-                                <WrapPanel Margin="0,6,0,0">
-                                    <ui:Button
-                                        Margin="0,0,8,0"
-                                        Padding="10,4"
-                                        Command="{Binding SelectAllCommand}"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[restore_select_all]}"
-                                        Icon="{ui:SymbolIcon Symbol=CheckmarkSquare24}"
-                                        IsEnabled="{Binding HasManifest}" />
-                                    <ui:Button
-                                        Padding="10,4"
-                                        Command="{Binding SelectNoneCommand}"
-                                        Content="{Binding Source={StaticResource Strings}, Path=[restore_select_none]}"
-                                        Icon="{ui:SymbolIcon Symbol=Square24}"
-                                        IsEnabled="{Binding HasManifest}" />
-                                </WrapPanel>
-                            </StackPanel>
+                        <!--  START RESTORE BUTTON  -->
+                        <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
+                            <ui:Button
+                                Appearance="Primary"
+                                Command="{Binding TriggerRestoreCommand}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[restore_start]}"
+                                Icon="{ui:SymbolIcon Symbol=Play24}"
+                                IsEnabled="{Binding CanRestore}" />
                         </StackPanel>
 
                         <TextBlock Margin="0,24,0,0" />
                     </StackPanel>
                 </ScrollViewer>
+            </ui:Card>
+
+            <!--  RIGHT COLUMN: FILES TO RESTORE  -->
+            <ui:Card
+                Grid.Column="4"
+                MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}"
+                Padding="16"
+                VerticalAlignment="Stretch">
+                <Grid VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Margin="0,0,0,6"
+                        Orientation="Horizontal">
+                        <ui:SymbolIcon
+                            Margin="0,0,6,0"
+                            FontSize="16"
+                            Symbol="DocumentMultiple24" />
+                        <TextBlock
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Text="{Binding Source={StaticResource Strings}, Path=[restore_files_title]}" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="0,0,0,6"
+                        FontSize="10"
+                        Opacity="0.6"
+                        Text="{Binding Source={StaticResource Strings}, Path=[restore_files_hint]}"
+                        TextWrapping="Wrap" />
+
+                    <Border
+                        Grid.Row="2"
+                        MinHeight="100"
+                        VerticalAlignment="Stretch"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Opacity="0.8">
+                        <ScrollViewer
+                            VerticalAlignment="Stretch"
+                            CanContentScroll="False"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <TreeView ItemsSource="{Binding ManifestTree}">
+                                <TreeView.Resources>
+                                    <HierarchicalDataTemplate DataType="{x:Type local:ManifestTreeNode}" ItemsSource="{Binding Children}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <ui:SymbolIcon FontSize="12" Symbol="{Binding Icon}" />
+                                            <CheckBox
+                                                Grid.Column="1"
+                                                Margin="6,0,0,0"
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                Margin="6,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="11"
+                                                Text="{Binding Name}" />
+                                        </Grid>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.Resources>
+                            </TreeView>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!--  SELECTION SUMMARY & ACTIONS  -->
+                    <StackPanel Grid.Row="3" Margin="0,8,0,0">
+                        <TextBlock
+                            FontSize="11"
+                            Opacity="0.7"
+                            Text="{Binding SelectionSummary}"
+                            TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,6,0,0">
+                            <ui:Button
+                                Margin="0,0,8,0"
+                                Padding="10,4"
+                                Command="{Binding SelectAllCommand}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[restore_select_all]}"
+                                Icon="{ui:SymbolIcon Symbol=CheckmarkSquare24}"
+                                IsEnabled="{Binding HasManifest}" />
+                            <ui:Button
+                                Padding="10,4"
+                                Command="{Binding SelectNoneCommand}"
+                                Content="{Binding Source={StaticResource Strings}, Path=[restore_select_none]}"
+                                Icon="{ui:SymbolIcon Symbol=Square24}"
+                                IsEnabled="{Binding HasManifest}" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
             </ui:Card>
         </Grid>
 

@@ -59,6 +59,7 @@ public sealed partial class JobRow : ObservableObject
         {
             JobKind.Backup => $"Backup: {_snapshot.BackupPlanName ?? _snapshot.JobId.Replace("backup:", "")}",
             JobKind.Restore => $"Restore: {_snapshot.RestorePlanName ?? _snapshot.JobId.Replace("restore:", "")}",
+            JobKind.KumaPing => $"KUMA: {_snapshot.AppName ?? _snapshot.ExePath ?? _snapshot.JobId.Replace("kuma:", "")}",
             _ => !string.IsNullOrWhiteSpace(_snapshot.AppName)
                 ? _snapshot.AppName
                 : $"Job: {_snapshot.JobId}"
@@ -67,10 +68,13 @@ public sealed partial class JobRow : ObservableObject
     private JobEvent? LastEvent => _snapshot.Events.LastOrDefault();
 
     public bool HasProgress =>
-    LastEvent?.Progress.HasValue == true;
+        _snapshot.ProgressPercent.HasValue
+        || LastEvent?.Progress.HasValue == true;
 
     public double Progress =>
-    LastEvent?.Progress ?? 0;
+        _snapshot.ProgressPercent
+        ?? LastEvent?.Progress
+        ?? 0;
 
     public string EventStatus =>
         LastEvent?.Status
@@ -112,7 +116,9 @@ public sealed partial class JobRow : ObservableObject
 
     public string LastRun =>
         IsBackupOrRestore
-            ? _snapshot.LastStartAttemptUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss") ?? "—"
+            ? (_snapshot.LastStartAttemptUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+               ?? _snapshot.LastCheckUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
+               ?? "—")
             : _snapshot.LastCheckUtc?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss") ?? "—";
 
     public string NextPlanned =>
@@ -146,13 +152,25 @@ public sealed partial class JobRow : ObservableObject
 
     public string? HealthCheckTarget => _snapshot.HealthCheckTarget;
     public string? HealthCheckType => _snapshot.HealthCheckType;
-    public bool ShowHealthDetails => _snapshot.Kind == JobKind.HealthMonitor && !string.IsNullOrEmpty(_snapshot.HealthCheckTarget);
+    public bool ShowHealthDetails =>
+        (_snapshot.Kind == JobKind.HealthMonitor || _snapshot.Kind == JobKind.KumaPing)
+        && !string.IsNullOrEmpty(_snapshot.HealthCheckTarget);
+
+    public bool ShowPing =>
+        _snapshot.Kind == JobKind.HealthMonitor
+        && (_snapshot.HealthCheckType == "HttpEndpoint" || _snapshot.HealthCheckType == "TcpPort")
+        && _snapshot.PingMs.HasValue;
+
+    public string PingText =>
+        _snapshot.PingMs.HasValue ? $"{_snapshot.PingMs.Value} ms" : "";
+
     public string HealthCheckLabel => _snapshot.HealthCheckType switch
     {
         "HttpEndpoint" => "Endpoint",
         "TcpPort" => "Port",
         "Executable" => "Executable",
         "WindowsService" => "Service",
+        "KumaPing" => "Executable",
         _ => "Target"
     };
 

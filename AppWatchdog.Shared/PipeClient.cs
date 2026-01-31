@@ -220,10 +220,27 @@ public static class PipeClient
                 BackupPlanId = backupPlanId
             });
 
+    public static void PurgeBackupArtifacts(string backupPlanId)
+        => SendRequest(
+            PipeProtocol.CmdPurgeBackupArtifacts,
+            new PurgeBackupArtifactsRequest
+            {
+                BackupPlanId = backupPlanId
+            });
+
     public static void TriggerRestore(RestoreTriggerRequest request)
         => SendRequest(
             PipeProtocol.CmdTriggerRestore,
             request);
 
+    public static string ExportConfig()
+        => SendRequestNoPayload<ConfigExportResponse>(PipeProtocol.CmdExportConfig).ConfigJson;
 
+    public static void ImportConfig(string configJson)
+        => SendRequest(
+            PipeProtocol.CmdImportConfig,
+            new ConfigImportRequest
+            {
+                ConfigJson = configJson
+            });
 }

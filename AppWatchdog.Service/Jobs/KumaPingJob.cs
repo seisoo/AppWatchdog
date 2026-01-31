@@ -62,4 +62,7 @@ public sealed class KumaPingJob : IJob
     /// Disposes the job.
     /// </summary>
     public void Dispose() { }
+
+    public string AppName => _app.Name;
+    public string ExePath => _app.ExePath;
 }

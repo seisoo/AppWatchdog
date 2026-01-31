@@ -113,11 +113,19 @@
 
                                             <StackPanel Grid.Column="3">
                                                 <TextBlock FontSize="10" Opacity="0.6" Text="{Binding Source={StaticResource Strings}, Path=[jobs_status], Mode=OneWay}" />
-                                                <TextBlock
-                                                    FontSize="11"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="{Binding EventBrush, Mode=OneWay}"
-                                                    Text="{Binding EventStatus, Mode=OneWay}" />
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{Binding EventBrush, Mode=OneWay}"
+                                                        Text="{Binding EventStatus, Mode=OneWay}" />
+                                                    <TextBlock
+                                                        Margin="8,0,0,0"
+                                                        FontSize="11"
+                                                        Opacity="0.7"
+                                                        Text="{Binding PingText, Mode=OneWay}"
+                                                        Visibility="{Binding ShowPing, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                </StackPanel>
                                             </StackPanel>
 
                                             <Border

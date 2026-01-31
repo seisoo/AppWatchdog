@@ -79,8 +79,17 @@ public sealed class PipeFacade
     public void TriggerBackup(string backupPlanId)
         => Execute(() => PipeClient.TriggerBackup(backupPlanId));
 
+    public void PurgeBackupArtifacts(string backupPlanId)
+        => Execute(() => PipeClient.PurgeBackupArtifacts(backupPlanId));
+
     public void TriggerRestore(RestoreTriggerRequest request)
         => Execute(() => PipeClient.TriggerRestore(request));
+
+    public string? ExportConfig()
+        => Execute(PipeClient.ExportConfig);
+
+    public void ImportConfig(string configJson)
+        => Execute(() => PipeClient.ImportConfig(configJson));
 
 
 
@@ -170,6 +179,11 @@ public sealed class PipeFacade
         {
             _backend.SetOffline(ex.Message);
             return AppStrings.error_service_notavailable_text;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _backend.SetReady(AppStrings.service_connected);
+            return ex.Message;
         }
         catch (Exception ex)
         {

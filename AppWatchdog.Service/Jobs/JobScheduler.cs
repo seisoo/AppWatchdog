@@ -236,6 +236,14 @@ public sealed class JobScheduler : IDisposable
                 Events = events
             };
 
+            if (e.Job is KumaPingJob kuma)
+            {
+                snapshot.AppName = kuma.AppName;
+                snapshot.ExePath = kuma.ExePath;
+                snapshot.HealthCheckType = "KumaPing";
+                snapshot.HealthCheckTarget = kuma.ExePath;
+            }
+
             // Backup Job Details
             if (e.Job is BackupJob && cfg != null)
             {

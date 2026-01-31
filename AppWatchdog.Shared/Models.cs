@@ -185,8 +185,8 @@ public sealed class JobSnapshot
     public bool Enabled { get; set; }
 
     public bool IsRunning { get; set; }
-    public int ConsecutiveDown { get; set; }
-    public int ConsecutiveStartFailures { get; set; }
+    public int ConsecutiveDown { get; set; } = 0;
+    public int ConsecutiveStartFailures { get; set; } = 0;
 
     public DateTimeOffset? LastCheckUtc { get; set; }
     public DateTimeOffset? LastStartAttemptUtc { get; set; }
@@ -335,6 +335,11 @@ public sealed class BackupTriggerRequest
     public string BackupPlanId { get; set; } = "";
 }
 
+public sealed class PurgeBackupArtifactsRequest
+{
+    public string BackupPlanId { get; set; } = "";
+}
+
 public sealed class BackupArtifactListRequest
 {
     public string BackupPlanId { get; set; } = "";
@@ -358,4 +363,14 @@ public sealed class RestoreTriggerRequest
     public string RestoreToDirectory { get; set; } = "";
     public bool OverwriteExisting { get; set; }
     public List<string> IncludePaths { get; set; } = new();
+}
+
+public sealed class ConfigExportResponse
+{
+    public string ConfigJson { get; set; } = "";
+}
+
+public sealed class ConfigImportRequest
+{
+    public string ConfigJson { get; set; } = "";
 }

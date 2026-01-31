@@ -865,4 +865,30 @@
   <data name="notifications_template_summary" xml:space="preserve"><value>Zusammenfassung</value></data>
   <data name="notifications_template_body" xml:space="preserve"><value>Nachrichtentext</value></data>
   <data name="notifications_template_color" xml:space="preserve"><value>Akzentfarbe</value></data>
+  <data name="backup_breaking_change_title" xml:space="preserve">
+    <value>Backup-Einstellungen geändert</value>
+  </data>
+  <data name="backup_breaking_change_text" xml:space="preserve">
+    <value>Du hast kritische Backup-Einstellungen für {0} geändert.
+Vorhandene Restore-Punkte werden gelöscht und alte Backups sind ggf. nicht mehr wiederherstellbar.
+Möchtest du fortfahren?</value>
+  </data>
+  <data name="backup_breaking_change_default_plan" xml:space="preserve">
+    <value>einen oder mehrere Pläne</value>
+  </data>
+  <data name="service_export_config" xml:space="preserve">
+    <value>Konfiguration exportieren</value>
+  </data>
+  <data name="service_import_config" xml:space="preserve">
+    <value>Konfiguration importieren</value>
+  </data>
+  <data name="service_import_config_confirm" xml:space="preserve">
+    <value>Der Import überschreibt die aktuelle Service-Konfiguration. Fortfahren?</value>
+  </data>
+  <data name="service_config_exported" xml:space="preserve">
+    <value>Konfiguration exportiert</value>
+  </data>
+  <data name="service_config_imported" xml:space="preserve">
+    <value>Konfiguration importiert</value>
+  </data>
 </root>

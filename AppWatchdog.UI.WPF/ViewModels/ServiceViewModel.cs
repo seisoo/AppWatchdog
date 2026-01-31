@@ -18,6 +18,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
+using Microsoft.Win32;
+using System.IO;
 
 namespace AppWatchdog.UI.WPF.ViewModels;
 
@@ -574,6 +576,92 @@ public partial class ServiceViewModel : DirtyViewModelBase
         {
             IsActionRunning = false;
             ActionStatusText = "";
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private async Task ExportConfigAsync()
+    {
+        try
+        {
+            var json = await Task.Run(() => _pipe.ExportConfig());
+            if (string.IsNullOrWhiteSpace(json))
+                throw new InvalidOperationException("Config export failed.");
+
+            var dlg = new SaveFileDialog
+            {
+                Title = AppStrings.service_export_config,
+                Filter = "AppWatchdog config (*.awcfg)|*.awcfg|JSON (*.json)|*.json|All files (*.*)|*.*",
+                FileName = "appwatchdog-config.awcfg"
+            };
+
+            if (dlg.ShowDialog() != true)
+                return;
+
+            File.WriteAllText(dlg.FileName, json);
+
+            _snackbar.Show(
+                AppStrings.service_title,
+                AppStrings.service_config_exported,
+                ControlAppearance.Success,
+                new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28),
+                TimeSpan.FromSeconds(4));
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Show(
+                AppStrings.service_error,
+                ex.Message,
+                ControlAppearance.Danger,
+                new SymbolIcon(SymbolRegular.ErrorCircle24, 28),
+                TimeSpan.FromSeconds(6));
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private async Task ImportConfigAsync()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = AppStrings.service_import_config,
+            Filter = "AppWatchdog config (*.awcfg;*.json)|*.awcfg;*.json|All files (*.*)|*.*",
+            CheckFileExists = true,
+            CheckPathExists = true
+        };
+
+        if (dlg.ShowDialog() != true)
+            return;
+
+        var confirm = await _dialog.ShowConfirmAsync(
+            AppStrings.service_import_config,
+            AppStrings.service_import_config_confirm,
+            AppStrings.ok,
+            AppStrings.cancel);
+
+        if (!confirm)
+            return;
+
+        try
+        {
+            var json = File.ReadAllText(dlg.FileName);
+            await Task.Run(() => _pipe.ImportConfig(json));
+            await ForceBackendRecheckAsync();
+
+            _snackbar.Show(
+                AppStrings.service_title,
+                AppStrings.service_config_imported,
+                ControlAppearance.Success,
+                new SymbolIcon(SymbolRegular.CheckmarkCircle24, 28),
+                TimeSpan.FromSeconds(4));
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Show(
+                AppStrings.service_error,
+                ex.Message,
+                ControlAppearance.Danger,
+                new SymbolIcon(SymbolRegular.ErrorCircle24, 28),
+                TimeSpan.FromSeconds(6));
         }
     }
 }
