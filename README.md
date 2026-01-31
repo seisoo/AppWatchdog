@@ -80,7 +80,7 @@ AppWatchdog is a Windows watchdog made of a Windows Service and a WPF UI. It mon
    <tr>
     <td align="center" width="50%">
       <b>Notifications</b><br>---
-      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications.png" width="100%">
+      <img src="https://raw.githubusercontent.com/seisoo/AppWatchdog/refs/heads/master/AppWatchdog.UI.WPF/README.md.Images/md_notifications_2.png" width="100%">
     </td>
     <td align="center" width="50%">
       <b>Notifications Style</b><br>---
